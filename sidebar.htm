@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>VMG CMS — Sidebar Navigation</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inconsolata:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --sb-w: 280px;
+  --bg: #f0f2f7;
+  --sidebar-bg: #0e1520;
+  --sidebar-border: #1c2840;
+  --text: #c9d5e8;
+  --muted: #4a5a72;
+  --white: #ffffff;
+
+  --c1: #f472b6;
+  --c2: #34d399;
+  --c3: #a78bfa;
+  --c4: #fbbf24;
+  --c5: #fb923c;
+  --c6: #38bdf8;
+  --c7: #e879f9;
+  --c8: #f87171;
+}
+
+html, body { height:100%; font-family:'Syne', sans-serif; background:var(--bg); overflow:hidden; }
+
+/* ── LAYOUT ── */
+.shell { display:flex; height:100vh; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: var(--sb-w);
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--sidebar-border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+/* subtle grid texture */
+.sidebar::before {
+  content:'';
+  position:absolute; inset:0;
+  background-image:
+    linear-gradient(rgba(56,189,248,.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56,189,248,.03) 1px, transparent 1px);
+  background-size: 24px 24px;
+  pointer-events:none;
+}
+
+/* ── LOGO AREA ── */
+.sb-logo {
+  padding: 22px 20px 18px;
+  border-bottom: 1px solid var(--sidebar-border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.sb-logo-mark {
+  width: 38px; height: 38px;
+  background: linear-gradient(135deg, #38bdf8, #a78bfa);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 800; color: #fff;
+  font-family: 'Inconsolata', monospace;
+  letter-spacing:-.02em;
+  flex-shrink:0;
+  box-shadow: 0 4px 14px rgba(56,189,248,.3);
+}
+.sb-logo-text { flex:1; }
+.sb-logo-name {
+  font-size: 14px; font-weight: 800; color: #fff;
+  letter-spacing: .04em; line-height:1;
+}
+.sb-logo-sub {
+  font-size: 10px; color: var(--muted);
+  font-family: 'Inconsolata', monospace;
+  margin-top: 3px; letter-spacing:.06em;
+}
+.sb-version {
+  background: rgba(56,189,248,.1);
+  border: 1px solid rgba(56,189,248,.2);
+  color: #38bdf8;
+  font-size: 9px; font-weight: 700;
+  padding: 2px 7px; border-radius: 20px;
+  font-family: 'Inconsolata', monospace;
+}
+
+/* ── SEARCH ── */
+.sb-search {
+  margin: 14px 16px 10px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid var(--sidebar-border);
+  border-radius: 9px;
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 12px;
+  flex-shrink: 0;
+  cursor: text;
+  transition: border-color .2s;
+}
+.sb-search:hover { border-color: #2a3f5f; }
+.sb-search:focus-within { border-color: rgba(56,189,248,.4); }
+.sb-search svg { flex-shrink:0; opacity:.4; }
+.sb-search input {
+  background: none; border: none; outline: none;
+  font-size: 12px; color: var(--text);
+  font-family: 'Inconsolata', monospace;
+  width: 100%;
+}
+.sb-search input::placeholder { color: var(--muted); }
+
+/* ── NAV SCROLL AREA ── */
+.sb-nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px 0 16px;
+  scroll-behavior: smooth;
+}
+.sb-nav::-webkit-scrollbar { width: 3px; }
+.sb-nav::-webkit-scrollbar-track { background: transparent; }
+.sb-nav::-webkit-scrollbar-thumb { background: #1c2840; border-radius: 4px; }
+
+/* ── SECTION LABEL ── */
+.sb-section {
+  padding: 14px 20px 6px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-family: 'Inconsolata', monospace;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.sb-section::after {
+  content:'';
+  flex:1;
+  height:1px;
+  background: var(--sidebar-border);
+}
+
+/* ── NAV ITEM ── */
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 0 12px;
+  margin: 1px 8px;
+  height: 40px;
+  border-radius: 9px;
+  cursor: pointer;
+  position: relative;
+  transition: background .15s;
+  text-decoration: none;
+  user-select: none;
+  overflow: hidden;
+}
+.nav-item::before {
+  content:'';
+  position:absolute; inset:0;
+  background: var(--item-color, #38bdf8);
+  opacity:0;
+  transition: opacity .15s;
+  border-radius: 9px;
+}
+.nav-item:hover::before { opacity:.07; }
+.nav-item.active::before { opacity:.1; }
+.nav-item.active {
+  background: rgba(255,255,255,.03);
+}
+
+/* left indicator */
+.nav-item.active::after {
+  content:'';
+  position:absolute; left:0; top:50%; transform:translateY(-50%);
+  width:3px; height:22px; border-radius:0 3px 3px 0;
+  background: var(--item-color, #38bdf8);
+  box-shadow: 0 0 8px var(--item-color, #38bdf8);
+}
+
+.nav-icon {
+  width:32px; height:32px;
+  border-radius:8px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:15px;
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.04);
+  flex-shrink:0;
+  transition: transform .2s, background .15s;
+  position:relative; z-index:1;
+}
+.nav-item:hover .nav-icon { transform: scale(1.08); }
+.nav-item.active .nav-icon {
+  background: rgba(255,255,255,.06);
+  border-color: var(--item-color, #38bdf8);
+  box-shadow: 0 0 12px var(--item-color, transparent);
+}
+
+.nav-info { flex:1; position:relative; z-index:1; min-width:0; }
+.nav-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #8ba0bc;
+  line-height:1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color .15s;
+}
+.nav-item:hover .nav-label,
+.nav-item.active .nav-label { color: #dde5f0; }
+
+.nav-sub {
+  font-size: 9.5px;
+  color: var(--muted);
+  font-family: 'Inconsolata', monospace;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nav-badge {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 20px;
+  font-family: 'Inconsolata', monospace;
+  flex-shrink:0;
+  position:relative; z-index:1;
+}
+.nav-badge.count {
+  background: rgba(255,255,255,.06);
+  color: var(--muted);
+  border: 1px solid var(--sidebar-border);
+}
+.nav-badge.new {
+  background: rgba(52,211,153,.12);
+  color: #34d399;
+  border: 1px solid rgba(52,211,153,.2);
+  animation: pulse-badge 2s infinite;
+}
+.nav-badge.alert {
+  background: rgba(251,191,36,.12);
+  color: #fbbf24;
+  border: 1px solid rgba(251,191,36,.2);
+}
+@keyframes pulse-badge {
+  0%,100%{opacity:1} 50%{opacity:.6}
+}
+
+/* collapse arrow */
+.nav-arrow {
+  width:16px; height:16px;
+  display:flex; align-items:center; justify-content:center;
+  color: var(--muted);
+  font-size:10px;
+  transition: transform .25s, color .15s;
+  flex-shrink:0;
+  position:relative; z-index:1;
+}
+.nav-item.open .nav-arrow { transform: rotate(90deg); color: var(--text); }
+
+/* sub-items */
+.sub-items {
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height .3s ease;
+}
+.sub-items.open { max-height: 300px; }
+.sub-item {
+  display:flex; align-items:center; gap:8px;
+  padding: 0 12px 0 52px;
+  height: 34px;
+  margin: 1px 8px;
+  border-radius: 8px;
+  cursor:pointer;
+  font-size:11.5px; color: var(--muted);
+  font-weight:600;
+  transition: color .15s, background .15s;
+  position:relative;
+}
+.sub-item::before {
+  content:'';
+  width:5px; height:5px; border-radius:50%;
+  background: var(--muted);
+  flex-shrink:0;
+  transition: background .15s;
+}
+.sub-item:hover { color: var(--text); background: rgba(255,255,255,.02); }
+.sub-item:hover::before { background: var(--text); }
+.sub-item.active { color: #dde5f0; }
+.sub-item.active::before { background: var(--item-color, #38bdf8); }
+
+/* ── USER FOOTER ── */
+.sb-footer {
+  border-top: 1px solid var(--sidebar-border);
+  padding: 12px 16px;
+  display:flex; align-items:center; gap:10px;
+  flex-shrink:0;
+}
+.sb-avatar {
+  width:34px; height:34px; border-radius:9px;
+  background: linear-gradient(135deg, #f472b6, #a78bfa);
+  display:flex; align-items:center; justify-content:center;
+  font-size:13px; font-weight:800; color:#fff;
+  flex-shrink:0;
+}
+.sb-user-info { flex:1; min-width:0; }
+.sb-user-name { font-size:12px; font-weight:700; color:#dde5f0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sb-user-role { font-size:10px; color:var(--muted); font-family:'Inconsolata',monospace; }
+.sb-settings-btn {
+  width:28px; height:28px; border-radius:7px;
+  background:rgba(255,255,255,.04); border:1px solid var(--sidebar-border);
+  color:var(--muted); display:flex; align-items:center; justify-content:center;
+  cursor:pointer; font-size:14px; transition: all .2s;
+}
+.sb-settings-btn:hover { color:var(--text); border-color:#2a3f5f; }
+
+/* ── MAIN CONTENT AREA ── */
+.main {
+  flex:1; overflow:hidden;
+  display:flex; flex-direction:column;
+  background: var(--bg);
+}
+
+/* top bar */
+.topbar {
+  height:60px;
+  background:#fff;
+  border-bottom:1px solid #e4e9f2;
+  display:flex; align-items:center;
+  padding: 0 28px;
+  gap:16px;
+  flex-shrink:0;
+}
+.topbar-title {
+  font-size:17px; font-weight:800; color:#0e1520;
+  display:flex; align-items:center; gap:10px;
+}
+.topbar-title span { font-size:20px; }
+.topbar-crumb {
+  font-size:11px; color:#94a3b8;
+  font-family:'Inconsolata',monospace;
+  display:flex; align-items:center; gap:6px;
+}
+.crumb-sep { color:#d1d5db; }
+.spacer { flex:1; }
+.topbar-actions { display:flex; gap:8px; align-items:center; }
+.tb-btn {
+  height:34px; padding:0 14px;
+  border-radius:8px; font-size:12px; font-weight:700;
+  cursor:pointer; font-family:'Syne',sans-serif;
+  display:flex; align-items:center; gap:6px;
+  border:none; transition: all .2s;
+}
+.tb-btn.outline { background:#f0f2f7; color:#4a5a72; border:1px solid #e4e9f2; }
+.tb-btn.outline:hover { background:#e4e9f2; }
+.tb-btn.primary { background:#0e1520; color:#fff; box-shadow:0 2px 8px rgba(14,21,32,.2); }
+.tb-btn.primary:hover { background:#1c2840; }
+
+/* content area */
+.content-area {
+  flex:1; overflow-y:auto; padding:28px;
+}
+
+/* module cards grid */
+.modules-grid {
+  display:grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap:16px;
+}
+.mod-card {
+  background:#fff;
+  border-radius:14px;
+  padding:20px;
+  border:1px solid #e4e9f2;
+  cursor:pointer;
+  transition: all .2s;
+  position:relative;
+  overflow:hidden;
+}
+.mod-card::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0; height:3px;
+  background: var(--c);
+}
+.mod-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,.08);
+  border-color: transparent;
+}
+.mod-card-top { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+.mod-card-icon {
+  width:42px; height:42px; border-radius:11px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:20px;
+  flex-shrink:0;
+}
+.mod-card-name { font-size:14px; font-weight:800; color:#0e1520; }
+.mod-card-group { font-size:10px; color:#94a3b8; font-family:'Inconsolata',monospace; margin-top:2px; }
+.mod-card-desc { font-size:11.5px; color:#64748b; line-height:1.5; }
+.mod-card-footer {
+  margin-top:14px; padding-top:12px;
+  border-top:1px solid #f0f2f7;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.mod-card-tables {
+  font-size:10px; color:#94a3b8;
+  font-family:'Inconsolata',monospace;
+}
+.mod-card-status {
+  font-size:9px; font-weight:700;
+  padding:3px 9px; border-radius:20px;
+}
+.status-p1 { background:#dcfce7; color:#166534; }
+.status-p2 { background:#fef9c3; color:#854d0e; }
+.status-p3 { background:#f1f5f9; color:#475569; }
+
+/* section header */
+.section-header {
+  margin-bottom:18px;
+  display:flex; align-items:center; gap:12px;
+}
+.section-header h2 {
+  font-size:20px; font-weight:800; color:#0e1520;
+}
+.section-header .count-pill {
+  background:#0e1520; color:#fff;
+  font-size:10px; font-weight:700;
+  padding:3px 10px; border-radius:20px;
+  font-family:'Inconsolata',monospace;
+}
+
+/* animate in */
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(16px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.nav-item { animation: fadeUp .3s both; }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- ══════════════ SIDEBAR ══════════════ -->
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-mark">V</div>
+      <div class="sb-logo-text">
+        <div class="sb-logo-name">VMG · CMS</div>
+        <div class="sb-logo-sub">VIPAWA MANAGEMENT</div>
+      </div>
+      <div class="sb-version">v2.0</div>
+    </div>
+
+    <div class="sb-search">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.5">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+      <input placeholder="Search modules..." id="searchInput" oninput="filterNav(this.value)"/>
+    </div>
+
+    <nav class="sb-nav" id="sbNav">
+
+      <!-- DASHBOARD -->
+      <div class="sb-section">Overview</div>
+      <div class="nav-item active" style="--item-color:#38bdf8" data-label="Dashboard" onclick="setActive(this,'Dashboard','🏠')">
+        <div class="nav-icon">🏠</div>
+        <div class="nav-info"><div class="nav-label">Dashboard</div><div class="nav-sub">overview & stats</div></div>
+      </div>
+
+      <!-- AUTH -->
+      <div class="sb-section">Auth & Users</div>
+      <div class="nav-item" style="--item-color:#f472b6" data-label="Users" onclick="setActive(this,'Users','👥')">
+        <div class="nav-icon">👥</div>
+        <div class="nav-info"><div class="nav-label">Users</div><div class="nav-sub">accounts · roles</div></div>
+        <div class="nav-badge count">12</div>
+      </div>
+      <div class="nav-item" style="--item-color:#f472b6" data-label="Roles & Permissions" onclick="setActive(this,'Roles & Permissions','🔐')">
+        <div class="nav-icon">🔐</div>
+        <div class="nav-info"><div class="nav-label">Roles & Permissions</div><div class="nav-sub">access control · RBAC</div></div>
+      </div>
+      <div class="nav-item" style="--item-color:#f472b6" data-label="Authors" onclick="setActive(this,'Authors','✍️')">
+        <div class="nav-icon">✍️</div>
+        <div class="nav-info"><div class="nav-label">Authors</div><div class="nav-sub">profiles · bios</div></div>
+      </div>
+
+      <!-- CONTENT -->
+      <div class="sb-section">Content Management</div>
+      <div class="nav-item" style="--item-color:#34d399" data-label="Pages" onclick="toggleSub(this,'sub-pages')">
+        <div class="nav-icon">📄</div>
+        <div class="nav-info"><div class="nav-label">Pages</div><div class="nav-sub">builder · SEO · status</div></div>
+        <div class="nav-badge count">8</div>
+        <div class="nav-arrow">›</div>
+      </div>
+      <div class="sub-items" id="sub-pages">
+        <div class="sub-item active" style="--item-color:#34d399" onclick="setActive(this,'All Pages','📄')">All Pages</div>
+        <div class="sub-item" onclick="setActive(this,'Add Page','📄')">Add New Page</div>
+        <div class="sub-item" onclick="setActive(this,'Draft Pages','📄')">Drafts</div>
+      </div>
+
+      <div class="nav-item" style="--item-color:#34d399" data-label="Services" onclick="setActive(this,'Services','🛠️')">
+        <div class="nav-icon">🛠️</div>
+        <div class="nav-info"><div class="nav-label">Services</div><div class="nav-sub">offerings · icons · order</div></div>
+        <div class="nav-badge count">6</div>
+      </div>
+      <div class="nav-item" style="--item-color:#34d399" data-label="Industries" onclick="setActive(this,'Industries','🏭')">
+        <div class="nav-icon">🏭</div>
+        <div class="nav-info"><div class="nav-label">Industries</div><div class="nav-sub">sectors · areas of practice</div></div>
+      </div>
+      <div class="nav-item" style="--item-color:#34d399" data-label="Projects" onclick="toggleSub(this,'sub-proj')">
+        <div class="nav-icon">📁</div>
+        <div class="nav-info"><div class="nav-label">Projects</div><div class="nav-sub">portfolio · case studies</div></div>
+        <div class="nav-badge count">9</div>
+        <div class="nav-arrow">›</div>
+      </div>
+      <div class="sub-items" id="sub-proj">
+        <div class="sub-item" onclick="setActive(this,'All Projects','📁')">All Projects</div>
+        <div class="sub-item" onclick="setActive(this,'Add Project','📁')">Add New Project</div>
+        <div class="sub-item" onclick="setActive(this,'Featured','📁')">Featured</div>
+      </div>
+
+      <div class="nav-item" style="--item-color:#34d399" data-label="Blog / Insights" onclick="toggleSub(this,'sub-blog')">
+        <div class="nav-icon">📝</div>
+        <div class="nav-info"><div class="nav-label">Blog / Insights</div><div class="nav-sub">posts · categories · tags</div></div>
+        <div class="nav-badge new">3 new</div>
+        <div class="nav-arrow">›</div>
+      </div>
+      <div class="sub-items" id="sub-blog">
+        <div class="sub-item" onclick="setActive(this,'All Posts','📝')">All Posts</div>
+        <div class="sub-item" onclick="setActive(this,'Add Post','📝')">Add New Post</div>
+        <div class="sub-item" onclick="setActive(this,'Categories','📝')">Categories</div>
+        <div class="sub-item" onclick="setActive(this,'Tags','📝')">Tags</div>
+      </div>
+
+      <div class="nav-item" style="--item-color:#34d399" data-label="Vacancies" onclick="toggleSub(this,'sub-vac')">
+        <div class="nav-icon">💼</div>
+        <div class="nav-info"><div class="nav-label">Vacancies</div><div class="nav-sub">careers · job listings</div></div>
+        <div class="nav-badge alert">2 exp</div>
+        <div class="nav-arrow">›</div>
+      </div>
+      <div class="sub-items" id="sub-vac">
+        <div class="sub-item" onclick="setActive(this,'All Jobs','💼')">All Jobs</div>
+        <div class="sub-item" onclick="setActive(this,'Add Vacancy','💼')">Post New Vacancy</div>
+        <div class="sub-item" onclick="setActive(this,'Expired Jobs','💼')">Expired</div>
+      </div>
+
+      <!-- MEDIA -->
+      <div class="sb-section">Assets</div>
+      <div class="nav-item" style="--item-color:#a78bfa" data-label="Media Library" onclick="setActive(this,'Media Library','🖼️')">
+        <div class="nav-icon">🖼️</div>
+        <div class="nav-info"><div class="nav-label">Media Library</div><div class="nav-sub">images · docs · videos</div></div>
+        <div class="nav-badge count">247</div>
+      </div>
+
+      <!-- FORMS -->
+      <div class="sb-section">Forms & Inquiries</div>
+      <div class="nav-item" style="--item-color:#fbbf24" data-label="Forms" onclick="toggleSub(this,'sub-forms')">
+        <div class="nav-icon">📋</div>
+        <div class="nav-info"><div class="nav-label">Forms</div><div class="nav-sub">builder · field types</div></div>
+        <div class="nav-arrow">›</div>
+      </div>
+      <div class="sub-items" id="sub-forms">
+        <div class="sub-item" onclick="setActive(this,'All Forms','📋')">All Forms</div>
+        <div class="sub-item" onclick="setActive(this,'Form Builder','📋')">Form Builder</div>
+      </div>
+      <div class="nav-item" style="--item-color:#fbbf24" data-label="Submissions" onclick="setActive(this,'Submissions','📬')">
+        <div class="nav-icon">📬</div>
+        <div class="nav-info"><div class="nav-label">Submissions</div><div class="nav-sub">responses · contact inbox</div></div>
+        <div class="nav-badge new">7 new</div>
+      </div>
+
+      <!-- WORKFLOW -->
+      <div class="sb-section">Publishing</div>
+      <div class="nav-item" style="--item-color:#fb923c" data-label="Workflow" onclick="setActive(this,'Workflow','🔄')">
+        <div class="nav-icon">🔄</div>
+        <div class="nav-info"><div class="nav-label">Workflow</div><div class="nav-sub">review · approve · publish</div></div>
+        <div class="nav-badge alert">4 pending</div>
+      </div>
+
+      <!-- SITE CONFIG -->
+      <div class="sb-section">Site Configuration</div>
+      <div class="nav-item" style="--item-color:#f87171" data-label="Hero Slides" onclick="setActive(this,'Hero Slides','🎠')">
+        <div class="nav-icon">🎠</div>
+        <div class="nav-info"><div class="nav-label">Hero Slides</div><div class="nav-sub">homepage banner · CTAs</div></div>
+      </div>
+      <div class="nav-item" style="--item-color:#f87171" data-label="Client Logos" onclick="setActive(this,'Client Logos','🏷️')">
+        <div class="nav-icon">🏷️</div>
+        <div class="nav-info"><div class="nav-label">Client Logos</div><div class="nav-sub">partners · clients strip</div></div>
+        <div class="nav-badge count">23</div>
+      </div>
+      <div class="nav-item" style="--item-color:#f87171" data-label="Testimonials" onclick="setActive(this,'Testimonials','⭐')">
+        <div class="nav-icon">⭐</div>
+        <div class="nav-info"><div class="nav-label">Testimonials</div><div class="nav-sub">reviews · ratings</div></div>
+      </div>
+      <div class="nav-item" style="--item-color:#f87171" data-label="Site Settings" onclick="setActive(this,'Site Settings','⚙️')">
+        <div class="nav-icon">⚙️</div>
+        <div class="nav-info"><div class="nav-label">Site Settings</div><div class="nav-sub">global config · contact info</div></div>
+      </div>
+
+      <!-- SEO & NAV -->
+      <div class="sb-section">SEO & Navigation</div>
+      <div class="nav-item" style="--item-color:#38bdf8" data-label="SEO Manager" onclick="setActive(this,'SEO Manager','🔍')">
+        <div class="nav-icon">🔍</div>
+        <div class="nav-info"><div class="nav-label">SEO Manager</div><div class="nav-sub">meta · OG · robots</div></div>
+      </div>
+      <div class="nav-item" style="--item-color:#38bdf8" data-label="Menu Manager" onclick="toggleSub(this,'sub-menus')">
+        <div class="nav-icon">🧭</div>
+        <div class="nav-info"><div class="nav-label">Menu Manager</div><div class="nav-sub">navigation · dropdowns</div></div>
+        <div class="nav-arrow">›</div>
+      </div>
+      <div class="sub-items" id="sub-menus">
+        <div class="sub-item" onclick="setActive(this,'Primary Nav','🧭')">Primary Navigation</div>
+        <div class="sub-item" onclick="setActive(this,'Footer Links','🧭')">Footer Links</div>
+      </div>
+
+      <!-- ANALYTICS -->
+      <div class="sb-section">Analytics & Logs</div>
+      <div class="nav-item" style="--item-color:#e879f9" data-label="Page Views" onclick="setActive(this,'Page Views','📊')">
+        <div class="nav-icon">📊</div>
+        <div class="nav-info"><div class="nav-label">Page Views</div><div class="nav-sub">traffic · content analytics</div></div>
+      </div>
+      <div class="nav-item" style="--item-color:#e879f9" data-label="Audit Log" onclick="setActive(this,'Audit Log','📜')">
+        <div class="nav-icon">📜</div>
+        <div class="nav-info"><div class="nav-label">Audit Log</div><div class="nav-sub">user actions · history</div></div>
+      </div>
+
+    </nav><!-- /sb-nav -->
+
+    <div class="sb-footer">
+      <div class="sb-avatar">A</div>
+      <div class="sb-user-info">
+        <div class="sb-user-name">Admin User</div>
+        <div class="sb-user-role">super-admin</div>
+      </div>
+      <div class="sb-settings-btn" title="Settings">⚙</div>
+    </div>
+
+  </aside><!-- /sidebar -->
+
+  <!-- ══════════════ MAIN ══════════════ -->
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title" id="topbarTitle"><span>🏠</span> Dashboard</div>
+        <div class="topbar-crumb">VMG CMS <span class="crumb-sep">/</span> <span id="crumbLabel">Dashboard</span></div>
+      </div>
+      <div class="spacer"></div>
+      <div class="topbar-actions">
+        <button class="tb-btn outline">⬡ View Site</button>
+        <button class="tb-btn primary">+ New Content</button>
+      </div>
+    </div>
+
+    <div class="content-area">
+      <div class="section-header">
+        <h2>All CMS Modules</h2>
+        <div class="count-pill">21 modules</div>
+      </div>
+      <div class="modules-grid" id="modulesGrid">
+        <!-- rendered by JS -->
+      </div>
+    </div>
+  </main>
+
+</div><!-- /shell -->
+
+<script>
+// ── Active state ──────────────────────────────────────
+function setActive(el, label, icon) {
+  document.querySelectorAll('.nav-item.active').forEach(e => e.classList.remove('active'));
+  document.querySelectorAll('.sub-item.active').forEach(e => e.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('topbarTitle').innerHTML = `<span>${icon}</span> ${label}`;
+  document.getElementById('crumbLabel').textContent = label;
+}
+
+function toggleSub(el, subId) {
+  const sub = document.getElementById(subId);
+  const isOpen = sub.classList.contains('open');
+  // close all
+  document.querySelectorAll('.sub-items.open').forEach(s => s.classList.remove('open'));
+  document.querySelectorAll('.nav-item.open').forEach(e => e.classList.remove('open'));
+  if (!isOpen) {
+    sub.classList.add('open');
+    el.classList.add('open');
+  }
+  document.querySelectorAll('.nav-item.active').forEach(e => e.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ── Search filter ──────────────────────────────────────
+function filterNav(q) {
+  const query = q.toLowerCase();
+  document.querySelectorAll('.nav-item').forEach(item => {
+    const label = item.dataset.label || '';
+    const show = !query || label.toLowerCase().includes(query);
+    item.style.display = show ? '' : 'none';
+  });
+  document.querySelectorAll('.sb-section').forEach(s => s.style.display = query ? 'none' : '');
+}
+
+// ── Module cards ──────────────────────────────────────
+const MODULES = [
+  { icon:'👥', name:'Users', group:'Auth & Users', color:'#f472b6', bg:'#fff0f7',
+    desc:'Manage admin accounts, assign roles, track login history.', tables:'users · roles · permissions', phase:'P1' },
+  { icon:'🔐', name:'Roles & Permissions', group:'Auth & Users', color:'#f472b6', bg:'#fff0f7',
+    desc:'Define role-based access control per module and action.', tables:'roles · permissions', phase:'P1' },
+  { icon:'✍️', name:'Authors', group:'Auth & Users', color:'#f472b6', bg:'#fff0f7',
+    desc:'Author profiles with bio, display name, and profile image.', tables:'authors', phase:'P2' },
+  { icon:'📄', name:'Pages', group:'Content', color:'#34d399', bg:'#f0fdf9',
+    desc:'Build and publish static pages with rich content editor and SEO.', tables:'pages · seo_settings', phase:'P1' },
+  { icon:'🛠️', name:'Services', group:'Content', color:'#34d399', bg:'#f0fdf9',
+    desc:'Create service cards with icons, descriptions, and ordering.', tables:'services · media', phase:'P1' },
+  { icon:'🏭', name:'Industries', group:'Content', color:'#34d399', bg:'#f0fdf9',
+    desc:'Manage areas of practice — sector cards with images.', tables:'industries', phase:'P2' },
+  { icon:'📁', name:'Projects', group:'Content', color:'#34d399', bg:'#f0fdf9',
+    desc:'Portfolio case studies with client info, dates, and images.', tables:'projects · content_media', phase:'P2' },
+  { icon:'📝', name:'Blog / Insights', group:'Content', color:'#34d399', bg:'#f0fdf9',
+    desc:'Full blog module with posts, categories, tags, and authors.', tables:'blog_posts · categories · tags', phase:'P2' },
+  { icon:'💼', name:'Vacancies', group:'Content', color:'#34d399', bg:'#f0fdf9',
+    desc:'Job board with deadlines, departments, and status tracking.', tables:'vacancies', phase:'P2' },
+  { icon:'🖼️', name:'Media Library', group:'Media', color:'#a78bfa', bg:'#faf5ff',
+    desc:'Central file manager for images, documents, and videos.', tables:'media', phase:'P1' },
+  { icon:'📋', name:'Forms', group:'Forms', color:'#fbbf24', bg:'#fffbeb',
+    desc:'Build custom forms — contact, inquiry, consultation requests.', tables:'forms · form_fields', phase:'P2' },
+  { icon:'📬', name:'Submissions', group:'Forms', color:'#fbbf24', bg:'#fffbeb',
+    desc:'Inbox for all form submissions with status and responses.', tables:'form_submissions · form_responses', phase:'P2' },
+  { icon:'🔄', name:'Workflow', group:'Publishing', color:'#fb923c', bg:'#fff7ed',
+    desc:'Content approval pipeline — draft → review → publish steps.', tables:'workflow', phase:'P3' },
+  { icon:'🎠', name:'Hero Slides', group:'Site Config', color:'#f87171', bg:'#fef2f2',
+    desc:'Manage homepage banner slides with headlines and CTAs.', tables:'hero_slides · media', phase:'P1' },
+  { icon:'🏷️', name:'Client Logos', group:'Site Config', color:'#f87171', bg:'#fef2f2',
+    desc:'Upload and reorder client/partner logos for the homepage.', tables:'client_logos', phase:'P1' },
+  { icon:'⭐', name:'Testimonials', group:'Site Config', color:'#f87171', bg:'#fef2f2',
+    desc:'Client reviews with ratings, approval, and featured toggle.', tables:'testimonials', phase:'P3' },
+  { icon:'⚙️', name:'Site Settings', group:'Site Config', color:'#f87171', bg:'#fef2f2',
+    desc:'Global config — company info, social links, operating hours.', tables:'site_settings', phase:'P1' },
+  { icon:'🔍', name:'SEO Manager', group:'SEO & Nav', color:'#38bdf8', bg:'#f0f9ff',
+    desc:'Per-page meta titles, descriptions, OG images, and robots.', tables:'seo_settings', phase:'P2' },
+  { icon:'🧭', name:'Menu Manager', group:'SEO & Nav', color:'#38bdf8', bg:'#f0f9ff',
+    desc:'Control navigation menus, dropdowns, and footer links.', tables:'menus · menu_items', phase:'P1' },
+  { icon:'📊', name:'Page Views', group:'Analytics', color:'#e879f9', bg:'#fdf4ff',
+    desc:'Track content traffic with IP, user agent, and timestamps.', tables:'page_views', phase:'P3' },
+  { icon:'📜', name:'Audit Log', group:'Analytics', color:'#e879f9', bg:'#fdf4ff',
+    desc:'Full history of all user actions across every CMS module.', tables:'audit_log', phase:'P3' },
+];
+
+const phaseClass = { P1:'status-p1', P2:'status-p2', P3:'status-p3' };
+const phaseLabel = { P1:'Phase 1', P2:'Phase 2', P3:'Phase 3' };
+
+function renderCards(list) {
+  const grid = document.getElementById('modulesGrid');
+  grid.innerHTML = list.map((m,i) => `
+    <div class="mod-card" style="--c:${m.color}; animation:fadeUp .35s ${i*.04}s both">
+      <div class="mod-card-top">
+        <div class="mod-card-icon" style="background:${m.bg}">${m.icon}</div>
+        <div>
+          <div class="mod-card-name">${m.name}</div>
+          <div class="mod-card-group">${m.group}</div>
+        </div>
+      </div>
+      <div class="mod-card-desc">${m.desc}</div>
+      <div class="mod-card-footer">
+        <div class="mod-card-tables">🗃 ${m.tables}</div>
+        <div class="mod-card-status ${phaseClass[m.phase]}">${phaseLabel[m.phase]}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+renderCards(MODULES);
+
+// Open pages sub by default
+document.getElementById('sub-pages').classList.add('open');
+document.querySelector('[onclick*="sub-pages"]').classList.add('open');
+</script>
+</body>
+</html>
