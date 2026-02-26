@@ -19,6 +19,13 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         BlogPost::observe(BlogPostObserver::class);
+
+         Relation::morphMap([
+            'user'   => \App\Models\User::class,
+            // Add other morphable models here as your app grows
+            // 'post'   => \App\Models\Post::class,
+            // 'author' => \App\Models\Author::class,
+        ]);
     }
 
     /**

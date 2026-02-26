@@ -4,17 +4,20 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { Loader2, Save, X } from 'lucide-react';
+import { Factory, Image as ImageIcon, Loader2, Save, Shapes, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useState } from 'react';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 type MediaItem = {
     id:            number;
-    filename:      string;
+    filename:      string | null;   // null for icons
     original_name: string;
     alt_text:      string | null;
     mime_type:     string;
+    is_icon:       boolean;         // ✅ NEW
+    icon_class:    string | null;   // ✅ NEW
 };
 
 type IndustryFormData = {
@@ -36,7 +39,7 @@ type DefaultValues = Partial<{
     is_active:   boolean;
 }>;
 
-// ── Field wrapper ─────────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 function Field({ label, error, hint, required, children }: {
     label: string; error?: string; hint?: string; required?: boolean; children: React.ReactNode;
@@ -64,7 +67,164 @@ function Section({ title, children }: { title: string; children: React.ReactNode
     );
 }
 
-// ── Component ─────────────────────────────────────────────────────────────────
+// ── Media Picker ──────────────────────────────────────────────────────────────
+
+function MediaPicker({
+    media,
+    value,
+    onChange,
+}: {
+    media:    MediaItem[];
+    value:    string;
+    onChange: (id: string) => void;
+}) {
+    const [tab, setTab] = useState<'images' | 'icons'>('images');
+
+    const images = media.filter(m => !m.is_icon && m.mime_type.startsWith('image/'));
+    const icons  = media.filter(m => m.is_icon);
+
+    const selected = media.find(m => String(m.id) === value) ?? null;
+
+    return (
+        <div className="space-y-3">
+
+            {/* ── Selected preview ──────────────────────────────────── */}
+            {selected && (
+                <div className="relative flex items-center gap-3 rounded-lg border bg-muted/30 p-3">
+                    {selected.is_icon ? (
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                            <i className={`${selected.icon_class} text-2xl text-primary`} />
+                        </div>
+                    ) : (
+                        <img
+                            src={`/storage/${selected.filename}`}
+                            alt={selected.alt_text ?? selected.original_name}
+                            className="h-12 w-12 shrink-0 rounded-lg object-cover"
+                        />
+                    )}
+                    <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium">{selected.original_name}</p>
+                        <p className="text-xs text-muted-foreground">
+                            {selected.is_icon ? selected.icon_class : selected.mime_type}
+                        </p>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => onChange('')}
+                        className="shrink-0 rounded-full p-1 text-muted-foreground hover:bg-muted hover:text-destructive transition-colors"
+                        aria-label="Remove selection"
+                    >
+                        <X className="h-4 w-4" />
+                    </button>
+                </div>
+            )}
+
+            {/* ── Tabs ──────────────────────────────────────────────── */}
+            <div className="flex rounded-lg border p-1 bg-muted/30 gap-1">
+                <button
+                    type="button"
+                    onClick={() => setTab('images')}
+                    className={cn(
+                        'flex flex-1 items-center justify-center gap-1.5 rounded-md py-1.5 text-xs font-medium transition-colors',
+                        tab === 'images'
+                            ? 'bg-background shadow-sm text-foreground'
+                            : 'text-muted-foreground hover:text-foreground',
+                    )}
+                >
+                    <ImageIcon className="h-3.5 w-3.5" />
+                    Images ({images.length})
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setTab('icons')}
+                    className={cn(
+                        'flex flex-1 items-center justify-center gap-1.5 rounded-md py-1.5 text-xs font-medium transition-colors',
+                        tab === 'icons'
+                            ? 'bg-background shadow-sm text-foreground'
+                            : 'text-muted-foreground hover:text-foreground',
+                    )}
+                >
+                    <Shapes className="h-3.5 w-3.5" />
+                    Icons ({icons.length})
+                </button>
+            </div>
+
+            {/* ── Image list ────────────────────────────────────────── */}
+            {tab === 'images' && (
+                <div className="max-h-56 overflow-y-auto space-y-1 pr-1">
+                    {images.length === 0 ? (
+                        <p className="py-4 text-center text-xs text-muted-foreground">
+                            No images uploaded yet.
+                        </p>
+                    ) : (
+                        images.map(m => (
+                            <label
+                                key={m.id}
+                                className={cn(
+                                    'flex cursor-pointer items-center gap-2 rounded-lg border p-2 transition-colors',
+                                    value === String(m.id)
+                                        ? 'border-primary bg-primary/5'
+                                        : 'hover:bg-muted/50',
+                                )}
+                            >
+                                <input
+                                    type="radio"
+                                    name="media_id"
+                                    value={m.id}
+                                    checked={value === String(m.id)}
+                                    onChange={() => onChange(String(m.id))}
+                                    className="accent-primary"
+                                />
+                                <img
+                                    src={`/storage/${m.filename}`}
+                                    alt={m.alt_text ?? m.original_name}
+                                    className="h-8 w-8 rounded object-cover shrink-0"
+                                />
+                                <span className="min-w-0 truncate text-xs">{m.original_name}</span>
+                            </label>
+                        ))
+                    )}
+                </div>
+            )}
+
+            {/* ── Icon grid ─────────────────────────────────────────── */}
+            {tab === 'icons' && (
+                <div className="max-h-56 overflow-y-auto pr-1">
+                    {icons.length === 0 ? (
+                        <p className="py-4 text-center text-xs text-muted-foreground">
+                            No icons added yet. Upload icons in the Media Library.
+                        </p>
+                    ) : (
+                        <div className="grid grid-cols-5 gap-1.5">
+                            {icons.map(m => (
+                                <button
+                                    key={m.id}
+                                    type="button"
+                                    onClick={() => onChange(value === String(m.id) ? '' : String(m.id))}
+                                    title={m.icon_class ?? m.original_name}
+                                    className={cn(
+                                        'flex flex-col items-center justify-center gap-1 rounded-lg border p-2.5 transition-all',
+                                        'hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+                                        value === String(m.id)
+                                            ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                                            : 'border-transparent hover:border-muted',
+                                    )}
+                                >
+                                    <i className={`${m.icon_class} text-xl text-foreground`} />
+                                    <span className="w-full truncate text-center text-[10px] leading-tight text-muted-foreground">
+                                        {m.icon_class?.replace('ri-', '').replace('-line', '').replace('-fill', '')}
+                                    </span>
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
+        </div>
+    );
+}
+
+// ── Main Form ─────────────────────────────────────────────────────────────────
 
 export default function IndustryForm({
     mode,
@@ -90,9 +250,6 @@ export default function IndustryForm({
             setData('slug', val.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''));
         }
     };
-
-    const selectedImage = media.find(m => String(m.id) === data.media_id);
-    const imageOnly     = media.filter(m => m.mime_type.startsWith('image/'));
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -161,22 +318,19 @@ export default function IndustryForm({
             {/* ── Right: sidebar ─────────────────────────────────────────── */}
             <div className="space-y-6">
 
-                {/* Settings */}
+                {/* Publish settings */}
                 <Section title="Settings">
-                    <div className="space-y-4">
-                        {/* Active toggle */}
-                        <div className="flex items-center justify-between gap-4">
-                            <div>
-                                <p className="text-sm font-medium">Active</p>
-                                <p className="text-xs text-muted-foreground">
-                                    Show this industry on the website
-                                </p>
-                            </div>
-                            <Switch
-                                checked={data.is_active}
-                                onCheckedChange={v => setData('is_active', v)}
-                            />
+                    <div className="flex items-center justify-between gap-4">
+                        <div>
+                            <p className="text-sm font-medium">Active</p>
+                            <p className="text-xs text-muted-foreground">
+                                Show this industry on the website
+                            </p>
                         </div>
+                        <Switch
+                            checked={data.is_active}
+                            onCheckedChange={v => setData('is_active', v)}
+                        />
                     </div>
 
                     <div className="mt-6 flex gap-2">
@@ -193,58 +347,16 @@ export default function IndustryForm({
                     </div>
                 </Section>
 
-                {/* Image picker */}
-                <Section title="Industry Image">
-                    {selectedImage && (
-                        <div className="relative mb-3">
-                            <img
-                                src={`/storage/${selectedImage.filename}`}
-                                alt={selectedImage.alt_text ?? selectedImage.original_name}
-                                className="w-full rounded-lg object-cover"
-                                style={{ maxHeight: 150 }}
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setData('media_id', '')}
-                                className="absolute right-2 top-2 rounded-full bg-black/50 p-1 text-white hover:bg-black/70"
-                            >
-                                <X className="h-3 w-3" />
-                            </button>
-                        </div>
+                {/* ✅ NEW: Image + Icon picker in one panel */}
+                <Section title="Industry Image / Icon">
+                    <MediaPicker
+                        media={media}
+                        value={data.media_id}
+                        onChange={id => setData('media_id', id)}
+                    />
+                    {errors.media_id && (
+                        <p className="mt-1.5 text-xs text-destructive">{errors.media_id}</p>
                     )}
-
-                    <div className="max-h-56 overflow-y-auto space-y-1">
-                        {imageOnly.length === 0 ? (
-                            <p className="text-xs text-muted-foreground">No images uploaded yet.</p>
-                        ) : (
-                            imageOnly.map(m => (
-                                <label
-                                    key={m.id}
-                                    className={cn(
-                                        'flex cursor-pointer items-center gap-2 rounded-lg border p-2 transition-colors',
-                                        data.media_id === String(m.id)
-                                            ? 'border-primary bg-primary/5'
-                                            : 'hover:bg-muted/50',
-                                    )}
-                                >
-                                    <input
-                                        type="radio"
-                                        name="media_id"
-                                        value={m.id}
-                                        checked={data.media_id === String(m.id)}
-                                        onChange={() => setData('media_id', String(m.id))}
-                                        className="accent-primary"
-                                    />
-                                    <img
-                                        src={`/storage/${m.filename}`}
-                                        alt={m.alt_text ?? m.original_name}
-                                        className="h-8 w-8 rounded object-cover"
-                                    />
-                                    <span className="min-w-0 truncate text-xs">{m.original_name}</span>
-                                </label>
-                            ))
-                        )}
-                    </div>
                 </Section>
             </div>
         </form>

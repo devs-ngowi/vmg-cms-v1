@@ -8,15 +8,24 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, Save, X } from 'lucide-react';
+import { Loader2, Save, X, Plus, Trash2, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import RichTextEditor from '@/components/rich-text-editor';
+import { useState } from 'react';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 type Category  = { id: number; name: string; children?: Category[] };
 type Tag       = { id: number; name: string; slug: string };
 type MediaItem = { id: number; filename: string; original_name: string; alt_text: string | null; mime_type: string };
+
+type ServicePackageFormData = {
+    id?: number;
+    title: string;
+    short_description: string;
+    description: string;
+    features: string[];
+};
 
 type ServiceFormData = {
     title:             string;
@@ -31,6 +40,7 @@ type ServiceFormData = {
     tag_ids:           number[];
     media_ids:         number[];
     workflow_notes:    string;
+    packages:          ServicePackageFormData[];
 };
 
 type DefaultValues = Partial<{
@@ -47,6 +57,7 @@ type DefaultValues = Partial<{
     tag_ids:           number[];
     media_ids:         number[];
     workflow_step:     string;
+    packages:          ServicePackageFormData[];
 }>;
 
 type Props = {
@@ -57,7 +68,7 @@ type Props = {
     defaultValues?: DefaultValues;
 };
 
-// ── Field wrapper ─────────────────────────────────────────────────────────────
+// ── Field wrapper ─────────────────────────────────────────────────────────
 
 function Field({ label, error, hint, required, children }: {
     label: string; error?: string; hint?: string; required?: boolean; children: React.ReactNode;
@@ -65,11 +76,17 @@ function Field({ label, error, hint, required, children }: {
     return (
         <div className="flex flex-col gap-1.5">
             <Label className={cn('text-sm font-medium', error && 'text-destructive')}>
-                {label}{required && <span className="text-destructive"> *</span>}
+                {label}
+                {required && <span className="text-destructive font-bold ml-1">*</span>}
             </Label>
             {children}
             {hint  && !error && <p className="text-xs text-muted-foreground">{hint}</p>}
-            {error && <p className="text-xs text-destructive">{error}</p>}
+            {error && (
+                <div className="flex items-start gap-1.5 text-xs text-destructive">
+                    <AlertCircle className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
+                    <span>{error}</span>
+                </div>
+            )}
         </div>
     );
 }
@@ -101,7 +118,10 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
         tag_ids:           defaultValues.tag_ids            ?? [],
         media_ids:         defaultValues.media_ids          ?? [],
         workflow_notes:    '',
+        packages:          defaultValues.packages          ?? [],
     });
+
+    const [expandedPackage, setExpandedPackage] = useState<number | null>(null);
 
     const handleTitleChange = (val: string) => {
         setData('title', val);
@@ -132,9 +152,67 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
     const selectedTags  = tags.filter(t => data.tag_ids.includes(t.id));
     const selectedImage = media.find(m => String(m.id) === data.image_id);
 
+    // ── Package Management ─────────────────────────────────────────────────
+
+    const addPackage = () => {
+        const newPackages = [...data.packages, {
+            title: '',
+            short_description: '',
+            description: '',
+            features: [],
+        }];
+        setData('packages', newPackages);
+    };
+
+    const updatePackage = (idx: number, field: keyof ServicePackageFormData, value: any) => {
+        const newPackages = [...data.packages];
+        newPackages[idx] = { ...newPackages[idx], [field]: value };
+        setData('packages', newPackages);
+    };
+
+    const removePackage = (idx: number) => {
+        const newPackages = data.packages.filter((_, i) => i !== idx);
+        setData('packages', newPackages);
+    };
+
+    const addFeature = (pkgIdx: number) => {
+        const newPackages = [...data.packages];
+        const pkg = { ...newPackages[pkgIdx] };
+        pkg.features = [...(pkg.features || []), ''];
+        newPackages[pkgIdx] = pkg;
+        setData('packages', newPackages);
+    };
+
+    const updateFeature = (pkgIdx: number, featureIdx: number, value: string) => {
+        const newPackages = [...data.packages];
+        const features = [...(newPackages[pkgIdx].features || [])];
+        features[featureIdx] = value;
+        newPackages[pkgIdx] = { ...newPackages[pkgIdx], features };
+        setData('packages', newPackages);
+    };
+
+    const removeFeature = (pkgIdx: number, featureIdx: number) => {
+        const newPackages = [...data.packages];
+        const features = (newPackages[pkgIdx].features || []).filter((_, i) => i !== featureIdx);
+        newPackages[pkgIdx] = { ...newPackages[pkgIdx], features };
+        setData('packages', newPackages);
+    };
+
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
         mode === 'create' ? post('/services') : patch(`/services/${defaultValues.id}`);
+    };
+
+    // ── Get error message array ─────────────────────────────────────────────
+    const getErrorArray = (fieldName: string): string[] => {
+        const err = errors[fieldName as keyof typeof errors];
+        if (Array.isArray(err)) return err;
+        if (typeof err === 'string') return [err];
+        return [];
+    };
+
+    const getFirstError = (fieldName: string): string | undefined => {
+        return getErrorArray(fieldName)[0];
     };
 
     return (
@@ -145,81 +223,213 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
 
                 <Section title="Service Details">
                     <div className="grid gap-4">
-                        <Field label="Service Title" required error={errors.title}>
+                        <Field
+                            label="Service Title"
+                            required
+                            error={getFirstError('title')}
+                        >
                             <Input
                                 value={data.title}
                                 onChange={e => handleTitleChange(e.target.value)}
                                 placeholder="e.g. Human Resource Management"
                                 autoFocus
+                                className={cn(errors.title && 'border-destructive')}
                             />
                         </Field>
 
                         <div className="grid gap-4 sm:grid-cols-2">
-                            <Field label="URL Slug" required error={errors.slug}
-                                hint="vmg.co.tz/services/your-slug">
+                            <Field
+                                label="URL Slug"
+                                required
+                                error={getFirstError('slug')}
+                                hint="vmg.co.tz/services/your-slug"
+                            >
                                 <div className="flex items-center rounded-md border bg-muted/30 px-3 text-sm text-muted-foreground">
                                     <span className="pr-1 shrink-0">/services/</span>
                                     <input
                                         value={data.slug}
                                         onChange={e => setData('slug', e.target.value)}
                                         placeholder="human-resource-management"
-                                        className="flex-1 bg-transparent py-2 outline-none"
+                                        className="w-full bg-transparent py-2 outline-none"
                                     />
                                 </div>
                             </Field>
 
-                            <Field label="Display Order" error={errors.order_number}
-                                hint="Lower number = appears first.">
+                            <Field
+                                label="Order Number"
+                                error={getFirstError('order_number')}
+                                hint="Display order on listing page"
+                            >
                                 <Input
                                     type="number"
-                                    min={0}
                                     value={data.order_number}
                                     onChange={e => setData('order_number', e.target.value)}
-                                    placeholder="0"
+                                    min="0"
                                 />
                             </Field>
                         </div>
 
-                        <Field label="Short Description" error={errors.short_description}
-                            hint="Shown on service cards on the homepage. Max 500 chars.">
+                        <Field
+                            label="Short Description"
+                            required
+                            error={getFirstError('short_description')}
+                            hint="Brief summary (shows in listings) - max 500 characters"
+                        >
                             <Textarea
                                 value={data.short_description}
                                 onChange={e => setData('short_description', e.target.value)}
-                                placeholder="Brief summary shown in service listings…"
-                                rows={3}
+                                placeholder="A short, compelling description..."
+                                rows={2}
                                 maxLength={500}
+                                className={cn(errors.short_description && 'border-destructive')}
                             />
-                            <p className="text-right text-xs text-muted-foreground">
-                                {data.short_description.length}/500
+                            <p className="text-xs text-muted-foreground">
+                                {data.short_description.length}/500 characters
                             </p>
                         </Field>
 
-                        <Field label="Full Description" error={errors.description}>
+                        <Field
+                            label="Service Description"
+                            required
+                            error={getFirstError('description')}
+                            hint="Overview/introduction of the service (HTML supported). This is required and will be displayed on the service page."
+                        >
                             <RichTextEditor
                                 value={data.description}
-                                onChange={val => setData('description', val)}
-                                placeholder="Detailed description shown on the service detail page…"
-                                error={errors.description}
-                                minHeight={360}
+                                onChange={v => setData('description', v)}
                             />
+                            {!data.description && (
+                                <p className="text-xs text-destructive flex items-center gap-1">
+                                    <AlertCircle className="h-3 w-3" />
+                                    Please provide a service description
+                                </p>
+                            )}
                         </Field>
                     </div>
                 </Section>
 
-                {/* Workflow notes (edit only) */}
-                {mode === 'edit' && (
-                    <Section title="Workflow Notes">
-                        <Field label="Notes (optional)" error={errors.workflow_notes}
-                            hint="Logged when the status changes.">
-                            <Textarea
-                                value={data.workflow_notes}
-                                onChange={e => setData('workflow_notes', e.target.value)}
-                                placeholder="Reason for status change, review feedback…"
-                                rows={3}
-                            />
-                        </Field>
-                    </Section>
-                )}
+                {/* ── Service Packages ──────────────────────────────────── */}
+                <Section title="Service Packages">
+                    <p className="mb-4 text-sm text-muted-foreground">
+                        Create package cards that will be displayed in a grid on the service detail page.
+                        Each package shows its short description in the card preview, with full description available via "Learn more".
+                    </p>
+
+                    {data.packages.length === 0 ? (
+                        <div className="rounded-lg border border-dashed p-4 text-center">
+                            <p className="text-sm text-muted-foreground mb-3">No packages yet.</p>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={addPackage}
+                                className="gap-1.5"
+                            >
+                                <Plus className="h-3.5 w-3.5" />
+                                Add Package
+                            </Button>
+                        </div>
+                    ) : (
+                        <div className="space-y-4">
+                            {data.packages.map((pkg, pkgIdx) => (
+                                <div key={pkgIdx} className="rounded-lg border p-4 space-y-4">
+                                    {/* Header */}
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div className="flex-1">
+                                            <Input
+                                                value={pkg.title}
+                                                onChange={e => updatePackage(pkgIdx, 'title', e.target.value)}
+                                                placeholder="Package title (e.g., HR Compliance & Foundation Package)"
+                                                className="font-semibold"
+                                            />
+                                        </div>
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => removePackage(pkgIdx)}
+                                            className="text-destructive hover:text-destructive"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+
+                                    {/* Short Description */}
+                                    <div>
+                                        <Label className="text-xs font-semibold mb-2 block">
+                                            Card Description (Shows in preview) <span className="text-destructive">*</span>
+                                        </Label>
+                                        <Textarea
+                                            value={pkg.short_description}
+                                            onChange={e => updatePackage(pkgIdx, 'short_description', e.target.value)}
+                                            placeholder="Brief description that appears in the card..."
+                                            rows={2}
+                                        />
+                                    </div>
+
+                                    {/* Full Description */}
+                                    <div>
+                                        <Label className="text-xs font-semibold mb-2 block">
+                                            Full Description (Optional)
+                                        </Label>
+                                        <RichTextEditor
+                                            value={pkg.description}
+                                            onChange={v => updatePackage(pkgIdx, 'description', v)}
+                                        />
+                                    </div>
+
+                                    {/* Features */}
+                                    <div>
+                                        <Label className="text-xs font-semibold mb-2 block">
+                                            Features (Displayed as pills/badges)
+                                        </Label>
+                                        <div className="space-y-2">
+                                            {pkg.features?.map((feature, featureIdx) => (
+                                                <div key={featureIdx} className="flex gap-2">
+                                                    <Input
+                                                        value={feature}
+                                                        onChange={e => updateFeature(pkgIdx, featureIdx, e.target.value)}
+                                                        placeholder="Feature name"
+                                                        className="text-sm"
+                                                    />
+                                                    <Button
+                                                        type="button"
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => removeFeature(pkgIdx, featureIdx)}
+                                                    >
+                                                        <X className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            ))}
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => addFeature(pkgIdx)}
+                                                className="gap-1.5 w-full"
+                                            >
+                                                <Plus className="h-3.5 w-3.5" />
+                                                Add Feature
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={addPackage}
+                                className="w-full gap-1.5"
+                            >
+                                <Plus className="h-4 w-4" />
+                                Add Another Package
+                            </Button>
+                        </div>
+                    )}
+                </Section>
+
             </div>
 
             {/* ── Right: sidebar ────────────────────────────────────────── */}
@@ -228,9 +438,15 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
                 {/* Publish */}
                 <Section title="Publish">
                     <div className="grid gap-4">
-                        <Field label="Status" required error={errors.status}>
+                        <Field
+                            label="Status"
+                            required
+                            error={getFirstError('status')}
+                        >
                             <Select value={data.status} onValueChange={v => setData('status', v)}>
-                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectTrigger className={cn(errors.status && 'border-destructive')}>
+                                    <SelectValue />
+                                </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="draft">Draft</SelectItem>
                                     <SelectItem value="review">In Review</SelectItem>
@@ -240,8 +456,11 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
                             </Select>
                         </Field>
 
-                        <Field label="Icon" error={errors.icon}
-                            hint="Emoji or icon class (e.g. 🏢 or fa-users).">
+                        <Field
+                            label="Icon"
+                            error={getFirstError('icon')}
+                            hint="Emoji or icon class (e.g. 🏢 or fa-users)"
+                        >
                             <Input
                                 value={data.icon}
                                 onChange={e => setData('icon', e.target.value)}

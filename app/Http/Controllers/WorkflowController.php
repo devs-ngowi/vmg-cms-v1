@@ -7,44 +7,80 @@ use App\Models\Page;
 use App\Models\Service;
 use App\Models\User;
 use App\Models\Workflow;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
-use Inertia\Response;
 
 class WorkflowController extends Controller
 {
     // ── Content type registry ─────────────────────────────────────────────────
 
     private const CONTENT_TYPES = [
-        BlogPost::class,
-        // Page::class,
-        // Service::class,
+        'BlogPost' => BlogPost::class,
+        'Page'     => Page::class,
+        'Service'  => Service::class,
     ];
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private function isApi(Request $request): bool
+    {
+        return $request->expectsJson() || $request->wantsJson();
+    }
+
+    private function editUrl(string $contentType, int $id): ?string
+    {
+        return match ($contentType) {
+            BlogPost::class => route('blog.edit', ['post' => $id]),
+            Page::class     => route('pages.edit', ['page' => $id]),
+            Service::class  => route('services.edit', ['service' => $id]),
+            default         => null,
+        };
+    }
+
+    private function formatWorkflowItem(Workflow $w): ?array
+    {
+        $content = $w->content;
+
+        if (!$content) {
+            return null;
+        }
+
+        return [
+            'workflow_id'  => $w->id,
+            'content_id'   => $w->content_id,
+            'content_type' => $w->content_type,
+            'type_label'   => $w->type_label,
+            'title'        => $content->title ?? $content->name ?? 'Untitled #' . $content->getKey(),
+            'step'         => $w->step,
+            'step_label'   => $w->step_label,
+            'assignee'     => $w->assignee?->full_name,
+            'assigner'     => $w->assigner?->full_name,
+            'notes'        => $w->notes,
+            'edit_url'     => $this->editUrl($w->content_type, $content->getKey()),
+            'updated_at'   => $w->updated_at->diffForHumans(),
+        ];
+    }
 
     // ── Index ─────────────────────────────────────────────────────────────────
 
-    public function index(): Response
+    public function index(Request $request)
     {
-        // Load only the latest workflow record per content item
         $latestWorkflows = Workflow::latestPerContent()
-            ->with(['assignee:id,name', 'assigner:id,name'])
+            ->with(['assignee:id,full_name', 'assigner:id,full_name', 'content'])
             ->orderByDesc('updated_at')
             ->get();
 
-        // Group them and resolve the actual content titles
         $grouped = collect(Workflow::STEPS)->mapWithKeys(function (string $step) use ($latestWorkflows) {
             $items = $latestWorkflows
                 ->where('step', $step)
                 ->map(fn (Workflow $w) => $this->formatWorkflowItem($w))
-                ->filter()   // remove any where content was deleted
+                ->filter()
                 ->values();
 
             return [$step => $items];
         });
 
-        // Stats
         $stats = [
             'total'     => $latestWorkflows->count(),
             'draft'     => $latestWorkflows->where('step', 'draft')->count(),
@@ -53,7 +89,15 @@ class WorkflowController extends Controller
             'archived'  => $latestWorkflows->where('step', 'archived')->count(),
         ];
 
-        $users = User::orderBy('full_name')->get(['id', 'full_name']);
+        if ($this->isApi($request)) {
+            return response()->json([
+                'success' => true,
+                'data'    => [
+                    'grouped' => $grouped,
+                    'stats'   => $stats,
+                ]
+            ]);
+        }
 
         return Inertia::render('workflow/index', [
             'grouped' => $grouped,
@@ -62,13 +106,13 @@ class WorkflowController extends Controller
                 'key'   => $s,
                 'label' => Workflow::STEP_LABELS[$s],
             ], Workflow::STEPS),
-            'users'   => $users,
+            'users'   => User::orderBy('full_name')->get(['id', 'full_name']),
         ]);
     }
 
-    // ── Move to a new step ────────────────────────────────────────────────────
+    // ── Move ──────────────────────────────────────────────────────────────────
 
-    public function move(Request $request, Workflow $workflow): RedirectResponse
+    public function move(Request $request, Workflow $workflow)
     {
         $data = $request->validate([
             'step'        => ['required', Rule::in(Workflow::STEPS)],
@@ -76,11 +120,7 @@ class WorkflowController extends Controller
             'notes'       => ['nullable', 'string', 'max:1000'],
         ]);
 
-        // Load the original content so we can also update its status
-        $content = $workflow->content;
-
-        // Create a new workflow record (history is preserved)
-        Workflow::create([
+        $newWorkflow = Workflow::create([
             'content_type' => $workflow->content_type,
             'content_id'   => $workflow->content_id,
             'step'         => $data['step'],
@@ -89,88 +129,62 @@ class WorkflowController extends Controller
             'notes'        => $data['notes'] ?? null,
         ]);
 
-        // Sync the content model's own status field so they stay in agreement
-        if ($content && method_exists($content, 'update')) {
-            $content->update(['status' => $data['step']]);
+        // Sync original content status
+        if ($workflow->content && method_exists($workflow->content, 'update')) {
+            $workflow->content->update(['status' => $data['step']]);
+        }
+
+        if ($this->isApi($request)) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Workflow updated.',
+                'data'    => $this->formatWorkflowItem($newWorkflow->load(['assignee', 'assigner', 'content']))
+            ]);
         }
 
         return back()->with('success', 'Workflow step updated.');
     }
 
-    // ── Full history for one content item ─────────────────────────────────────
+    // ── History ───────────────────────────────────────────────────────────────
 
-    public function history(string $contentType, int $contentId): Response
+    public function history(Request $request, string $contentType, int $contentId)
     {
-        abort_unless(in_array($contentType, self::CONTENT_TYPES), 404);
+        // Handle short names (e.g., "BlogPost") vs FQCN
+        $fqcn = self::CONTENT_TYPES[$contentType] ?? $contentType;
+        abort_unless(in_array($fqcn, self::CONTENT_TYPES), 404);
 
-        $history = Workflow::where('content_type', $contentType)
+        $history = Workflow::where('content_type', $fqcn)
             ->where('content_id', $contentId)
-            ->with(['assignee:id,name', 'assigner:id,name'])
+            ->with(['assignee:id,full_name', 'assigner:id,full_name'])
             ->latest()
             ->get()
             ->map(fn (Workflow $w) => [
-                'id'          => $w->id,
-                'step'        => $w->step,
-                'step_label'  => $w->step_label,
-                'assignee'    => $w->assignee?->name,
-                'assigner'    => $w->assigner?->name,
-                'notes'       => $w->notes,
-                'created_at'  => $w->created_at->format('Y-m-d H:i'),
+                'id'         => $w->id,
+                'step'       => $w->step,
+                'step_label' => $w->step_label,
+                'assignee'   => $w->assignee?->full_name,
+                'assigner'   => $w->assigner?->full_name,
+                'notes'      => $w->notes,
+                'created_at' => $w->created_at->format('Y-m-d H:i'),
             ]);
 
-        // Resolve the content title for the heading
-        $model       = app($contentType)->find($contentId);
-        $contentTitle = $model?->title ?? $model?->name ?? "#{$contentId}";
+        $model = app($fqcn)->find($contentId);
+        $contentTitle = $model?->title ?? $model?->full_name ?? "#{$contentId}";
+
+        if ($this->isApi($request)) {
+            return response()->json([
+                'success' => true,
+                'data'    => [
+                    'title'   => $contentTitle,
+                    'history' => $history
+                ]
+            ]);
+        }
 
         return Inertia::render('workflow/history', [
             'history'      => $history,
             'contentTitle' => $contentTitle,
-            'contentType'  => class_basename($contentType),
+            'contentType'  => class_basename($fqcn),
         ]);
-    }
-
-    // ── Format helper ─────────────────────────────────────────────────────────
-
-    private function formatWorkflowItem(Workflow $w): ?array
-    {
-        $content = $w->content;
-
-        // Content was hard-deleted — skip it
-        if (!$content) {
-            return null;
-        }
-
-        // Resolve a display title from common column names
-        $title = $content->title
-            ?? $content->name
-            ?? 'Untitled #' . $content->getKey();
-
-        // Resolve an edit URL based on type
-        $editUrl = $this->editUrl($w->content_type, $content->getKey());
-
-        return [
-            'workflow_id'  => $w->id,
-            'content_id'   => $w->content_id,
-            'content_type' => $w->content_type,
-            'type_label'   => $w->type_label,
-            'title'        => $title,
-            'step'         => $w->step,
-            'step_label'   => $w->step_label,
-            'assignee'     => $w->assignee?->name,
-            'assigner'     => $w->assigner?->name,
-            'notes'        => $w->notes,
-            'edit_url'     => $editUrl,
-            'updated_at'   => $w->updated_at->diffForHumans(),
-        ];
-    }
-
-    private function editUrl(string $contentType, int $id): ?string
-    {
-        return match ($contentType) {
-            BlogPost::class => route('blog.edit',     ['post'    => $id]),
-            // Page::class  => route('pages.edit',    ['page'    => $id]),
-            // Service::class => route('services.edit', ['service' => $id]),
-            default         => null,
-        };
     }
 }

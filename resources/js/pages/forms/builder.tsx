@@ -1,4 +1,4 @@
-import { useForm } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -181,7 +181,6 @@ function FieldCard({
                     </p>
                 </div>
 
-                {/* Move / delete — stop propagation so they don't toggle expand */}
                 <div className="flex items-center gap-0.5" onClick={e => e.stopPropagation()}>
                     <TooltipProvider delayDuration={300}>
                         <Tooltip>
@@ -223,7 +222,6 @@ function FieldCard({
             {expanded && (
                 <div className="grid gap-4 border-t px-4 pb-5 pt-4 sm:grid-cols-2">
 
-                    {/* Label */}
                     <div className="flex flex-col gap-1.5 sm:col-span-2">
                         <Label className="text-xs font-medium">
                             Label <span className="text-destructive">*</span>
@@ -236,7 +234,6 @@ function FieldCard({
                         />
                     </div>
 
-                    {/* Field type */}
                     <div className="flex flex-col gap-1.5">
                         <Label className="text-xs font-medium">Field Type</Label>
                         <Select
@@ -256,7 +253,6 @@ function FieldCard({
                         </Select>
                     </div>
 
-                    {/* Required toggle */}
                     <div className="flex items-end pb-1">
                         <label className="flex cursor-pointer items-center gap-2.5">
                             <button
@@ -278,7 +274,6 @@ function FieldCard({
                         </label>
                     </div>
 
-                    {/* Placeholder */}
                     {meta.hasPlaceholder && (
                         <div className="flex flex-col gap-1.5 sm:col-span-2">
                             <Label className="text-xs font-medium">
@@ -292,7 +287,6 @@ function FieldCard({
                         </div>
                     )}
 
-                    {/* Options */}
                     {meta.hasOptions && (
                         <div className="flex flex-col gap-1.5 sm:col-span-2">
                             <Label className="text-xs font-medium">
@@ -306,7 +300,6 @@ function FieldCard({
                         </div>
                     )}
 
-                    {/* Live preview */}
                     <div className="flex flex-col gap-1.5 sm:col-span-2">
                         <p className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
                             <Eye className="h-3 w-3" /> Live preview
@@ -330,6 +323,14 @@ function FieldCard({
 export default function FormBuilder({ mode, form, fieldTypes }: Props) {
     const isEdit = mode === 'edit' && !!form;
 
+    // ── Local state for all form values (including fields) ─────────────────
+    const [name,        setName]        = useState(form?.name        ?? '');
+    const [formType,    setFormType]    = useState(form?.form_type   ?? '');
+    const [description, setDescription] = useState(form?.description ?? '');
+    const [isActive,    setIsActive]    = useState(form?.is_active   ?? true);
+    const [processing,  setProcessing]  = useState(false);
+    const [errors,      setErrors]      = useState<Record<string, string>>({});
+
     const [fields, setFields] = useState<BuilderField[]>(
         form?.fields?.map(f => ({
             ...f,
@@ -339,24 +340,12 @@ export default function FormBuilder({ mode, form, fieldTypes }: Props) {
 
     const [addType, setAddType] = useState<FieldType>('text');
 
-    const { data, setData, post, patch, processing, errors } = useForm({
-        name:        form?.name        ?? '',
-        form_type:   form?.form_type   ?? '',
-        description: form?.description ?? '',
-        is_active:   form?.is_active   ?? true,
-    });
-
-    const addField = () => {
-        setFields(prev => [...prev, newField(addType)]);
-    };
-
+    const addField   = () => setFields(prev => [...prev, newField(addType)]);
     const updateField = (i: number, updated: BuilderField) =>
         setFields(prev => prev.map((f, idx) => idx === i ? updated : f));
-
     const removeField = (i: number) =>
         setFields(prev => prev.filter((_, idx) => idx !== i));
-
-    const moveField = (i: number, dir: 'up' | 'down') => {
+    const moveField   = (i: number, dir: 'up' | 'down') => {
         setFields(prev => {
             const next = [...prev];
             const swap = dir === 'up' ? i - 1 : i + 1;
@@ -365,16 +354,40 @@ export default function FormBuilder({ mode, form, fieldTypes }: Props) {
         });
     };
 
+    // ── Submit — use router directly so ALL state is included ─────────────
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
-        const payload = {
-            ...data,
-            fields: fields.map(({ _key, ...rest }) => rest),
-        } as any;
 
-        isEdit
-            ? patch(`/forms/${form!.id}`, { data: payload })
-            : post('/forms',              { data: payload });
+        // Basic validation
+        const newErrors: Record<string, string> = {};
+        if (!name.trim())     newErrors.name      = 'Form name is required.';
+        if (!formType.trim()) newErrors.form_type = 'Form type is required.';
+        if (Object.keys(newErrors).length) { setErrors(newErrors); return; }
+
+        setProcessing(true);
+        setErrors({});
+
+        // Build the complete payload — fields included ✅
+        const payload = {
+            name,
+            form_type:   formType,
+            description,
+            is_active:   isActive,
+            fields: fields.map(({ _key, ...rest }) => rest), // strip _key, keep id if editing
+        };
+
+        const options = {
+            onError:  (errs: Record<string, string>) => { setErrors(errs); setProcessing(false); },
+            onFinish: () => setProcessing(false),
+        };
+
+        if (isEdit) {
+            // ✅ router.patch sends the payload correctly
+            router.patch(`/forms/${form!.id}`, payload, options);
+        } else {
+            // ✅ router.post sends the payload correctly
+            router.post('/forms', payload, options);
+        }
     };
 
     return (
@@ -437,36 +450,45 @@ export default function FormBuilder({ mode, form, fieldTypes }: Props) {
                         Form Settings
                     </h2>
 
+                    {/* Name */}
                     <div className="flex flex-col gap-1.5">
                         <Label className={cn('text-sm font-medium', errors.name && 'text-destructive')}>
                             Form Name <span className="text-destructive">*</span>
                         </Label>
                         <Input
-                            value={data.name}
-                            onChange={e => setData('name', e.target.value)}
+                            value={name}
+                            onChange={e => setName(e.target.value)}
                             placeholder="e.g. Contact Us"
                         />
                         {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
                     </div>
 
+                    {/* Type */}
                     <div className="flex flex-col gap-1.5">
                         <Label className={cn('text-sm font-medium', errors.form_type && 'text-destructive')}>
                             Form Type <span className="text-destructive">*</span>
                         </Label>
-                        <Input
-                            value={data.form_type}
-                            onChange={e => setData('form_type', e.target.value)}
-                            placeholder="e.g. contact, inquiry, quote"
-                        />
-                        <p className="text-xs text-muted-foreground">Used to categorise forms internally.</p>
+                        <Select value={formType} onValueChange={setFormType}>
+                            <SelectTrigger className={cn(errors.form_type && 'border-destructive')}>
+                                <SelectValue placeholder="Select form type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="contact">Contact</SelectItem>
+                                <SelectItem value="newsletter">Newsletter</SelectItem>
+                                <SelectItem value="job_application">Job Application</SelectItem>
+                                <SelectItem value="feedback">Feedback</SelectItem>
+                                <SelectItem value="custom">Custom</SelectItem>
+                            </SelectContent>
+                        </Select>
                         {errors.form_type && <p className="text-xs text-destructive">{errors.form_type}</p>}
                     </div>
 
+                    {/* Description */}
                     <div className="flex flex-col gap-1.5">
                         <Label className="text-sm font-medium">Description</Label>
                         <Textarea
-                            value={data.description}
-                            onChange={e => setData('description', e.target.value)}
+                            value={description}
+                            onChange={e => setDescription(e.target.value)}
                             placeholder="Internal notes about this form…"
                             rows={3}
                         />
@@ -481,16 +503,16 @@ export default function FormBuilder({ mode, form, fieldTypes }: Props) {
                         <button
                             type="button"
                             role="switch"
-                            aria-checked={data.is_active}
+                            aria-checked={isActive}
                             className={cn(
                                 'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 transition-colors focus-visible:outline-none',
-                                data.is_active ? 'border-primary bg-primary' : 'border-muted bg-muted',
+                                isActive ? 'border-primary bg-primary' : 'border-muted bg-muted',
                             )}
-                            onClick={() => setData('is_active', !data.is_active)}
+                            onClick={() => setIsActive(v => !v)}
                         >
                             <span className={cn(
                                 'pointer-events-none block h-4 w-4 rounded-full bg-white shadow-md transition-transform mt-px',
-                                data.is_active ? 'translate-x-4 ml-0.5' : 'translate-x-0.5',
+                                isActive ? 'translate-x-4 ml-0.5' : 'translate-x-0.5',
                             )} />
                         </button>
                     </div>
@@ -519,12 +541,12 @@ export default function FormBuilder({ mode, form, fieldTypes }: Props) {
                         Summary
                     </p>
                     <div className="space-y-2">
-                        {[
-                            ['Total fields',    fields.length],
-                            ['Required',        fields.filter(f => f.is_required).length],
-                            ['With options',    fields.filter(f => ['select','radio','checkbox'].includes(f.field_type)).length],
-                        ].map(([label, count]) => (
-                            <div key={label as string} className="flex items-center justify-between text-sm">
+                        {([
+                            ['Total fields',  fields.length],
+                            ['Required',      fields.filter(f => f.is_required).length],
+                            ['With options',  fields.filter(f => ['select','radio','checkbox'].includes(f.field_type)).length],
+                        ] as [string, number][]).map(([label, count]) => (
+                            <div key={label} className="flex items-center justify-between text-sm">
                                 <span className="text-muted-foreground">{label}</span>
                                 <Badge variant="secondary" className="tabular-nums">{count}</Badge>
                             </div>

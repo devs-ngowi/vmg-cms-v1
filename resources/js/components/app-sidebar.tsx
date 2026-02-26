@@ -13,6 +13,7 @@ import {
     LayoutGrid,
     Mail,
     Navigation,
+    PanelTop,
     PenLine,
     ScrollText,
     Search,
@@ -61,7 +62,6 @@ const authItems: NavItem[] = [
         href: '/roles',
         icon: ShieldCheck,
     },
-
     {
         title: 'Authors',
         href: '/authors',
@@ -76,9 +76,9 @@ const contentItems: NavItem[] = [
         href: '/pages',
         icon: FileText,
         items: [
-            { title: 'All Pages',    href: '/pages',         icon: FileText },
-            { title: 'Add New Page', href: '/pages/create',  icon: FileText },
-            { title: 'Drafts',       href: '/pages/drafts',  icon: FileText },
+            { title: 'All Pages',    href: '/pages',        icon: FileText },
+            { title: 'Add New Page', href: '/pages/create', icon: FileText },
+            { title: 'Drafts',       href: '/pages/drafts', icon: FileText },
         ],
     },
     {
@@ -106,22 +106,12 @@ const contentItems: NavItem[] = [
         href: '/blog',
         icon: BookOpen,
         items: [
-            { title: 'All Posts',    href: '/blog',             icon: BookOpen },
-            { title: 'Add New Post', href: '/blog/create',      icon: BookOpen },
-            { title: 'Categories',   href: '/blog/categories',  icon: BookOpen },
-            { title: 'Tags',         href: '/blog/tags',        icon: BookOpen },
+            { title: 'All Posts',    href: '/blog',            icon: BookOpen },
+            { title: 'Add New Post', href: '/blog/create',     icon: BookOpen },
+            { title: 'Categories',   href: '/blog/categories', icon: BookOpen },
+            { title: 'Tags',         href: '/blog/tags',       icon: BookOpen },
         ],
     },
-    // {
-    //     title: 'Vacancies',
-    //     href: '/vacancies',
-    //     icon: Briefcase,
-    //     items: [
-    //         { title: 'All Jobs',        href: '/vacancies',         icon: Briefcase },
-    //         { title: 'Post Vacancy',    href: '/vacancies/create',  icon: Briefcase },
-    //         { title: 'Expired',         href: '/vacancies/expired', icon: Briefcase },
-    //     ],
-    // },
 ];
 
 // ── Assets ────────────────────────────────────────────
@@ -140,8 +130,8 @@ const formItems: NavItem[] = [
         href: '/forms',
         icon: ClipboardList,
         items: [
-            { title: 'All Forms',     href: '/forms',         icon: ClipboardList },
-            { title: 'Form Builder',  href: '/forms/builder', icon: ClipboardList },
+            { title: 'All Forms',   href: '/forms',        icon: ClipboardList },
+            { title: 'New Form',    href: '/forms/create', icon: ClipboardList }, // ← was /forms/builder (404)
         ],
     },
     {
@@ -162,6 +152,11 @@ const publishingItems: NavItem[] = [
 
 // ── Site Configuration ────────────────────────────────
 const siteConfigItems: NavItem[] = [
+    {
+        title: 'Home-Banners',
+        href: '/banners',
+        icon: PanelTop,
+    },
     {
         title: 'Hero Slides',
         href: '/hero-slides',
@@ -193,7 +188,7 @@ const seoNavItems: NavItem[] = [
     },
     {
         title: 'Menu Manager',
-        href: '/menus',
+        href: '/menus/primary', // ← was /menus (no such route → 404)
         icon: Navigation,
         items: [
             { title: 'Primary Navigation', href: '/menus/primary', icon: Navigation },
@@ -203,18 +198,18 @@ const seoNavItems: NavItem[] = [
 ];
 
 // ── Analytics & Logs ──────────────────────────────────
-const analyticsItems: NavItem[] = [
-    {
-        title: 'Page Views',
-        href: '/analytics/page-views',
-        icon: BarChart2,
-    },
-    {
-        title: 'Audit Log',
-        href: '/analytics/audit-log',
-        icon: ScrollText,
-    },
-];
+// const analyticsItems: NavItem[] = [
+//     {
+//         title: 'Page Views',
+//         href: '/analytics/page-views',
+//         icon: BarChart2,
+//     },
+//     {
+//         title: 'Audit Log',
+//         href: '/analytics/audit-log',
+//         icon: ScrollText,
+//     },
+// ];
 
 export function AppSidebar() {
     return (
@@ -256,7 +251,7 @@ export function AppSidebar() {
                 <NavMain items={seoNavItems} groupLabel="SEO & Navigation" />
 
                 <SidebarSeparator />
-                <NavMain items={analyticsItems} groupLabel="Analytics & Logs" />
+                {/* <NavMain items={analyticsItems} groupLabel="Analytics & Logs" /> */}
             </SidebarContent>
 
             <SidebarFooter>

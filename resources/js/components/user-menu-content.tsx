@@ -1,4 +1,5 @@
 import { router } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
 import { LogOut, Settings } from 'lucide-react';
 import {
     DropdownMenuGroup,
@@ -30,19 +31,16 @@ export function UserMenuContent({ user }: Props) {
                     <UserInfo user={user} showEmail={true} />
                 </div>
             </DropdownMenuLabel>
-
             <DropdownMenuSeparator />
-
             <DropdownMenuGroup>
                 <DropdownMenuItem asChild>
-
+                    <Link href="/settings">  {/* ← single child element */}
                         <Settings className="mr-2" />
                         Settings
+                    </Link>
                 </DropdownMenuItem>
             </DropdownMenuGroup>
-
             <DropdownMenuSeparator />
-
             <DropdownMenuItem
                 className="w-full cursor-pointer"
                 onSelect={handleLogout}

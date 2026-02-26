@@ -25,6 +25,13 @@ class Media extends Model
         'height',
         'was_compressed',
         'original_size_bytes',
+        'is_icon',      // ✅ FIX: Added
+        'icon_class',   // ✅ FIX: Added
+    ];
+
+    protected $casts = [
+        'is_icon'       => 'boolean',
+        'was_compressed'=> 'boolean',
     ];
 
     protected $appends = ['url', 'human_size', 'is_image'];
@@ -36,13 +43,11 @@ class Media extends Model
         return $this->belongsTo(User::class, 'uploaded_by');
     }
 
-    /** Blog posts that use this as a featured image */
     public function featuredInPosts()
     {
         return $this->hasMany(BlogPost::class, 'media_id');
     }
 
-    /** Blog posts that include this in their gallery */
     public function galleryPosts()
     {
         return $this->belongsToMany(BlogPost::class, 'blog_post_media')
@@ -52,26 +57,32 @@ class Media extends Model
 
     // ── Accessors ─────────────────────────────────────────────────────────────
 
-    /** Full public storage URL */
+    /**
+     * Full public URL — returns empty string for icon records (no file on disk).
+     */
     public function getUrlAttribute(): string
     {
+        // ✅ FIX: Guard against null filename (icons have no file)
+        if (empty($this->filename)) {
+            return '';
+        }
+
         return Storage::url($this->filename);
     }
 
-    /** e.g. "2.4 MB" or "340 KB" */
     public function getHumanSizeAttribute(): string
     {
         $bytes = $this->size_bytes ?? 0;
 
-        if ($bytes >= 1_048_576) {
-            return round($bytes / 1_048_576, 1) . ' MB';
-        }
-        if ($bytes >= 1_024) {
-            return round($bytes / 1_024) . ' KB';
-        }
+        if ($bytes >= 1_048_576) return round($bytes / 1_048_576, 1) . ' MB';
+        if ($bytes >= 1_024)     return round($bytes / 1_024) . ' KB';
+
         return $bytes . ' B';
     }
 
+    /**
+     * True for image/* mime types. Icons use 'icon/remixicon' so this stays false.
+     */
     public function getIsImageAttribute(): bool
     {
         return str_starts_with($this->mime_type ?? '', 'image/');
@@ -81,12 +92,19 @@ class Media extends Model
 
     public function scopeImages($query)
     {
-        return $query->where('mime_type', 'like', 'image/%');
+        return $query->where('mime_type', 'like', 'image/%')
+                     ->where('is_icon', false);
     }
 
     public function scopeDocuments($query)
     {
-        return $query->where('mime_type', 'not like', 'image/%');
+        return $query->where('mime_type', 'not like', 'image/%')
+                     ->where('is_icon', false);
+    }
+
+    public function scopeIcons($query)
+    {
+        return $query->where('is_icon', true);
     }
 
     public function scopeInFolder($query, string $folder)

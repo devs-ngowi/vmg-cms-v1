@@ -19,6 +19,11 @@ class MenuItem extends Model
         'url',
         'sort_order',
         'target',
+        'is_visible',
+    ];
+
+    protected $casts = [
+        'is_visible' => 'boolean',
     ];
 
     public function menu()
@@ -35,6 +40,22 @@ class MenuItem extends Model
     {
         return $this->hasMany(MenuItem::class, 'parent_id', 'id')
             ->orderBy('sort_order');
+    }
+
+    /**
+     * ✅ Scope to get only visible items
+     */
+    public function scopeVisible($query)
+    {
+        return $query->where('is_visible', true);
+    }
+
+    /**
+     * ✅ Scope to get only hidden items
+     */
+    public function scopeHidden($query)
+    {
+        return $query->where('is_visible', false);
     }
 
     public function hasChildren(): bool

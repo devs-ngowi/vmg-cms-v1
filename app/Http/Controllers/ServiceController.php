@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Media;
 use App\Models\Service;
+use App\Models\ServicePackage;
 use App\Models\Tag;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
@@ -30,6 +32,26 @@ class ServiceController extends Controller
         ];
     }
 
+    /**
+     * Format package for API response
+     */
+    private function formatPackage(ServicePackage $package): array
+    {
+        return [
+            'id'                  => $package->id,
+            'title'               => $package->title,
+            'slug'                => $package->slug,
+            'short_description'   => $package->short_description,
+            'description'         => $package->description,
+            'features'            => $package->features ?? [],
+            'order_number'        => $package->order_number,
+            'status'              => $package->status,
+        ];
+    }
+
+    /**
+     * Format service for API response
+     */
     private function formatService(Service $service): array
     {
         return [
@@ -37,12 +59,20 @@ class ServiceController extends Controller
             'title'             => $service->title,
             'slug'              => $service->slug,
             'short_description' => $service->short_description,
+            'description'       => $service->description,
             'icon'              => $service->icon,
             'order_number'      => $service->order_number,
             'status'            => $service->status,
             'image'             => $service->image
-                ? ['id' => $service->image->id, 'filename' => $service->image->filename, 'alt_text' => $service->image->alt_text]
+                ? [
+                    'id'       => $service->image->id,
+                    'filename' => $service->image->filename,
+                    'url'      => url(Storage::url($service->image->filename)),
+                    'alt_text' => $service->image->alt_text,
+                ]
                 : null,
+            // ✅ NEW: Include packages
+            'packages'          => $service->packages->map(fn (ServicePackage $p) => $this->formatPackage($p)),
             'categories'        => $service->categories->pluck('name'),
             'tags'              => $service->tags->pluck('name'),
             'workflow_step'     => $service->latestWorkflowStep(),
@@ -52,20 +82,61 @@ class ServiceController extends Controller
 
     // ── Index ─────────────────────────────────────────────────────────────────
 
-    public function index(): Response
+    /**
+     * List all services with packages
+     */
+    public function index(Request $request)
     {
-        $services = Service::with(['image', 'categories', 'tags'])
+        $services = Service::with(['image', 'packages', 'categories', 'tags'])
             ->orderBy('order_number')
             ->get()
             ->map(fn (Service $s) => $this->formatService($s));
 
+        // 🟢 API Response
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'data'    => $services,
+            ]);
+        }
+
+        // 👁️ View Response (Admin Panel)
         return Inertia::render('services/index', [
             'services' => $services,
         ]);
     }
 
+    // ── Show (Public) ─────────────────────────────────────────────────────────
+
+    /**
+     * Get single service by slug with all packages
+     */
+    public function show(Request $request, $slug)
+    {
+        $service = Service::where('slug', $slug)
+            ->where('status', 'published')
+            ->with(['image', 'packages', 'categories', 'tags'])
+            ->firstOrFail();
+
+        $formatted = $this->formatService($service);
+
+        // 🟢 API Response
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'data'    => $formatted,
+            ]);
+        }
+
+        // 👁️ View Response
+        return view('services.show', ['service' => $formatted]);
+    }
+
     // ── Create ────────────────────────────────────────────────────────────────
 
+    /**
+     * Show create form
+     */
     public function create(): Response
     {
         return Inertia::render('services/create', $this->sharedData());
@@ -73,6 +144,9 @@ class ServiceController extends Controller
 
     // ── Store ─────────────────────────────────────────────────────────────────
 
+    /**
+     * Store new service with packages
+     */
     public function store(Request $request): RedirectResponse
     {
         $data = $request->validate([
@@ -90,6 +164,13 @@ class ServiceController extends Controller
             'tag_ids.*'         => ['exists:tags,id'],
             'media_ids'         => ['array'],
             'media_ids.*'       => ['exists:media,id'],
+            // ✅ NEW: Packages validation
+            'packages'          => ['array'],
+            'packages.*.title'  => ['required_with:packages', 'string', 'max:255'],
+            'packages.*.short_description' => ['required_with:packages', 'string'],
+            'packages.*.description' => ['nullable', 'string'],
+            'packages.*.features' => ['nullable', 'array'],
+            'packages.*.order_number' => ['nullable', 'integer'],
         ]);
 
         $service = Service::create([
@@ -102,6 +183,22 @@ class ServiceController extends Controller
             'order_number'      => $data['order_number']      ?? 0,
             'status'            => $data['status'],
         ]);
+
+        // ✅ Create packages
+        if (!empty($data['packages'])) {
+            foreach ($data['packages'] as $i => $pkg) {
+                ServicePackage::create([
+                    'service_id'         => $service->id,
+                    'title'              => $pkg['title'],
+                    'slug'               => Str::slug($pkg['title']),
+                    'short_description'  => $pkg['short_description'],
+                    'description'        => $pkg['description']      ?? null,
+                    'features'           => $pkg['features']         ?? [],
+                    'order_number'       => $pkg['order_number']     ?? $i,
+                    'status'             => 'published',
+                ]);
+            }
+        }
 
         $service->categories()->sync($data['category_ids'] ?? []);
         $service->tags()->sync($data['tag_ids']            ?? []);
@@ -125,9 +222,12 @@ class ServiceController extends Controller
 
     // ── Edit ──────────────────────────────────────────────────────────────────
 
+    /**
+     * Show edit form
+     */
     public function edit(Service $service): Response
     {
-        $service->load(['image', 'categories', 'tags', 'media']);
+        $service->load(['image', 'packages', 'categories', 'tags', 'media']);
 
         return Inertia::render('services/edit', array_merge($this->sharedData(), [
             'service' => [
@@ -143,6 +243,15 @@ class ServiceController extends Controller
                 'category_ids'      => $service->categories->pluck('id'),
                 'tag_ids'           => $service->tags->pluck('id'),
                 'media_ids'         => $service->media->pluck('id'),
+                // ✅ Include packages
+                'packages'          => $service->allPackages->map(fn (ServicePackage $p) => [
+                    'id'                  => $p->id,
+                    'title'               => $p->title,
+                    'short_description'   => $p->short_description,
+                    'description'         => $p->description,
+                    'features'            => $p->features ?? [],
+                    'order_number'        => $p->order_number,
+                ])->values(),
                 'workflow_step'     => $service->latestWorkflowStep(),
             ],
         ]));
@@ -150,6 +259,9 @@ class ServiceController extends Controller
 
     // ── Update ────────────────────────────────────────────────────────────────
 
+    /**
+     * Update service and packages
+     */
     public function update(Request $request, Service $service): RedirectResponse
     {
         $data = $request->validate([
@@ -168,6 +280,14 @@ class ServiceController extends Controller
             'media_ids'         => ['array'],
             'media_ids.*'       => ['exists:media,id'],
             'workflow_notes'    => ['nullable', 'string', 'max:1000'],
+            // ✅ Packages validation
+            'packages'          => ['array'],
+            'packages.*.id'     => ['nullable', 'exists:service_packages,id'],
+            'packages.*.title'  => ['required_with:packages', 'string', 'max:255'],
+            'packages.*.short_description' => ['required_with:packages', 'string'],
+            'packages.*.description' => ['nullable', 'string'],
+            'packages.*.features' => ['nullable', 'array'],
+            'packages.*.order_number' => ['nullable', 'integer'],
         ]);
 
         $oldStatus = $service->status;
@@ -182,6 +302,48 @@ class ServiceController extends Controller
             'order_number'      => $data['order_number']      ?? 0,
             'status'            => $data['status'],
         ]);
+
+        // ✅ Sync packages
+        if (!empty($data['packages'])) {
+            $existingPackageIds = [];
+
+            foreach ($data['packages'] as $i => $pkg) {
+                if (!empty($pkg['id'])) {
+                    // Update existing package
+                    $package = ServicePackage::findOrFail($pkg['id']);
+                    $package->update([
+                        'title'              => $pkg['title'],
+                        'slug'               => Str::slug($pkg['title']),
+                        'short_description'  => $pkg['short_description'],
+                        'description'        => $pkg['description']  ?? null,
+                        'features'           => $pkg['features']     ?? [],
+                        'order_number'       => $pkg['order_number'] ?? $i,
+                    ]);
+                    $existingPackageIds[] = $package->id;
+                } else {
+                    // Create new package
+                    $newPackage = ServicePackage::create([
+                        'service_id'         => $service->id,
+                        'title'              => $pkg['title'],
+                        'slug'               => Str::slug($pkg['title']),
+                        'short_description'  => $pkg['short_description'],
+                        'description'        => $pkg['description']  ?? null,
+                        'features'           => $pkg['features']     ?? [],
+                        'order_number'       => $pkg['order_number'] ?? $i,
+                        'status'             => 'published',
+                    ]);
+                    $existingPackageIds[] = $newPackage->id;
+                }
+            }
+
+            // Delete packages not in the update
+            $service->allPackages()
+                ->whereNotIn('id', $existingPackageIds)
+                ->delete();
+        } else {
+            // Delete all packages if none provided
+            $service->allPackages()->delete();
+        }
 
         $service->categories()->sync($data['category_ids'] ?? []);
         $service->tags()->sync($data['tag_ids']            ?? []);
@@ -210,8 +372,12 @@ class ServiceController extends Controller
 
     // ── Destroy ───────────────────────────────────────────────────────────────
 
-    public function destroy(Service $service): RedirectResponse
+    /**
+     * Delete service and all associated packages
+     */
+    public function destroy(Request $request, Service $service): RedirectResponse
     {
+        $service->allPackages()->delete(); // ✅ Delete packages first
         $service->categories()->detach();
         $service->tags()->detach();
         $service->media()->detach();

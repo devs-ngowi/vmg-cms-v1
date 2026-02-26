@@ -17,6 +17,8 @@ class FormField extends Model
         'field_type',
         'is_required',
         'sort_order',
+        'options',       // ← was missing — caused options to be silently dropped
+        'placeholder',   // ← was missing — caused placeholder to be silently dropped
     ];
 
     public function form()

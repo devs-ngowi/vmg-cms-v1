@@ -1,6 +1,5 @@
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, router } from '@inertiajs/react';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import {
@@ -14,9 +13,30 @@ import {
 import { DataTable, type ColumnDef } from '@/components/ui/data-table';
 import type { BreadcrumbItem } from '@/types';
 import { Factory, MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+
+// ── Load Remixicon font (required to render <i class="ri-..."> glyphs) ────────
+function useRemixiconCSS() {
+    useEffect(() => {
+        const id = 'remixicon-css';
+        if (document.getElementById(id)) return;
+        const link   = document.createElement('link');
+        link.id      = id;
+        link.rel     = 'stylesheet';
+        link.href    = 'https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css';
+        document.head.appendChild(link);
+    }, []);
+}
 
 // ── Types ─────────────────────────────────────────────────────────────────────
+
+type IndustryMedia = {
+    id:          number;
+    filename:    string | null;
+    alt_text:    string | null;
+    is_icon:     boolean;       // ✅ NEW
+    icon_class:  string | null; // ✅ NEW
+};
 
 type Industry = {
     id:          number;
@@ -25,9 +45,40 @@ type Industry = {
     description: string | null;
     sort_order:  number;
     is_active:   boolean;
-    media:       { id: number; filename: string; alt_text: string | null } | null;
+    media:       IndustryMedia | null;
     created_at:  string;
 };
+
+// ── Thumbnail ─────────────────────────────────────────────────────────────────
+
+/**
+ * Renders an image thumbnail, an icon glyph, or a default factory placeholder.
+ */
+function IndustryThumbnail({ media, name }: { media: IndustryMedia | null; name: string }) {
+    if (!media) {
+        return (
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                <Factory className="h-4 w-4 text-primary" />
+            </div>
+        );
+    }
+
+    if (media.is_icon) {
+        return (
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                <i className={`${media.icon_class} text-xl text-primary`} />
+            </div>
+        );
+    }
+
+    return (
+        <img
+            src={`/storage/${media.filename}`}
+            alt={media.alt_text ?? name}
+            className="h-10 w-10 shrink-0 rounded-lg object-cover"
+        />
+    );
+}
 
 // ── Breadcrumbs ───────────────────────────────────────────────────────────────
 
@@ -39,6 +90,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function IndustriesIndex({ industries }: { industries: Industry[] }) {
+    useRemixiconCSS(); // ✅ Ensures icons render
+
     const [deleteTarget, setDeleteTarget] = useState<Industry | null>(null);
 
     const confirmDelete = () => {
@@ -68,17 +121,8 @@ export default function IndustriesIndex({ industries }: { industries: Industry[]
             sortable: true,
             cell: (row) => (
                 <div className="flex items-center gap-3">
-                    {row.media ? (
-                        <img
-                            src={`/storage/${row.media.filename}`}
-                            alt={row.media.alt_text ?? row.name}
-                            className="h-10 w-10 rounded-lg object-cover"
-                        />
-                    ) : (
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                            <Factory className="h-4 w-4 text-primary" />
-                        </div>
-                    )}
+                    {/* ✅ Unified thumbnail — handles image, icon, or placeholder */}
+                    <IndustryThumbnail media={row.media} name={row.name} />
                     <div className="min-w-0">
                         <p className="truncate font-medium">{row.name}</p>
                         <p className="mt-0.5 truncate text-xs text-muted-foreground/60">/{row.slug}</p>

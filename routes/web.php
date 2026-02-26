@@ -2,16 +2,22 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AuthorController;
+use App\Http\Controllers\BannerController;
 use App\Http\Controllers\BlogPostController;
 use App\Http\Controllers\ClientLogoController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FormController;
 use App\Http\Controllers\HeroSlideController;
 use App\Http\Controllers\IndustryController;
 use App\Http\Controllers\MediaController;
+use App\Http\Controllers\MenuController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\SeoSettingController;
 use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\SiteSettingController;
+use App\Http\Controllers\TestimonialController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WorkflowController;
 use Illuminate\Support\Facades\Route;
@@ -37,7 +43,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     // ── Overview ──────────────────────────────────────
-    Route::get('/dashboard', fn () => Inertia::render('dashboard'))->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // ── Auth & Users ──────────────────────────────────
     Route::get('/users',              [UserController::class, 'index'])->name('users.index');
@@ -112,6 +118,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/blog/tags',                            [BlogPostController::class, 'tags'])->name('blog.tags');
     Route::post('/blog/tags',                           [BlogPostController::class, 'storeTag'])->name('blog.tags.store');
     Route::delete('/blog/tags/{tag}',                   [BlogPostController::class, 'destroyTag'])->name('blog.tags.destroy');
+
     // ── Vacancies ─────────────────────────────────────
     Route::get('/vacancies',         fn () => Inertia::render('vacancies/index'))->name('vacancies.index');
     Route::get('/vacancies/create',  fn () => Inertia::render('vacancies/create'))->name('vacancies.create');
@@ -132,7 +139,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/forms/{form}/toggle', [FormController::class, 'toggle'])->name('forms.toggle');
     Route::delete('/forms/{form}',     [FormController::class, 'destroy'])->name('forms.destroy');
 
-    // ── Submissions ────────────────────────────────────────────────────────────
+    // ── Submissions ────────────────────────────────────
     Route::get('/submissions',                          [FormController::class, 'submissions'])->name('submissions.index');
     Route::get('/submissions/{submission}',             [FormController::class, 'showSubmission'])->name('submissions.show');
     Route::patch('/submissions/{submission}',           [FormController::class, 'updateSubmission'])->name('submissions.update');
@@ -144,6 +151,16 @@ Route::middleware('auth')->group(function () {
     Route::get('/workflow/history/{contentType}/{contentId}',  [WorkflowController::class, 'history'])->name('workflow.history');
 
     // ── Site Configuration ────────────────────────────
+    Route::get('/banners/create', [BannerController::class, 'create'])->name('banners.create');
+    Route::get('/banners', [BannerController::class, 'index'])->name('banners.index');
+    Route::get('/banners/{banner}/edit', [BannerController::class, 'edit'])->name('banners.edit');
+    Route::get('/banners/{banner}', [BannerController::class, 'show'])->name('banners.show');
+    Route::post('/banners', [BannerController::class, 'store'])->name('banners.store');
+    Route::put('/banners/{banner}', [BannerController::class, 'update'])->name('banners.update');
+    Route::patch('/banners/{banner}', [BannerController::class, 'update']);
+    Route::patch('/banners/{banner}/toggle', [BannerController::class, 'toggle'])->name('banners.toggle');
+    Route::delete('/banners/{banner}', [BannerController::class, 'destroy'])->name('banners.destroy');
+
     Route::get('/hero-slides',                   [HeroSlideController::class, 'index'])->name('hero-slides.index');
     Route::get('/hero-slides/create',            [HeroSlideController::class, 'create'])->name('hero-slides.create');
     Route::post('/hero-slides',                  [HeroSlideController::class, 'store'])->name('hero-slides.store');
@@ -160,13 +177,29 @@ Route::middleware('auth')->group(function () {
     Route::patch('/client-logos/{clientLogo}/toggle',  [ClientLogoController::class, 'toggle'])->name('client-logos.toggle');
     Route::delete('/client-logos/{clientLogo}',        [ClientLogoController::class, 'destroy'])->name('client-logos.destroy');
 
-    Route::get('/testimonials', fn () => Inertia::render('testimonials/index'))->name('testimonials.index');
-    Route::get('/settings',     fn () => Inertia::render('settings/index'))->name('settings.index');
+    Route::get('/testimonials',                          [TestimonialController::class, 'index'])->name('testimonials.index');
+    Route::post('/testimonials',                         [TestimonialController::class, 'store'])->name('testimonials.store');
+    Route::patch('/testimonials/{testimonial}',          [TestimonialController::class, 'update'])->name('testimonials.update');
+    Route::patch('/testimonials/{testimonial}/approve',  [TestimonialController::class, 'approve'])->name('testimonials.approve');
+    Route::patch('/testimonials/{testimonial}/feature',  [TestimonialController::class, 'feature'])->name('testimonials.feature');
+    Route::delete('/testimonials/{testimonial}',         [TestimonialController::class, 'destroy'])->name('testimonials.destroy');
+
+    Route::get('/settings',  [SiteSettingController::class, 'index'])->name('settings.index');
+    Route::post('/settings', [SiteSettingController::class, 'update'])->name('settings.update');
 
     // ── SEO & Navigation ──────────────────────────────
-    Route::get('/seo',            fn () => Inertia::render('seo/index'))->name('seo.index');
-    Route::get('/menus/primary',  fn () => Inertia::render('menus/primary'))->name('menus.primary');
-    Route::get('/menus/footer',   fn () => Inertia::render('menus/footer'))->name('menus.footer');
+    Route::get('/seo',  [SeoSettingController::class, 'index'])->name('seo.index');
+    Route::post('/seo', [SeoSettingController::class, 'update'])->name('seo.update');
+
+    // ✅ MENU ROUTES - Fixed to match naming convention
+    Route::get('/menus/primary',                               [MenuController::class, 'primary'])->name('menus.primary');
+    Route::get('/menus/footer',                                [MenuController::class, 'footer'])->name('menus.footer');
+    Route::patch('/menus/{menu}',                              [MenuController::class, 'updateMenu'])->name('menus.update');
+    Route::post('/menus/{menu}/items',                         [MenuController::class, 'storeItem'])->name('menus.items.store');
+    Route::patch('/menus/{menu}/items/{item}',                 [MenuController::class, 'updateItem'])->name('menus.items.update');
+    Route::delete('/menus/{menu}/items/{item}',                [MenuController::class, 'destroyItem'])->name('menus.items.destroy');
+    Route::post('/menus/{menu}/reorder',                       [MenuController::class, 'reorder'])->name('menus.reorder');
+    Route::patch('/menus/{menu}/items/{item}/toggle-visibility', [MenuController::class, 'toggleVisibility'])->name('menus.items.toggle-visibility');
 
     // ── Analytics & Logs ──────────────────────────────
     Route::get('/analytics/page-views', fn () => Inertia::render('analytics/page-views'))->name('analytics.page-views');

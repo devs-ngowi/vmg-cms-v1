@@ -18,6 +18,8 @@ import {
 } from 'lucide-react';
 import { useRef, useState, useDeferredValue } from 'react';
 import { cn } from '@/lib/utils';
+import { IconPicker } from '@/components/IconPicker';
+
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -37,9 +39,14 @@ type MediaItem = {
     width:               number | null;
     height:              number | null;
     is_image:            boolean;
+    is_icon:             boolean;       // ✅ FIX: Added to type
+    icon_class:          string | null; // ✅ FIX: Added to type
     uploader:            string | null;
     created_at:          string;
 };
+
+// ✅ FIX: Explicit union type including 'icons'
+type TypeFilter = 'all' | 'images' | 'documents' | 'icons';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
@@ -63,8 +70,8 @@ function savings(item: MediaItem): string | null {
 // ── Upload zone ───────────────────────────────────────────────────────────────
 
 function UploadZone({ onUploaded }: { onUploaded: () => void }) {
-    const inputRef  = useRef<HTMLInputElement>(null);
-    const [drag, setDrag]     = useState(false);
+    const inputRef = useRef<HTMLInputElement>(null);
+    const [drag, setDrag]         = useState(false);
     const [previews, setPreviews] = useState<{ name: string; url: string | null }[]>([]);
 
     const { data, setData, post, processing, errors, reset } = useForm<{
@@ -77,11 +84,13 @@ function UploadZone({ onUploaded }: { onUploaded: () => void }) {
         if (!incoming) return;
         const arr = Array.from(incoming);
         setData('files', [...data.files, ...arr]);
-        const newPreviews = arr.map(f => ({
-            name: f.name,
-            url: f.type.startsWith('image/') ? URL.createObjectURL(f) : null,
-        }));
-        setPreviews(p => [...p, ...newPreviews]);
+        setPreviews(p => [
+            ...p,
+            ...arr.map(f => ({
+                name: f.name,
+                url: f.type.startsWith('image/') ? URL.createObjectURL(f) : null,
+            })),
+        ]);
     };
 
     const removeFile = (i: number) => {
@@ -174,7 +183,9 @@ function UploadZone({ onUploaded }: { onUploaded: () => void }) {
                     />
                 </div>
                 <div className="flex flex-col gap-1">
-                    <Label className="text-xs font-medium">Alt text <span className="text-muted-foreground">(optional)</span></Label>
+                    <Label className="text-xs font-medium">
+                        Alt text <span className="text-muted-foreground">(optional)</span>
+                    </Label>
                     <Input
                         value={data.alt_text}
                         onChange={e => setData('alt_text', e.target.value)}
@@ -190,9 +201,55 @@ function UploadZone({ onUploaded }: { onUploaded: () => void }) {
                 className="w-full gap-2"
             >
                 <Upload className="h-4 w-4" />
-                {processing ? 'Uploading…' : `Upload ${data.files.length > 0 ? `(${data.files.length})` : ''}`}
+                {processing ? 'Uploading…' : `Upload${data.files.length > 0 ? ` (${data.files.length})` : ''}`}
             </Button>
         </form>
+    );
+}
+
+// ── Icon upload zone ──────────────────────────────────────────────────────────
+
+function IconUploadZone({ onUploaded }: { onUploaded: () => void }) {
+    const [selectedIcon, setSelectedIcon] = useState('');
+    const [saving, setSaving]             = useState(false);
+
+    const handleSave = () => {
+        if (!selectedIcon) return;
+        setSaving(true);
+
+        router.post(
+            '/media',
+            { is_icon: true, icon_class: selectedIcon, alt_text: '', folder: 'icons' },
+            {
+                onSuccess: () => {
+                    setSelectedIcon('');
+                    onUploaded();
+                },
+                onFinish: () => setSaving(false),
+            },
+        );
+    };
+
+    return (
+        <div className="rounded-xl border bg-card p-6 shadow-sm space-y-4">
+            <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                Add Icon
+            </h2>
+
+            <IconPicker value={selectedIcon} onChange={setSelectedIcon} />
+
+            {selectedIcon && (
+                <Button
+                    type="button"
+                    disabled={saving}
+                    className="w-full gap-2"
+                    onClick={handleSave}
+                >
+                    <Zap className="h-4 w-4" />
+                    {saving ? 'Saving…' : 'Save Icon'}
+                </Button>
+            )}
+        </div>
     );
 }
 
@@ -200,9 +257,10 @@ function UploadZone({ onUploaded }: { onUploaded: () => void }) {
 
 function EditDialog({ item, onClose }: { item: MediaItem; onClose: () => void }) {
     const { data, setData, patch, processing } = useForm({
-        alt_text: item.alt_text ?? '',
-        caption:  item.caption  ?? '',
-        folder:   item.folder   ?? 'uploads',
+        alt_text:   item.alt_text   ?? '',
+        caption:    item.caption    ?? '',
+        folder:     item.folder     ?? 'uploads',
+        icon_class: item.icon_class ?? '',
     });
 
     const submit = (e: React.FormEvent) => {
@@ -213,42 +271,62 @@ function EditDialog({ item, onClose }: { item: MediaItem; onClose: () => void })
     return (
         <DialogContent className="sm:max-w-lg">
             <DialogHeader>
-                <DialogTitle className="truncate text-sm font-semibold">{item.original_name}</DialogTitle>
+                <DialogTitle className="truncate text-sm font-semibold">
+                    {item.original_name}
+                </DialogTitle>
             </DialogHeader>
 
-            <div className="grid gap-4">
-                {item.is_image && (
-                    <img
-                        src={item.url}
-                        alt={item.alt_text ?? item.original_name}
-                        className="max-h-48 w-full rounded-lg object-contain bg-muted/30"
-                    />
+            {/* Icon preview */}
+            {item.is_icon && (
+                <div className="flex justify-center py-4">
+                    <div className="flex items-center justify-center w-24 h-24 bg-primary/10 rounded-lg">
+                        <i className={`${item.icon_class} text-6xl text-primary`} />
+                    </div>
+                </div>
+            )}
+
+            {/* Image preview */}
+            {item.is_image && !item.is_icon && (
+                <img
+                    src={item.url}
+                    alt={item.alt_text ?? item.original_name}
+                    className="max-h-48 w-full rounded-lg object-contain bg-muted/30"
+                />
+            )}
+
+            {/* File meta */}
+            <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                <span>{item.mime_type}</span>
+                {!item.is_icon && (
+                    <>
+                        <span>·</span>
+                        <span>{item.human_size}</span>
+                    </>
+                )}
+                {item.width && item.height && !item.is_icon && (
+                    <><span>·</span><span>{item.width} × {item.height}</span></>
+                )}
+            </div>
+
+            <form onSubmit={submit} className="grid gap-3">
+                {/* Icon class (read-only display) */}
+                {item.is_icon && (
+                    <div className="flex flex-col gap-1">
+                        <Label className="text-sm font-medium">Icon Class</Label>
+                        <Input value={data.icon_class} disabled className="bg-muted/40" />
+                    </div>
                 )}
 
-                {/* File meta */}
-                <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                    <span>{item.mime_type}</span>
-                    <span>·</span>
-                    <span>{item.human_size}</span>
-                    {item.width && item.height && (
-                        <><span>·</span><span>{item.width} × {item.height}</span></>
-                    )}
-                    {item.was_compressed && savings(item) && (
-                        <Badge variant="secondary" className="gap-1 text-[10px] py-0">
-                            <Zap className="h-3 w-3" /> {savings(item)}
-                        </Badge>
-                    )}
+                <div className="flex flex-col gap-1">
+                    <Label className="text-sm font-medium">Alt text</Label>
+                    <Input
+                        value={data.alt_text}
+                        onChange={e => setData('alt_text', e.target.value)}
+                        placeholder={item.is_icon ? 'Describe the icon…' : 'Describe the image…'}
+                    />
                 </div>
 
-                <form onSubmit={submit} className="grid gap-3">
-                    <div className="flex flex-col gap-1">
-                        <Label className="text-sm font-medium">Alt text</Label>
-                        <Input
-                            value={data.alt_text}
-                            onChange={e => setData('alt_text', e.target.value)}
-                            placeholder="Describe the image for screen readers…"
-                        />
-                    </div>
+                {!item.is_icon && (
                     <div className="flex flex-col gap-1">
                         <Label className="text-sm font-medium">Caption</Label>
                         <Input
@@ -257,19 +335,21 @@ function EditDialog({ item, onClose }: { item: MediaItem; onClose: () => void })
                             placeholder="Optional caption…"
                         />
                     </div>
-                    <div className="flex flex-col gap-1">
-                        <Label className="text-sm font-medium">Folder</Label>
-                        <Input
-                            value={data.folder}
-                            onChange={e => setData('folder', e.target.value)}
-                        />
-                    </div>
-                    <div className="flex gap-2 justify-end">
-                        <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-                        <Button type="submit" disabled={processing}>Save</Button>
-                    </div>
-                </form>
-            </div>
+                )}
+
+                <div className="flex flex-col gap-1">
+                    <Label className="text-sm font-medium">Folder</Label>
+                    <Input
+                        value={data.folder}
+                        onChange={e => setData('folder', e.target.value)}
+                    />
+                </div>
+
+                <div className="flex gap-2 justify-end pt-1">
+                    <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
+                    <Button type="submit" disabled={processing}>Save</Button>
+                </div>
+            </form>
         </DialogContent>
     );
 }
@@ -277,37 +357,54 @@ function EditDialog({ item, onClose }: { item: MediaItem; onClose: () => void })
 // ── Media card ────────────────────────────────────────────────────────────────
 
 function MediaCard({ item, view, onEdit, onDelete }: {
-    item: MediaItem;
-    view: 'grid' | 'list';
-    onEdit: (item: MediaItem) => void;
+    item:     MediaItem;
+    view:     'grid' | 'list';
+    onEdit:   (item: MediaItem) => void;
     onDelete: (item: MediaItem) => void;
 }) {
     const saving = savings(item);
 
+    // ── List view ─────────────────────────────────────────────────────────────
     if (view === 'list') {
         return (
             <div className="flex items-center gap-3 rounded-lg border bg-card px-4 py-3 hover:bg-muted/30 transition-colors group">
-                <div className="h-10 w-14 shrink-0 overflow-hidden rounded-md bg-muted">
-                    {item.is_image
-                        ? <img src={item.url} alt={item.alt_text ?? ''} className="h-full w-full object-cover" />
-                        : <div className="flex h-full w-full items-center justify-center">
-                            <FileText className="h-5 w-5 text-muted-foreground" />
-                          </div>
-                    }
+                {/* Thumbnail */}
+                <div className="h-10 w-14 shrink-0 overflow-hidden rounded-md bg-muted flex items-center justify-center">
+                    {item.is_icon ? (
+                        <i className={`${item.icon_class} text-2xl text-primary`} />
+                    ) : item.is_image ? (
+                        <img src={item.url} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                        <FileText className="h-5 w-5 text-muted-foreground" />
+                    )}
                 </div>
+
+                {/* Info */}
                 <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium">{item.original_name}</p>
-                    <p className="text-xs text-muted-foreground">{item.human_size} · {item.mime_type}</p>
+                    <p className="text-xs text-muted-foreground">
+                        {item.is_icon
+                            ? item.icon_class
+                            : `${item.human_size}${item.folder ? ` · ${item.folder}` : ''}`
+                        }
+                    </p>
                 </div>
+
+                {/* Compression badge */}
                 {saving && (
-                    <Badge variant="secondary" className="hidden sm:flex gap-1 text-[10px]">
+                    <Badge className="gap-1 text-[10px] py-0.5 bg-emerald-600 text-white border-0 shrink-0">
                         <Zap className="h-3 w-3" />{saving}
                     </Badge>
                 )}
-                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => onEdit(item)}>Edit</Button>
+
+                {/* Actions */}
+                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                    <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => onEdit(item)}>
+                        Edit
+                    </Button>
                     <Button
-                        variant="ghost" size="icon"
+                        variant="ghost"
+                        size="icon"
                         className="h-8 w-8 text-muted-foreground hover:text-destructive"
                         onClick={() => onDelete(item)}
                     >
@@ -318,18 +415,31 @@ function MediaCard({ item, view, onEdit, onDelete }: {
         );
     }
 
+    // ── Grid view ─────────────────────────────────────────────────────────────
     return (
         <div className="group relative overflow-hidden rounded-xl border bg-card shadow-sm hover:shadow-md transition-shadow">
-            <div className="aspect-video bg-muted/50 overflow-hidden">
-                {item.is_image
-                    ? <img src={item.url} alt={item.alt_text ?? ''} className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                    : <div className="flex h-full w-full flex-col items-center justify-center gap-1 text-muted-foreground">
+            {/* Preview area */}
+            <div className={cn(
+                'overflow-hidden',
+                item.is_icon ? 'aspect-square bg-primary/5 flex items-center justify-center' : 'aspect-video bg-muted/50',
+            )}>
+                {item.is_icon ? (
+                    <i className={`${item.icon_class} text-6xl text-primary`} />
+                ) : item.is_image ? (
+                    <img
+                        src={item.url}
+                        alt={item.alt_text ?? ''}
+                        className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                ) : (
+                    <div className="flex h-full w-full flex-col items-center justify-center gap-1 text-muted-foreground">
                         <FileText className="h-8 w-8" />
                         <span className="text-xs uppercase">{item.mime_type.split('/')[1]}</span>
-                      </div>
-                }
+                    </div>
+                )}
             </div>
 
+            {/* Compression badge */}
             {saving && (
                 <div className="absolute left-2 top-2">
                     <Badge className="gap-1 text-[10px] py-0.5 bg-emerald-600 text-white border-0">
@@ -338,11 +448,15 @@ function MediaCard({ item, view, onEdit, onDelete }: {
                 </div>
             )}
 
+            {/* Card footer */}
             <div className="p-3">
                 <p className="truncate text-xs font-medium">{item.original_name}</p>
-                <p className="mt-0.5 text-[11px] text-muted-foreground">{item.human_size}</p>
+                <p className="mt-0.5 text-[11px] text-muted-foreground">
+                    {item.is_icon ? item.icon_class : item.human_size}
+                </p>
             </div>
 
+            {/* Hover overlay */}
             <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl">
                 <Button size="sm" variant="secondary" onClick={() => onEdit(item)}>Edit</Button>
                 <Button
@@ -363,20 +477,25 @@ function MediaCard({ item, view, onEdit, onDelete }: {
 export default function MediaIndex({ media }: { media: MediaItem[] }) {
     const [view, setView]           = useState<'grid' | 'list'>('grid');
     const [query, setQuery]         = useState('');
-    const [typeFilter, setTypeFilter] = useState<'all' | 'images' | 'documents'>('all');
-    const [editTarget, setEditTarget] = useState<MediaItem | null>(null);
+    const [typeFilter, setTypeFilter] = useState<TypeFilter>('all'); // ✅ FIX: Typed correctly
+    const [editTarget, setEditTarget]   = useState<MediaItem | null>(null);
     const [deleteTarget, setDeleteTarget] = useState<MediaItem | null>(null);
 
     const deferredQuery = useDeferredValue(query);
 
     const filtered = media.filter(m => {
-        if (typeFilter === 'images'    && !m.is_image)  return false;
-        if (typeFilter === 'documents' &&  m.is_image)  return false;
+        if (typeFilter === 'images'    && (!m.is_image || m.is_icon))  return false;
+        if (typeFilter === 'documents' && (m.is_image  || m.is_icon))  return false;
+        if (typeFilter === 'icons'     && !m.is_icon)                  return false;
+
         if (deferredQuery) {
             const q = deferredQuery.toLowerCase();
-            return m.original_name.toLowerCase().includes(q)
-                || m.folder?.toLowerCase().includes(q)
-                || m.alt_text?.toLowerCase().includes(q);
+            return (
+                m.original_name.toLowerCase().includes(q) ||
+                m.folder?.toLowerCase().includes(q)       ||
+                m.alt_text?.toLowerCase().includes(q)     ||
+                m.icon_class?.toLowerCase().includes(q)
+            );
         }
         return true;
     });
@@ -388,12 +507,22 @@ export default function MediaIndex({ media }: { media: MediaItem[] }) {
         });
     };
 
-    const totalSize = media.reduce((s, m) => s + m.size_bytes, 0);
-    const imageCount = media.filter(m => m.is_image).length;
+    const totalSize  = media.reduce((s, m) => s + m.size_bytes, 0);
+    const imageCount = media.filter(m => m.is_image && !m.is_icon).length;
+    const iconCount  = media.filter(m => m.is_icon).length;
+
+    // Filter counts
+    const counts: Record<TypeFilter, number> = {
+        all:       media.length,
+        images:    imageCount,
+        documents: media.filter(m => !m.is_image && !m.is_icon).length,
+        icons:     iconCount,
+    };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Media Library" />
+
             <div className="px-4 py-6 sm:px-6 lg:px-8">
 
                 {/* Header */}
@@ -401,21 +530,31 @@ export default function MediaIndex({ media }: { media: MediaItem[] }) {
                     <div>
                         <h1 className="text-2xl font-semibold tracking-tight">Media Library</h1>
                         <p className="mt-1 text-sm text-muted-foreground">
-                            {media.length} file{media.length !== 1 ? 's' : ''} · {imageCount} images · {formatBytes(totalSize)} total
+                            {media.length} file{media.length !== 1 ? 's' : ''}
+                            {' · '}{imageCount} image{imageCount !== 1 ? 's' : ''}
+                            {iconCount > 0 && ` · ${iconCount} icon${iconCount !== 1 ? 's' : ''}`}
+                            {' · '}{formatBytes(totalSize)} total
                         </p>
                     </div>
                 </div>
 
                 <div className="grid gap-6 lg:grid-cols-4">
 
-                    {/* ── Sidebar: upload + filters ────────────────────────── */}
+                    {/* ── Sidebar ──────────────────────────────────────────── */}
                     <div className="space-y-4 lg:col-span-1">
+
+                        {/* File upload */}
                         <UploadZone onUploaded={() => {}} />
 
-                        {/* Filter by type */}
+                        {/* Icon upload — ✅ FIX: Moved into sidebar, self-contained */}
+                        <IconUploadZone onUploaded={() => {}} />
+
+                        {/* Type filter */}
                         <div className="rounded-xl border bg-card p-4 shadow-sm space-y-1">
-                            <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">Filter</p>
-                            {(['all', 'images', 'documents'] as const).map(t => (
+                            <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                                Filter
+                            </p>
+                            {(['all', 'images', 'documents', 'icons'] as const).map(t => (
                                 <button
                                     key={t}
                                     onClick={() => setTypeFilter(t)}
@@ -426,13 +565,13 @@ export default function MediaIndex({ media }: { media: MediaItem[] }) {
                                             : 'hover:bg-muted/50 text-muted-foreground',
                                     )}
                                 >
-                                    {t === 'all' ? `All (${media.length})` : t === 'images' ? `Images (${imageCount})` : `Documents (${media.length - imageCount})`}
+                                    {t.charAt(0).toUpperCase() + t.slice(1)} ({counts[t]})
                                 </button>
                             ))}
                         </div>
                     </div>
 
-                    {/* ── Main grid ─────────────────────────────────────────── */}
+                    {/* ── Main area ─────────────────────────────────────────── */}
                     <div className="lg:col-span-3 space-y-4">
 
                         {/* Toolbar */}
@@ -453,6 +592,7 @@ export default function MediaIndex({ media }: { media: MediaItem[] }) {
                                         'rounded-l-md px-3 py-2 transition-colors',
                                         view === 'grid' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted/50',
                                     )}
+                                    aria-label="Grid view"
                                 >
                                     <LayoutGrid className="h-4 w-4" />
                                 </button>
@@ -462,12 +602,14 @@ export default function MediaIndex({ media }: { media: MediaItem[] }) {
                                         'rounded-r-md px-3 py-2 border-l transition-colors',
                                         view === 'list' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted/50',
                                     )}
+                                    aria-label="List view"
                                 >
                                     <List className="h-4 w-4" />
                                 </button>
                             </div>
                         </div>
 
+                        {/* Media grid / list */}
                         {filtered.length === 0 ? (
                             <div className="flex flex-col items-center justify-center rounded-xl border border-dashed py-16 text-center">
                                 <ImageIcon className="mb-3 h-10 w-10 text-muted-foreground/40" />
@@ -506,7 +648,9 @@ export default function MediaIndex({ media }: { media: MediaItem[] }) {
 
             {/* Edit dialog */}
             <Dialog open={!!editTarget} onOpenChange={() => setEditTarget(null)}>
-                {editTarget && <EditDialog item={editTarget} onClose={() => setEditTarget(null)} />}
+                {editTarget && (
+                    <EditDialog item={editTarget} onClose={() => setEditTarget(null)} />
+                )}
             </Dialog>
 
             {/* Delete confirm */}
