@@ -22,6 +22,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\WorkflowController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Laravel\Fortify\Http\Controllers\TwoFactorQrCodeController;
 
 // ── Root ──────────────────────────────────────────────
 Route::get('/', fn () => redirect()->route('dashboard'))->name('home');
@@ -36,6 +37,9 @@ Route::middleware('guest')->group(function () {
         'status' => session('status'),
     ]))->name('password.request');
 });
+
+Route::get('/settings/two-factor', [TwoFactorQrCodeController::class, 'show'])
+    ->name('two-factor.show');
 
 // ── Authenticated routes ───────────────────────────────
 Route::middleware('auth')->group(function () {
