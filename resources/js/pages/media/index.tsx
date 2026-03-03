@@ -15,8 +15,9 @@ import type { BreadcrumbItem } from '@/types';
 import {
     FileText, Image as ImageIcon, LayoutGrid, List,
     Search, Trash2, Upload, X, Zap,
+    ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight,
 } from 'lucide-react';
-import { useRef, useState, useDeferredValue } from 'react';
+import { useRef, useState, useDeferredValue, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { IconPicker } from '@/components/IconPicker';
 
@@ -39,19 +40,20 @@ type MediaItem = {
     width:               number | null;
     height:              number | null;
     is_image:            boolean;
-    is_icon:             boolean;       // ✅ FIX: Added to type
-    icon_class:          string | null; // ✅ FIX: Added to type
+    is_icon:             boolean;
+    icon_class:          string | null;
     uploader:            string | null;
     created_at:          string;
 };
 
-// ✅ FIX: Explicit union type including 'icons'
 type TypeFilter = 'all' | 'images' | 'documents' | 'icons';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
     { title: 'Media',     href: '/media' },
 ];
+
+const PAGE_SIZE = 20;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -67,6 +69,118 @@ function savings(item: MediaItem): string | null {
     return pct > 0 ? `${pct}% smaller` : null;
 }
 
+// ── Pagination ────────────────────────────────────────────────────────────────
+
+function Pagination({
+    currentPage,
+    totalPages,
+    totalItems,
+    pageSize,
+    onPageChange,
+}: {
+    currentPage:  number;
+    totalPages:   number;
+    totalItems:   number;
+    pageSize:     number;
+    onPageChange: (page: number) => void;
+}) {
+    if (totalPages <= 1) return null;
+
+    const from = (currentPage - 1) * pageSize + 1;
+    const to   = Math.min(currentPage * pageSize, totalItems);
+
+    // Build page numbers with ellipsis
+    const pages: (number | '...')[] = [];
+    if (totalPages <= 7) {
+        for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+        pages.push(1);
+        if (currentPage > 3) pages.push('...');
+        for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) {
+            pages.push(i);
+        }
+        if (currentPage < totalPages - 2) pages.push('...');
+        pages.push(totalPages);
+    }
+
+    const btnBase = 'flex h-8 w-8 items-center justify-center rounded-md border text-xs font-medium transition-colors';
+
+    return (
+        <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-between border-t pt-4 mt-2">
+            <p className="text-xs text-muted-foreground shrink-0">
+                Showing <span className="font-medium text-foreground">{from}–{to}</span> of{' '}
+                <span className="font-medium text-foreground">{totalItems}</span> items
+            </p>
+
+            <div className="flex items-center gap-1">
+                {/* First */}
+                <button
+                    onClick={() => onPageChange(1)}
+                    disabled={currentPage === 1}
+                    aria-label="First page"
+                    className={cn(btnBase, currentPage === 1 ? 'opacity-40 cursor-not-allowed text-muted-foreground' : 'hover:bg-muted/50')}
+                >
+                    <ChevronsLeft className="h-3.5 w-3.5" />
+                </button>
+
+                {/* Prev */}
+                <button
+                    onClick={() => onPageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    aria-label="Previous page"
+                    className={cn(btnBase, currentPage === 1 ? 'opacity-40 cursor-not-allowed text-muted-foreground' : 'hover:bg-muted/50')}
+                >
+                    <ChevronLeft className="h-3.5 w-3.5" />
+                </button>
+
+                {/* Page numbers */}
+                {pages.map((p, i) =>
+                    p === '...' ? (
+                        <span key={`ellipsis-${i}`} className="flex h-8 w-6 items-center justify-center text-xs text-muted-foreground">
+                            …
+                        </span>
+                    ) : (
+                        <button
+                            key={p}
+                            onClick={() => onPageChange(p as number)}
+                            aria-label={`Page ${p}`}
+                            aria-current={p === currentPage ? 'page' : undefined}
+                            className={cn(
+                                btnBase,
+                                p === currentPage
+                                    ? 'bg-primary text-primary-foreground border-primary'
+                                    : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground',
+                            )}
+                        >
+                            {p}
+                        </button>
+                    )
+                )}
+
+                {/* Next */}
+                <button
+                    onClick={() => onPageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    aria-label="Next page"
+                    className={cn(btnBase, currentPage === totalPages ? 'opacity-40 cursor-not-allowed text-muted-foreground' : 'hover:bg-muted/50')}
+                >
+                    <ChevronRight className="h-3.5 w-3.5" />
+                </button>
+
+                {/* Last */}
+                <button
+                    onClick={() => onPageChange(totalPages)}
+                    disabled={currentPage === totalPages}
+                    aria-label="Last page"
+                    className={cn(btnBase, currentPage === totalPages ? 'opacity-40 cursor-not-allowed text-muted-foreground' : 'hover:bg-muted/50')}
+                >
+                    <ChevronsRight className="h-3.5 w-3.5" />
+                </button>
+            </div>
+        </div>
+    );
+}
+
 // ── Upload zone ───────────────────────────────────────────────────────────────
 
 function UploadZone({ onUploaded }: { onUploaded: () => void }) {
@@ -74,7 +188,7 @@ function UploadZone({ onUploaded }: { onUploaded: () => void }) {
     const [drag, setDrag]         = useState(false);
     const [previews, setPreviews] = useState<{ name: string; url: string | null }[]>([]);
 
-    const { data, setData, post, processing, errors, reset } = useForm<{
+    const { data, setData, processing, errors, reset } = useForm<{
         files: File[];
         folder: string;
         alt_text: string;
@@ -109,21 +223,14 @@ function UploadZone({ onUploaded }: { onUploaded: () => void }) {
 
         router.post('/media', fd as any, {
             forceFormData: true,
-            onSuccess: () => {
-                reset();
-                setPreviews([]);
-                onUploaded();
-            },
+            onSuccess: () => { reset(); setPreviews([]); onUploaded(); },
         });
     };
 
     return (
         <form onSubmit={submit} className="rounded-xl border bg-card p-6 shadow-sm space-y-4">
-            <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                Upload Files
-            </h2>
+            <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Upload Files</h2>
 
-            {/* Drop zone */}
             <div
                 className={cn(
                     'flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed py-8 transition-colors',
@@ -136,24 +243,17 @@ function UploadZone({ onUploaded }: { onUploaded: () => void }) {
             >
                 <Upload className="mb-2 h-8 w-8 text-muted-foreground" />
                 <p className="text-sm font-medium">Drag & drop or click to browse</p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                    JPEG · PNG · WebP · GIF · SVG · PDF
-                </p>
+                <p className="mt-1 text-xs text-muted-foreground">JPEG · PNG · WebP · GIF · SVG · PDF</p>
                 <input
-                    ref={inputRef}
-                    type="file"
-                    multiple
+                    ref={inputRef} type="file" multiple
                     accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml,application/pdf"
                     className="hidden"
                     onChange={e => addFiles(e.target.files)}
                 />
             </div>
 
-            {errors.upload && (
-                <p className="text-xs text-destructive">{errors.upload}</p>
-            )}
+            {errors.upload && <p className="text-xs text-destructive">{errors.upload}</p>}
 
-            {/* Previews */}
             {previews.length > 0 && (
                 <div className="max-h-36 overflow-y-auto space-y-1">
                     {previews.map((p, i) => (
@@ -171,35 +271,18 @@ function UploadZone({ onUploaded }: { onUploaded: () => void }) {
                 </div>
             )}
 
-            {/* Options */}
             <div className="grid gap-3">
                 <div className="flex flex-col gap-1">
                     <Label className="text-xs font-medium">Folder</Label>
-                    <Input
-                        value={data.folder}
-                        onChange={e => setData('folder', e.target.value)}
-                        placeholder="uploads"
-                        className="h-8 text-sm"
-                    />
+                    <Input value={data.folder} onChange={e => setData('folder', e.target.value)} placeholder="uploads" className="h-8 text-sm" />
                 </div>
                 <div className="flex flex-col gap-1">
-                    <Label className="text-xs font-medium">
-                        Alt text <span className="text-muted-foreground">(optional)</span>
-                    </Label>
-                    <Input
-                        value={data.alt_text}
-                        onChange={e => setData('alt_text', e.target.value)}
-                        placeholder="Describe the image…"
-                        className="h-8 text-sm"
-                    />
+                    <Label className="text-xs font-medium">Alt text <span className="text-muted-foreground">(optional)</span></Label>
+                    <Input value={data.alt_text} onChange={e => setData('alt_text', e.target.value)} placeholder="Describe the image…" className="h-8 text-sm" />
                 </div>
             </div>
 
-            <Button
-                type="submit"
-                disabled={processing || data.files.length === 0}
-                className="w-full gap-2"
-            >
+            <Button type="submit" disabled={processing || data.files.length === 0} className="w-full gap-2">
                 <Upload className="h-4 w-4" />
                 {processing ? 'Uploading…' : `Upload${data.files.length > 0 ? ` (${data.files.length})` : ''}`}
             </Button>
@@ -216,35 +299,22 @@ function IconUploadZone({ onUploaded }: { onUploaded: () => void }) {
     const handleSave = () => {
         if (!selectedIcon) return;
         setSaving(true);
-
         router.post(
             '/media',
             { is_icon: true, icon_class: selectedIcon, alt_text: '', folder: 'icons' },
             {
-                onSuccess: () => {
-                    setSelectedIcon('');
-                    onUploaded();
-                },
-                onFinish: () => setSaving(false),
+                onSuccess: () => { setSelectedIcon(''); onUploaded(); },
+                onFinish:  () => setSaving(false),
             },
         );
     };
 
     return (
         <div className="rounded-xl border bg-card p-6 shadow-sm space-y-4">
-            <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                Add Icon
-            </h2>
-
+            <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Add Icon</h2>
             <IconPicker value={selectedIcon} onChange={setSelectedIcon} />
-
             {selectedIcon && (
-                <Button
-                    type="button"
-                    disabled={saving}
-                    className="w-full gap-2"
-                    onClick={handleSave}
-                >
+                <Button type="button" disabled={saving} className="w-full gap-2" onClick={handleSave}>
                     <Zap className="h-4 w-4" />
                     {saving ? 'Saving…' : 'Save Icon'}
                 </Button>
@@ -271,12 +341,9 @@ function EditDialog({ item, onClose }: { item: MediaItem; onClose: () => void })
     return (
         <DialogContent className="sm:max-w-lg">
             <DialogHeader>
-                <DialogTitle className="truncate text-sm font-semibold">
-                    {item.original_name}
-                </DialogTitle>
+                <DialogTitle className="truncate text-sm font-semibold">{item.original_name}</DialogTitle>
             </DialogHeader>
 
-            {/* Icon preview */}
             {item.is_icon && (
                 <div className="flex justify-center py-4">
                     <div className="flex items-center justify-center w-24 h-24 bg-primary/10 rounded-lg">
@@ -285,31 +352,18 @@ function EditDialog({ item, onClose }: { item: MediaItem; onClose: () => void })
                 </div>
             )}
 
-            {/* Image preview */}
             {item.is_image && !item.is_icon && (
-                <img
-                    src={item.url}
-                    alt={item.alt_text ?? item.original_name}
-                    className="max-h-48 w-full rounded-lg object-contain bg-muted/30"
-                />
+                <img src={item.url} alt={item.alt_text ?? item.original_name}
+                    className="max-h-48 w-full rounded-lg object-contain bg-muted/30" />
             )}
 
-            {/* File meta */}
             <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
                 <span>{item.mime_type}</span>
-                {!item.is_icon && (
-                    <>
-                        <span>·</span>
-                        <span>{item.human_size}</span>
-                    </>
-                )}
-                {item.width && item.height && !item.is_icon && (
-                    <><span>·</span><span>{item.width} × {item.height}</span></>
-                )}
+                {!item.is_icon && <><span>·</span><span>{item.human_size}</span></>}
+                {item.width && item.height && !item.is_icon && <><span>·</span><span>{item.width} × {item.height}</span></>}
             </div>
 
             <form onSubmit={submit} className="grid gap-3">
-                {/* Icon class (read-only display) */}
                 {item.is_icon && (
                     <div className="flex flex-col gap-1">
                         <Label className="text-sm font-medium">Icon Class</Label>
@@ -319,30 +373,20 @@ function EditDialog({ item, onClose }: { item: MediaItem; onClose: () => void })
 
                 <div className="flex flex-col gap-1">
                     <Label className="text-sm font-medium">Alt text</Label>
-                    <Input
-                        value={data.alt_text}
-                        onChange={e => setData('alt_text', e.target.value)}
-                        placeholder={item.is_icon ? 'Describe the icon…' : 'Describe the image…'}
-                    />
+                    <Input value={data.alt_text} onChange={e => setData('alt_text', e.target.value)}
+                        placeholder={item.is_icon ? 'Describe the icon…' : 'Describe the image…'} />
                 </div>
 
                 {!item.is_icon && (
                     <div className="flex flex-col gap-1">
                         <Label className="text-sm font-medium">Caption</Label>
-                        <Input
-                            value={data.caption}
-                            onChange={e => setData('caption', e.target.value)}
-                            placeholder="Optional caption…"
-                        />
+                        <Input value={data.caption} onChange={e => setData('caption', e.target.value)} placeholder="Optional caption…" />
                     </div>
                 )}
 
                 <div className="flex flex-col gap-1">
                     <Label className="text-sm font-medium">Folder</Label>
-                    <Input
-                        value={data.folder}
-                        onChange={e => setData('folder', e.target.value)}
-                    />
+                    <Input value={data.folder} onChange={e => setData('folder', e.target.value)} />
                 </div>
 
                 <div className="flex gap-2 justify-end pt-1">
@@ -364,50 +408,34 @@ function MediaCard({ item, view, onEdit, onDelete }: {
 }) {
     const saving = savings(item);
 
-    // ── List view ─────────────────────────────────────────────────────────────
     if (view === 'list') {
         return (
             <div className="flex items-center gap-3 rounded-lg border bg-card px-4 py-3 hover:bg-muted/30 transition-colors group">
-                {/* Thumbnail */}
                 <div className="h-10 w-14 shrink-0 overflow-hidden rounded-md bg-muted flex items-center justify-center">
-                    {item.is_icon ? (
-                        <i className={`${item.icon_class} text-2xl text-primary`} />
-                    ) : item.is_image ? (
-                        <img src={item.url} alt="" className="h-full w-full object-cover" />
-                    ) : (
-                        <FileText className="h-5 w-5 text-muted-foreground" />
-                    )}
+                    {item.is_icon
+                        ? <i className={`${item.icon_class} text-2xl text-primary`} />
+                        : item.is_image
+                            ? <img src={item.url} alt="" className="h-full w-full object-cover" />
+                            : <FileText className="h-5 w-5 text-muted-foreground" />
+                    }
                 </div>
 
-                {/* Info */}
                 <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium">{item.original_name}</p>
                     <p className="text-xs text-muted-foreground">
-                        {item.is_icon
-                            ? item.icon_class
-                            : `${item.human_size}${item.folder ? ` · ${item.folder}` : ''}`
-                        }
+                        {item.is_icon ? item.icon_class : `${item.human_size}${item.folder ? ` · ${item.folder}` : ''}`}
                     </p>
                 </div>
 
-                {/* Compression badge */}
                 {saving && (
                     <Badge className="gap-1 text-[10px] py-0.5 bg-emerald-600 text-white border-0 shrink-0">
                         <Zap className="h-3 w-3" />{saving}
                     </Badge>
                 )}
 
-                {/* Actions */}
                 <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                    <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => onEdit(item)}>
-                        Edit
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                        onClick={() => onDelete(item)}
-                    >
+                    <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => onEdit(item)}>Edit</Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => onDelete(item)}>
                         <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                 </div>
@@ -415,31 +443,25 @@ function MediaCard({ item, view, onEdit, onDelete }: {
         );
     }
 
-    // ── Grid view ─────────────────────────────────────────────────────────────
     return (
         <div className="group relative overflow-hidden rounded-xl border bg-card shadow-sm hover:shadow-md transition-shadow">
-            {/* Preview area */}
             <div className={cn(
                 'overflow-hidden',
                 item.is_icon ? 'aspect-square bg-primary/5 flex items-center justify-center' : 'aspect-video bg-muted/50',
             )}>
-                {item.is_icon ? (
-                    <i className={`${item.icon_class} text-6xl text-primary`} />
-                ) : item.is_image ? (
-                    <img
-                        src={item.url}
-                        alt={item.alt_text ?? ''}
-                        className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                ) : (
-                    <div className="flex h-full w-full flex-col items-center justify-center gap-1 text-muted-foreground">
-                        <FileText className="h-8 w-8" />
-                        <span className="text-xs uppercase">{item.mime_type.split('/')[1]}</span>
-                    </div>
-                )}
+                {item.is_icon
+                    ? <i className={`${item.icon_class} text-6xl text-primary`} />
+                    : item.is_image
+                        ? <img src={item.url} alt={item.alt_text ?? ''} className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                        : (
+                            <div className="flex h-full w-full flex-col items-center justify-center gap-1 text-muted-foreground">
+                                <FileText className="h-8 w-8" />
+                                <span className="text-xs uppercase">{item.mime_type.split('/')[1]}</span>
+                            </div>
+                        )
+                }
             </div>
 
-            {/* Compression badge */}
             {saving && (
                 <div className="absolute left-2 top-2">
                     <Badge className="gap-1 text-[10px] py-0.5 bg-emerald-600 text-white border-0">
@@ -448,23 +470,14 @@ function MediaCard({ item, view, onEdit, onDelete }: {
                 </div>
             )}
 
-            {/* Card footer */}
             <div className="p-3">
                 <p className="truncate text-xs font-medium">{item.original_name}</p>
-                <p className="mt-0.5 text-[11px] text-muted-foreground">
-                    {item.is_icon ? item.icon_class : item.human_size}
-                </p>
+                <p className="mt-0.5 text-[11px] text-muted-foreground">{item.is_icon ? item.icon_class : item.human_size}</p>
             </div>
 
-            {/* Hover overlay */}
             <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl">
                 <Button size="sm" variant="secondary" onClick={() => onEdit(item)}>Edit</Button>
-                <Button
-                    size="icon"
-                    variant="destructive"
-                    className="h-8 w-8"
-                    onClick={() => onDelete(item)}
-                >
+                <Button size="icon" variant="destructive" className="h-8 w-8" onClick={() => onDelete(item)}>
                     <Trash2 className="h-4 w-4" />
                 </Button>
             </div>
@@ -475,15 +488,21 @@ function MediaCard({ item, view, onEdit, onDelete }: {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function MediaIndex({ media }: { media: MediaItem[] }) {
-    const [view, setView]           = useState<'grid' | 'list'>('grid');
-    const [query, setQuery]         = useState('');
-    const [typeFilter, setTypeFilter] = useState<TypeFilter>('all'); // ✅ FIX: Typed correctly
-    const [editTarget, setEditTarget]   = useState<MediaItem | null>(null);
+    const [view, setView]             = useState<'grid' | 'list'>('grid');
+    const [query, setQuery]           = useState('');
+    const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
+    const [page, setPage]             = useState(1);
+    const [editTarget, setEditTarget]     = useState<MediaItem | null>(null);
     const [deleteTarget, setDeleteTarget] = useState<MediaItem | null>(null);
 
     const deferredQuery = useDeferredValue(query);
 
-    const filtered = media.filter(m => {
+    // Reset page when filter or search changes
+    const handleFilterChange = (filter: TypeFilter) => { setTypeFilter(filter); setPage(1); };
+    const handleQueryChange  = (q: string)          => { setQuery(q);           setPage(1); };
+
+    // All filtered items (before pagination)
+    const filtered = useMemo(() => media.filter(m => {
         if (typeFilter === 'images'    && (!m.is_image || m.is_icon))  return false;
         if (typeFilter === 'documents' && (m.is_image  || m.is_icon))  return false;
         if (typeFilter === 'icons'     && !m.is_icon)                  return false;
@@ -498,20 +517,22 @@ export default function MediaIndex({ media }: { media: MediaItem[] }) {
             );
         }
         return true;
-    });
+    }), [media, typeFilter, deferredQuery]);
+
+    // Pagination
+    const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+    const safePage   = Math.min(page, totalPages);
+    const paginated  = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
     const confirmDelete = () => {
         if (!deleteTarget) return;
-        router.delete(`/media/${deleteTarget.id}`, {
-            onFinish: () => setDeleteTarget(null),
-        });
+        router.delete(`/media/${deleteTarget.id}`, { onFinish: () => setDeleteTarget(null) });
     };
 
     const totalSize  = media.reduce((s, m) => s + m.size_bytes, 0);
     const imageCount = media.filter(m => m.is_image && !m.is_icon).length;
     const iconCount  = media.filter(m => m.is_icon).length;
 
-    // Filter counts
     const counts: Record<TypeFilter, number> = {
         all:       media.length,
         images:    imageCount,
@@ -542,22 +563,16 @@ export default function MediaIndex({ media }: { media: MediaItem[] }) {
 
                     {/* ── Sidebar ──────────────────────────────────────────── */}
                     <div className="space-y-4 lg:col-span-1">
-
-                        {/* File upload */}
                         <UploadZone onUploaded={() => {}} />
-
-                        {/* Icon upload — ✅ FIX: Moved into sidebar, self-contained */}
                         <IconUploadZone onUploaded={() => {}} />
 
                         {/* Type filter */}
                         <div className="rounded-xl border bg-card p-4 shadow-sm space-y-1">
-                            <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                                Filter
-                            </p>
+                            <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">Filter</p>
                             {(['all', 'images', 'documents', 'icons'] as const).map(t => (
                                 <button
                                     key={t}
-                                    onClick={() => setTypeFilter(t)}
+                                    onClick={() => handleFilterChange(t)}
                                     className={cn(
                                         'w-full rounded-md px-3 py-1.5 text-left text-sm capitalize transition-colors',
                                         typeFilter === t
@@ -580,7 +595,7 @@ export default function MediaIndex({ media }: { media: MediaItem[] }) {
                                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                 <Input
                                     value={query}
-                                    onChange={e => setQuery(e.target.value)}
+                                    onChange={e => handleQueryChange(e.target.value)}
                                     placeholder="Search by name, folder, alt text…"
                                     className="pl-9"
                                 />
@@ -588,20 +603,14 @@ export default function MediaIndex({ media }: { media: MediaItem[] }) {
                             <div className="flex rounded-md border">
                                 <button
                                     onClick={() => setView('grid')}
-                                    className={cn(
-                                        'rounded-l-md px-3 py-2 transition-colors',
-                                        view === 'grid' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted/50',
-                                    )}
+                                    className={cn('rounded-l-md px-3 py-2 transition-colors', view === 'grid' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted/50')}
                                     aria-label="Grid view"
                                 >
                                     <LayoutGrid className="h-4 w-4" />
                                 </button>
                                 <button
                                     onClick={() => setView('list')}
-                                    className={cn(
-                                        'rounded-r-md px-3 py-2 border-l transition-colors',
-                                        view === 'list' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted/50',
-                                    )}
+                                    className={cn('rounded-r-md px-3 py-2 border-l transition-colors', view === 'list' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted/50')}
                                     aria-label="List view"
                                 >
                                     <List className="h-4 w-4" />
@@ -619,38 +628,33 @@ export default function MediaIndex({ media }: { media: MediaItem[] }) {
                             </div>
                         ) : view === 'grid' ? (
                             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                                {filtered.map(item => (
-                                    <MediaCard
-                                        key={item.id}
-                                        item={item}
-                                        view="grid"
-                                        onEdit={setEditTarget}
-                                        onDelete={setDeleteTarget}
-                                    />
+                                {paginated.map(item => (
+                                    <MediaCard key={item.id} item={item} view="grid" onEdit={setEditTarget} onDelete={setDeleteTarget} />
                                 ))}
                             </div>
                         ) : (
                             <div className="space-y-2">
-                                {filtered.map(item => (
-                                    <MediaCard
-                                        key={item.id}
-                                        item={item}
-                                        view="list"
-                                        onEdit={setEditTarget}
-                                        onDelete={setDeleteTarget}
-                                    />
+                                {paginated.map(item => (
+                                    <MediaCard key={item.id} item={item} view="list" onEdit={setEditTarget} onDelete={setDeleteTarget} />
                                 ))}
                             </div>
                         )}
+
+                        {/* Pagination */}
+                        <Pagination
+                            currentPage={safePage}
+                            totalPages={totalPages}
+                            totalItems={filtered.length}
+                            pageSize={PAGE_SIZE}
+                            onPageChange={setPage}
+                        />
                     </div>
                 </div>
             </div>
 
             {/* Edit dialog */}
             <Dialog open={!!editTarget} onOpenChange={() => setEditTarget(null)}>
-                {editTarget && (
-                    <EditDialog item={editTarget} onClose={() => setEditTarget(null)} />
-                )}
+                {editTarget && <EditDialog item={editTarget} onClose={() => setEditTarget(null)} />}
             </Dialog>
 
             {/* Delete confirm */}
