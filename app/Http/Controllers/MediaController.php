@@ -43,7 +43,7 @@ class MediaController extends Controller
             'alt_text'            => $m->alt_text,
             'caption'             => $m->caption,
             'folder'              => $m->folder,
-            'url'                 => $m->url,
+            'url' => preg_replace('#(?<!:)//+#', '/', $m->url),
             'size_bytes'          => $m->size_bytes,
             'human_size'          => $m->human_size,
             'original_size_bytes' => $m->original_size_bytes,
@@ -51,8 +51,8 @@ class MediaController extends Controller
             'width'               => $m->width,
             'height'              => $m->height,
             'is_image'            => $m->is_image,
-            'is_icon'             => (bool) $m->is_icon,  // ✅ NEW
-            'icon_class'          => $m->icon_class,      // ✅ NEW
+            'is_icon'             => (bool) $m->is_icon,
+            'icon_class'          => $m->icon_class,
             'uploader'            => $m->uploader?->name,
             'created_at'          => $m->created_at->format('Y-m-d'),
         ];
