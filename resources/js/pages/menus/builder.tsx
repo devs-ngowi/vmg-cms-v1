@@ -117,7 +117,50 @@ function ItemFields({
     items:     MenuItemData[];
     excludeId?: number;
 }) {
-    const parentOptions = flattenMenuForParentPicker(items, 0, excludeId);
+    // ✅ Pre-compute excluded IDs
+    const excludedIds = excludeId
+        ? (() => {
+            const editedItem = getItemById(items, excludeId);
+            return editedItem ? getAllDescendantIds(editedItem) : [];
+        })()
+        : [];
+
+    const parentOptions = flattenMenuForParentPicker(items, 0, excludeId, excludedIds);
+
+    // ✅ Helper to get parent URL by ID
+    const getParentUrl = (parentId: number | null): string => {
+        if (!parentId) return '';
+        const parent = getItemById(items, parentId);
+        return parent?.url?.replace(/\/$/, '') ?? '';
+    };
+
+    // ✅ Generate slug from label
+    const toSlug = (label: string) =>
+        label.toLowerCase()
+            .replace(/[^a-z0-9\s-]/g, '')
+            .trim()
+            .replace(/\s+/g, '-');
+
+    // ✅ When label changes, auto-build URL with parent prefix
+    const handleLabelChange = (newLabel: string) => {
+        setData('label', newLabel);
+        const slug = toSlug(newLabel);
+        const parentUrl = getParentUrl(data.parent_id);
+        setData('url', parentUrl ? `${parentUrl}/${slug}` : `/${slug}`);
+    };
+
+    // ✅ When parent changes, update URL prefix but keep slug
+    const handleParentChange = (value: string) => {
+        const newParentId = value === 'none' ? null : parseInt(value);
+        setData('parent_id', newParentId);
+
+        // Re-generate URL with new parent prefix using current label
+        if (data.label) {
+            const slug = toSlug(data.label);
+            const parentUrl = getParentUrl(newParentId);
+            setData('url', parentUrl ? `${parentUrl}/${slug}` : `/${slug}`);
+        }
+    };
 
     return (
         <div className="space-y-4">
@@ -127,16 +170,7 @@ function ItemFields({
                 </Label>
                 <Input
                     value={data.label}
-                    onChange={e => {
-                        const newLabel = e.target.value;
-                        setData('label', newLabel);
-                        // Auto-generate URL only if URL is empty or was previously auto-generated
-                        const autoUrl = '/' + newLabel.toLowerCase()
-                            .replace(/[^a-z0-9\s-]/g, '')
-                            .trim()
-                            .replace(/\s+/g, '-');
-                        setData('url', autoUrl);
-                    }}
+                    onChange={e => handleLabelChange(e.target.value)}
                     placeholder="e.g. About Us"
                     autoFocus
                 />
@@ -174,12 +208,11 @@ function ItemFields({
                     </Label>
                     <Select
                         value={data.parent_id !== null && data.parent_id !== undefined ? String(data.parent_id) : 'none'}
-                        onValueChange={v => setData('parent_id', v === 'none' ? null : parseInt(v))}
+                        onValueChange={handleParentChange}
                     >
                         <SelectTrigger>
                             <SelectValue placeholder="Top-level (no parent)" />
                         </SelectTrigger>
-
                         <SelectContent>
                             <SelectItem value="none">Top-level</SelectItem>
                             {parentOptions.map(option => (
@@ -195,7 +228,7 @@ function ItemFields({
                 </div>
             </div>
 
-            {/* ✅ Visibility toggle in dialog */}
+            {/* Visibility toggle */}
             <div className="flex items-center justify-between rounded-lg border bg-muted/20 px-3 py-2.5">
                 <span className="text-sm font-medium">Visible on website</span>
                 <button
