@@ -53,7 +53,8 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Media',     href: '/media' },
 ];
 
-const PAGE_SIZE = 20;
+// ── Page size: 9 items = 3×3 grid, obvious pagination ────────────────────────
+const PAGE_SIZE = 9;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -67,6 +68,33 @@ function savings(item: MediaItem): string | null {
     if (!item.was_compressed || !item.original_size_bytes) return null;
     const pct = Math.round((1 - item.size_bytes / item.original_size_bytes) * 100);
     return pct > 0 ? `${pct}% smaller` : null;
+}
+
+// ── Category badge ─────────────────────────────────────────────────────────────
+
+function CategoryBadge({ item }: { item: MediaItem }) {
+    if (item.is_icon) {
+        return (
+            <span className="inline-flex items-center gap-1 rounded-full border border-violet-300 bg-violet-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-violet-700 dark:border-violet-700 dark:bg-violet-950/50 dark:text-violet-300">
+                <Zap className="h-2.5 w-2.5" />
+                Icon
+            </span>
+        );
+    }
+    if (item.is_image) {
+        return (
+            <span className="inline-flex items-center gap-1 rounded-full border border-sky-300 bg-sky-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-sky-700 dark:border-sky-700 dark:bg-sky-950/50 dark:text-sky-300">
+                <ImageIcon className="h-2.5 w-2.5" />
+                Image
+            </span>
+        );
+    }
+    return (
+        <span className="inline-flex items-center gap-1 rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-700 dark:border-amber-700 dark:bg-amber-950/50 dark:text-amber-300">
+            <FileText className="h-2.5 w-2.5" />
+            Doc
+        </span>
+    );
 }
 
 // ── Pagination ────────────────────────────────────────────────────────────────
@@ -110,6 +138,8 @@ function Pagination({
             <p className="text-xs text-muted-foreground shrink-0">
                 Showing <span className="font-medium text-foreground">{from}–{to}</span> of{' '}
                 <span className="font-medium text-foreground">{totalItems}</span> items
+                {' · '}Page <span className="font-medium text-foreground">{currentPage}</span> of{' '}
+                <span className="font-medium text-foreground">{totalPages}</span>
             </p>
 
             <div className="flex items-center gap-1">
@@ -358,6 +388,8 @@ function EditDialog({ item, onClose }: { item: MediaItem; onClose: () => void })
             )}
 
             <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                <CategoryBadge item={item} />
+                <span>·</span>
                 <span>{item.mime_type}</span>
                 {!item.is_icon && <><span>·</span><span>{item.human_size}</span></>}
                 {item.width && item.height && !item.is_icon && <><span>·</span><span>{item.width} × {item.height}</span></>}
@@ -422,9 +454,12 @@ function MediaCard({ item, view, onEdit, onDelete }: {
 
                 <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium">{item.original_name}</p>
-                    <p className="text-xs text-muted-foreground">
-                        {item.is_icon ? item.icon_class : `${item.human_size}${item.folder ? ` · ${item.folder}` : ''}`}
-                    </p>
+                    <div className="mt-1 flex items-center gap-2 flex-wrap">
+                        <CategoryBadge item={item} />
+                        <span className="text-xs text-muted-foreground">
+                            {item.is_icon ? item.icon_class : `${item.human_size}${item.folder ? ` · ${item.folder}` : ''}`}
+                        </span>
+                    </div>
                 </div>
 
                 {saving && (
@@ -462,8 +497,14 @@ function MediaCard({ item, view, onEdit, onDelete }: {
                 }
             </div>
 
+            {/* Category badge — top-left */}
+            <div className="absolute left-2 top-2 flex flex-col gap-1">
+                <CategoryBadge item={item} />
+            </div>
+
+            {/* Compression badge — top-right */}
             {saving && (
-                <div className="absolute left-2 top-2">
+                <div className="absolute right-2 top-2">
                     <Badge className="gap-1 text-[10px] py-0.5 bg-emerald-600 text-white border-0">
                         <Zap className="h-3 w-3" />{saving}
                     </Badge>
@@ -540,6 +581,14 @@ export default function MediaIndex({ media }: { media: MediaItem[] }) {
         icons:     iconCount,
     };
 
+    // Filter icon config for UI
+    const filterConfig: { key: TypeFilter; label: string; color: string }[] = [
+        { key: 'all',       label: 'All',       color: '' },
+        { key: 'images',    label: 'Images',    color: 'text-sky-600' },
+        { key: 'documents', label: 'Documents', color: 'text-amber-600' },
+        { key: 'icons',     label: 'Icons',     color: 'text-violet-600' },
+    ];
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Media Library" />
@@ -568,21 +617,54 @@ export default function MediaIndex({ media }: { media: MediaItem[] }) {
 
                         {/* Type filter */}
                         <div className="rounded-xl border bg-card p-4 shadow-sm space-y-1">
-                            <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">Filter</p>
-                            {(['all', 'images', 'documents', 'icons'] as const).map(t => (
+                            <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">Filter by Type</p>
+                            {filterConfig.map(({ key, label, color }) => (
                                 <button
-                                    key={t}
-                                    onClick={() => handleFilterChange(t)}
+                                    key={key}
+                                    onClick={() => handleFilterChange(key)}
                                     className={cn(
-                                        'w-full rounded-md px-3 py-1.5 text-left text-sm capitalize transition-colors',
-                                        typeFilter === t
+                                        'w-full rounded-md px-3 py-1.5 text-left text-sm transition-colors flex items-center justify-between',
+                                        typeFilter === key
                                             ? 'bg-primary text-primary-foreground'
                                             : 'hover:bg-muted/50 text-muted-foreground',
                                     )}
                                 >
-                                    {t.charAt(0).toUpperCase() + t.slice(1)} ({counts[t]})
+                                    <span className={cn(typeFilter !== key && color)}>{label}</span>
+                                    <span className={cn(
+                                        'text-xs font-medium rounded-full px-1.5 py-0.5 min-w-[1.5rem] text-center',
+                                        typeFilter === key
+                                            ? 'bg-white/20 text-white'
+                                            : 'bg-muted text-muted-foreground',
+                                    )}>
+                                        {counts[key]}
+                                    </span>
                                 </button>
                             ))}
+                        </div>
+
+                        {/* Legend */}
+                        <div className="rounded-xl border bg-card p-4 shadow-sm space-y-2">
+                            <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">Legend</p>
+                            <div className="space-y-1.5">
+                                <div className="flex items-center gap-2">
+                                    <span className="inline-flex items-center gap-1 rounded-full border border-sky-300 bg-sky-50 px-2 py-0.5 text-[10px] font-semibold text-sky-700 dark:border-sky-700 dark:bg-sky-950/50 dark:text-sky-300">
+                                        <ImageIcon className="h-2.5 w-2.5" />Image
+                                    </span>
+                                    <span className="text-xs text-muted-foreground">JPEG, PNG, WebP…</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className="inline-flex items-center gap-1 rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:border-amber-700 dark:bg-amber-950/50 dark:text-amber-300">
+                                        <FileText className="h-2.5 w-2.5" />Doc
+                                    </span>
+                                    <span className="text-xs text-muted-foreground">PDF, SVG…</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className="inline-flex items-center gap-1 rounded-full border border-violet-300 bg-violet-50 px-2 py-0.5 text-[10px] font-semibold text-violet-700 dark:border-violet-700 dark:bg-violet-950/50 dark:text-violet-300">
+                                        <Zap className="h-2.5 w-2.5" />Icon
+                                    </span>
+                                    <span className="text-xs text-muted-foreground">Remix icons</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
