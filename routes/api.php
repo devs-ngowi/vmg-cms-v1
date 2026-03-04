@@ -39,7 +39,6 @@ Route::prefix('v1')->group(function () {
     Route::get('/banners',      [BannerController::class, 'index']);
     Route::get('/client-logos', [ClientLogoController::class, 'index']);
     Route::get('/hero-slides',  [HeroSlideController::class, 'index']);
-    Route::get('/industries',   [IndustryController::class, 'index']);
     Route::get('/media',        [MediaController::class, 'index']);
     Route::get('/testimonials', [TestimonialController::class, 'index']);
 
@@ -60,6 +59,10 @@ Route::prefix('v1')->group(function () {
     // Services
     Route::get('/services',        [ServiceController::class, 'index']);
     Route::get('/services/{slug}', [ServiceController::class, 'show']);
+
+    //industry
+     Route::get('/industries',   [IndustryController::class, 'index']);
+    Route::get('/industries/{slug}',   [IndustryController::class, 'show']);
 
     // Menus
     Route::get('/menus/primary', [MenuController::class, 'primary']);
