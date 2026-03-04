@@ -155,40 +155,42 @@ class MenuController extends Controller
     }
 
     public function updateItem(Request $request, Menu $menu, MenuItem $item)
-    {
-        abort_unless($item->menu_id === $menu->id, 403);
+{
+    abort_unless($item->menu_id === $menu->id, 403);
 
-        $data = $request->validate($this->itemValidationRules());
+    $data = $request->validate($this->itemValidationRules());
 
-        // ✅ Prevent item from being its own parent
-        if (!empty($data['parent_id']) && (int) $data['parent_id'] === $item->id) {
-            if ($this->isApi($request)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'An item cannot be its own parent.',
-                ], 422);
-            }
-
-            return back()->withErrors(['parent_id' => 'An item cannot be its own parent.']);
-        }
-
-        // ✅ Prevent circular references (item cannot be descendant of itself)
-        if (!empty($data['parent_id'])) {
-            $this->validateNoCircularReference($data['parent_id'], $item->id);
-        }
-
-        $item->update($data);
-
+    // ✅ Prevent item from being its own parent
+    if (!empty($data['parent_id']) && (int) $data['parent_id'] === $item->id) {
         if ($this->isApi($request)) {
             return response()->json([
-                'success' => true,
-                'message' => 'Item updated.',
-                'data'    => $this->formatItem($item->load('children.children.children')),
-            ]);
+                'success' => false,
+                'message' => 'An item cannot be its own parent.',
+            ], 422);
         }
-
-        return back()->with('success', 'Item updated.');
+        return back()->withErrors(['parent_id' => 'An item cannot be its own parent.']);
     }
+
+    // ✅ Only validate circular reference if parent is actually CHANGING
+    $newParentId = $data['parent_id'] ?? null;
+    $oldParentId = $item->parent_id;
+
+    if (!is_null($newParentId) && $newParentId !== $oldParentId) {
+        $this->validateNoCircularReference($newParentId, $item->id);
+    }
+
+    $item->update($data);
+
+    if ($this->isApi($request)) {
+        return response()->json([
+            'success' => true,
+            'message' => 'Item updated.',
+            'data'    => $this->formatItem($item->load('children.children.children')),
+        ]);
+    }
+
+    return back()->with('success', 'Item updated.');
+}
 
     /**
      * ✅ Toggle visibility of a menu item
@@ -308,6 +310,11 @@ class MenuController extends Controller
     {
         $ids = [];
 
+        // ✅ Load children if not already loaded
+        if (!$item->relationLoaded('children')) {
+            $item->load('children');
+        }
+
         if ($item->children && $item->children->count() > 0) {
             foreach ($item->children as $child) {
                 $ids[] = $child->id;
@@ -357,7 +364,7 @@ class MenuController extends Controller
             'target'     => $item->target ?? '_self',
             'sort_order' => $item->sort_order,
             'parent_id'  => $item->parent_id,
-            'is_visible' => (bool) $item->is_visible, 
+            'is_visible' => (bool) $item->is_visible,
             'children'   => $item->children ? $item->children->map(fn ($c) => $this->formatItem($c))->values() : [],
         ];
     }

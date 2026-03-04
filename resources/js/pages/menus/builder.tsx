@@ -56,16 +56,26 @@ function getAllDescendantIds(item: MenuItemData): number[] {
     return ids;
 }
 
+function getItemById(items: MenuItemData[], id: number): MenuItemData | null {
+    for (const item of items) {
+        if (item.id === id) return item;
+        const found = getItemById(item.children || [], id);
+        if (found) return found;
+    }
+    return null;
+}
+
 function flattenMenuForParentPicker(
     items: MenuItemData[],
     depth = 0,
-    excludeId?: number
+    excludeId?: number,
+    excludedIds: number[] = []
 ): Array<{ id: number; label: string; depth: number }> {
     return items.flatMap(item => {
-        const descendants = getAllDescendantIds(item);
-        const isExcluded = excludeId && (item.id === excludeId || descendants.includes(excludeId));
-
-        if (isExcluded) return [];
+        // Skip the item being edited and its descendants
+        if (excludeId && (item.id === excludeId || excludedIds.includes(item.id))) {
+            return [];
+        }
 
         const result: Array<{ id: number; label: string; depth: number }> = [{
             id: item.id,
@@ -74,12 +84,19 @@ function flattenMenuForParentPicker(
         }];
 
         if (item.children && item.children.length > 0) {
-            result.push(...flattenMenuForParentPicker(item.children, depth + 1, excludeId));
+            result.push(...flattenMenuForParentPicker(
+                item.children,
+                depth + 1,
+                excludeId,
+                excludedIds
+            ));
         }
 
         return result;
     });
 }
+
+
 
 function moveItemInArray<T>(arr: T[], fromIndex: number, toIndex: number): T[] {
     const newArr = [...arr];
@@ -110,7 +127,16 @@ function ItemFields({
                 </Label>
                 <Input
                     value={data.label}
-                    onChange={e => setData('label', e.target.value)}
+                    onChange={e => {
+                        const newLabel = e.target.value;
+                        setData('label', newLabel);
+                        // Auto-generate URL only if URL is empty or was previously auto-generated
+                        const autoUrl = '/' + newLabel.toLowerCase()
+                            .replace(/[^a-z0-9\s-]/g, '')
+                            .trim()
+                            .replace(/\s+/g, '-');
+                        setData('url', autoUrl);
+                    }}
                     placeholder="e.g. About Us"
                     autoFocus
                 />
@@ -125,6 +151,7 @@ function ItemFields({
                     value={data.url}
                     onChange={e => setData('url', e.target.value)}
                     placeholder="/about or https://example.com"
+                    onFocus={e => e.target.select()}
                 />
                 {errors.url && <p className="text-xs text-destructive">{errors.url}</p>}
             </div>
@@ -146,10 +173,13 @@ function ItemFields({
                         Parent <span className="text-muted-foreground font-normal">(optional)</span>
                     </Label>
                     <Select
-                        value={data.parent_id ? String(data.parent_id) : 'none'}
+                        value={data.parent_id !== null && data.parent_id !== undefined ? String(data.parent_id) : 'none'}
                         onValueChange={v => setData('parent_id', v === 'none' ? null : parseInt(v))}
                     >
-                        <SelectTrigger><SelectValue placeholder="Top-level" /></SelectTrigger>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Top-level (no parent)" />
+                        </SelectTrigger>
+
                         <SelectContent>
                             <SelectItem value="none">Top-level</SelectItem>
                             {parentOptions.map(option => (
@@ -239,9 +269,9 @@ function EditDialog({ menu, item, targets, onClose }: {
     const { data, setData, patch, processing, errors } = useForm({
         label:      item.label,
         url:        item.url,
-        target:     item.target,
-        parent_id:  item.parent_id,
-        is_visible: item.is_visible,  // ✅ Include visibility
+        target:     item.target ?? '_self',
+        parent_id:  item.parent_id ?? null,
+        is_visible: item.is_visible ?? true,
     });
 
     const submit = (e: React.FormEvent) => {
