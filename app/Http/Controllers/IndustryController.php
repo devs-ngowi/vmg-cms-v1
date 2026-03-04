@@ -102,27 +102,27 @@ class IndustryController extends Controller
         return Inertia::render('industries/index', compact('industries'));
     }
 
-    // ── Show (public, by slug) ────────────────────────────────────────────────
+    // ── Show (public, by slugs) ────────────────────────────────────────────────
+    public function show(Request $request, string $slug)
+    {
+        $industry = Industry::with('media')
+            ->where('slug', $slug)
+            ->where('is_active', true)
+            ->firstOrFail();
 
-public function show(Request $request, string $slug)
-{
-    $industry = Industry::with('media')
-        ->where('slug', $slug)
-        ->where('is_active', true)
-        ->firstOrFail();
+        if ($this->isApi($request)) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Industry retrieved successfully.',
+                'data'    => $this->formatIndustry($industry),
+            ]);
+        }
 
-    if ($this->isApi($request)) {
-        return response()->json([
-            'success' => true,
-            'message' => 'Industry retrieved successfully.',
-            'data'    => $this->formatIndustry($industry),
+        return Inertia::render('industries/show', [
+            'industry' => $this->formatIndustry($industry),
         ]);
     }
 
-    return Inertia::render('industries/show', [
-        'industry' => $this->formatIndustry($industry),
-    ]);
-}
 
     // ── Create ────────────────────────────────────────────────────────────────
 
