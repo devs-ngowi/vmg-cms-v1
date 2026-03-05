@@ -260,6 +260,6 @@ Route::prefix('v1')->group(function () {
             Route::patch('/articles/{article}/toggle',    [KnowledgeController::class, 'articlesToggle']);
         });
 
-    }); // end auth:sanctum
+    }); // end
 
-}); // end v1
+}); // end
