@@ -9,7 +9,7 @@ use App\Http\Controllers\ClientLogoController;
 use App\Http\Controllers\FormController;
 use App\Http\Controllers\HeroSlideController;
 use App\Http\Controllers\IndustryController;
-use App\Http\Controllers\KnowledgeController;   // ✅ NEW
+use App\Http\Controllers\KnowledgeController;
 use App\Http\Controllers\MediaController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\PageController;
@@ -44,8 +44,8 @@ Route::prefix('v1')->group(function () {
     Route::get('/testimonials', [TestimonialController::class, 'index']);
 
     // Forms (public)
-    Route::get('/forms',              [FormController::class, 'index']);
-    Route::get('/forms/{form}',       [FormController::class, 'edit']);
+    Route::get('/forms',               [FormController::class, 'index']);
+    Route::get('/forms/{form}',        [FormController::class, 'edit']);
     Route::post('/forms/{form}/submit', [FormController::class, 'submit']);
 
     // Blog
@@ -72,7 +72,7 @@ Route::prefix('v1')->group(function () {
 
     // Projects (public)
     Route::get('/projects',          [ProjectController::class, 'index']);
-    Route::get('/projects/featured', [ProjectController::class, 'featured']); // ← BEFORE {slug}
+    Route::get('/projects/featured', [ProjectController::class, 'featured']);
     Route::get('/projects/{slug}',   [ProjectController::class, 'show']);
 
     // SEO / Settings
@@ -81,15 +81,16 @@ Route::prefix('v1')->group(function () {
     Route::get('/settings/{group}',   [SiteSettingController::class, 'apiByGroup']);
     Route::get('/settings/get/{key}', [SiteSettingController::class, 'apiGetSetting']);
 
-    // ✅ Knowledge (public — frontend reads)
-    // GET /api/v1/knowledge/categories              → all top-level categories with children
-    // GET /api/v1/knowledge/categories/{slug}       → single category + its articles
-    // GET /api/v1/knowledge/{categorySlug}/{slug}   → single article detail with gallery
-    Route::get('/knowledge',                      [KnowledgeController::class, 'index']);
-    Route::get('/knowledge/categories',                      [KnowledgeController::class, 'publicCategories']);
-    Route::get('/knowledge/categories/{slug}',               [KnowledgeController::class, 'publicCategoryBySlug']);
-    Route::get('/knowledge/{categorySlug}/{articleSlug}',    [KnowledgeController::class, 'publicArticleBySlug']);
-    Route::get('/knowledge/articles', [KnowledgeController::class, 'publicArticlesList']);
+    // ════════════════════════════════════════════════════════════════════════
+    // 🔵 Knowledge — PUBLIC (No Authentication)
+    // Specific routes MUST come before wildcard routes
+    // ════════════════════════════════════════════════════════════════════════
+    Route::get('/knowledge',                                  [KnowledgeController::class, 'index']);
+    Route::get('/knowledge/articles',                         [KnowledgeController::class, 'publicArticlesList']);     // ← specific first
+    Route::get('/knowledge/categories',                       [KnowledgeController::class, 'publicCategories']);       // ← specific first
+    Route::get('/knowledge/categories/{slug}',                [KnowledgeController::class, 'publicCategoryBySlug']);
+    Route::get('/knowledge/{categorySlug}/{articleSlug}',     [KnowledgeController::class, 'publicArticleBySlug']);    // ← wildcard last
+
     // ════════════════════════════════════════════════════════════════════════
     // 🔴 PROTECTED ROUTES (Requires Sanctum token)
     // ════════════════════════════════════════════════════════════════════════
@@ -108,13 +109,13 @@ Route::prefix('v1')->group(function () {
 
         // Blog writes
         Route::prefix('blog')->group(function () {
-            Route::post('/posts',                    [BlogPostController::class, 'store']);
-            Route::put('/posts/{post}',              [BlogPostController::class, 'update']);
-            Route::delete('/posts/{post}',           [BlogPostController::class, 'destroy']);
-            Route::post('/categories',               [BlogPostController::class, 'storeCategory']);
-            Route::delete('/categories/{category}',  [BlogPostController::class, 'destroyCategory']);
-            Route::post('/tags',                     [BlogPostController::class, 'storeTag']);
-            Route::delete('/tags/{tag}',             [BlogPostController::class, 'destroyTag']);
+            Route::post('/posts',                   [BlogPostController::class, 'store']);
+            Route::put('/posts/{post}',             [BlogPostController::class, 'update']);
+            Route::delete('/posts/{post}',          [BlogPostController::class, 'destroy']);
+            Route::post('/categories',              [BlogPostController::class, 'storeCategory']);
+            Route::delete('/categories/{category}', [BlogPostController::class, 'destroyCategory']);
+            Route::post('/tags',                    [BlogPostController::class, 'storeTag']);
+            Route::delete('/tags/{tag}',            [BlogPostController::class, 'destroyTag']);
         });
 
         // Client logos
@@ -236,25 +237,27 @@ Route::prefix('v1')->group(function () {
             Route::delete('/{banner}',       [BannerController::class, 'destroy']);
         });
 
-        // ✅ Knowledge (protected admin writes)
+        // ✅ Knowledge — PROTECTED (admin writes only)
+        // ⚠️  GET /articles and GET /categories are intentionally absent here.
+        //     They are already registered as public routes above.
+        //     Duplicating them here inside auth:sanctum causes a route conflict
+        //     where Laravel matches the protected version and returns 401.
         Route::prefix('knowledge')->group(function () {
-            // Categories
-            Route::get('/categories',                  [KnowledgeController::class, 'categoriesIndex']);
-            Route::post('/categories',                 [KnowledgeController::class, 'categoriesStore']);
-            Route::get('/categories/{category}',       [KnowledgeController::class, 'categoriesEdit']);
-            Route::put('/categories/{category}',       [KnowledgeController::class, 'categoriesUpdate']);
-            Route::patch('/categories/{category}',     [KnowledgeController::class, 'categoriesUpdate']);
-            Route::delete('/categories/{category}',    [KnowledgeController::class, 'categoriesDestroy']);
+            // Categories (writes)
+            Route::post('/categories',                    [KnowledgeController::class, 'categoriesStore']);
+            Route::get('/categories/{category}',          [KnowledgeController::class, 'categoriesEdit']);
+            Route::put('/categories/{category}',          [KnowledgeController::class, 'categoriesUpdate']);
+            Route::patch('/categories/{category}',        [KnowledgeController::class, 'categoriesUpdate']);
+            Route::delete('/categories/{category}',       [KnowledgeController::class, 'categoriesDestroy']);
             Route::patch('/categories/{category}/toggle', [KnowledgeController::class, 'categoriesToggle']);
 
-            // Articles
-            Route::get('/articles',                    [KnowledgeController::class, 'articlesIndex']);
-            Route::post('/articles',                   [KnowledgeController::class, 'articlesStore']);
-            Route::get('/articles/{article}',          [KnowledgeController::class, 'articlesEdit']);
-            Route::put('/articles/{article}',          [KnowledgeController::class, 'articlesUpdate']);
-            Route::patch('/articles/{article}',        [KnowledgeController::class, 'articlesUpdate']);
-            Route::delete('/articles/{article}',       [KnowledgeController::class, 'articlesDestroy']);
-            Route::patch('/articles/{article}/toggle', [KnowledgeController::class, 'articlesToggle']);
+            // Articles (writes)
+            Route::post('/articles',                      [KnowledgeController::class, 'articlesStore']);
+            Route::get('/articles/{article}',             [KnowledgeController::class, 'articlesEdit']);
+            Route::put('/articles/{article}',             [KnowledgeController::class, 'articlesUpdate']);
+            Route::patch('/articles/{article}',           [KnowledgeController::class, 'articlesUpdate']);
+            Route::delete('/articles/{article}',          [KnowledgeController::class, 'articlesDestroy']);
+            Route::patch('/articles/{article}/toggle',    [KnowledgeController::class, 'articlesToggle']);
         });
 
     }); // end auth:sanctum
