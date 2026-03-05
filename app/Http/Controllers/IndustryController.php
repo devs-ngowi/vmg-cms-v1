@@ -11,31 +11,22 @@ use Inertia\Inertia;
 
 class IndustryController extends Controller
 {
-    // ── Helpers ───────────────────────────────────────────────────────────────
-
     private function isApi(Request $request): bool
     {
-        return $request->expectsJson() || $request->wantsJson();
+        return $request->expectsJson() || $request->wantsJson() || $request->is('api/*');
     }
 
-    /**
-     * Return all media items (images + icons) for the picker.
-     * ✅ Now includes is_icon and icon_class so the frontend can render both types.
-     */
     private function mediaList(): \Illuminate\Support\Collection
     {
         return Media::orderByDesc('created_at')
             ->get(['id', 'filename', 'original_name', 'alt_text', 'mime_type', 'is_icon', 'icon_class']);
     }
 
-    /**
-     * ✅ Updated to expose icon fields so the index can render icons inline.
-     */
-    private function formatIndustry(Industry $industry): array
+    private function formatIndustry(Industry $industry, bool $withGallery = false): array
     {
         $media = $industry->media;
 
-        return [
+        $result = [
             'id'          => $industry->id,
             'name'        => $industry->name,
             'slug'        => $industry->slug,
@@ -43,14 +34,30 @@ class IndustryController extends Controller
             'sort_order'  => $industry->sort_order,
             'is_active'   => (bool) $industry->is_active,
             'media'       => $media ? [
-                'id'           => $media->id,
-                'filename'     => $media->filename,
-                'alt_text'     => $media->alt_text,
-                'is_icon'      => (bool) $media->is_icon,   // ✅ NEW
-                'icon_class'   => $media->icon_class,        // ✅ NEW
+                'id'         => $media->id,
+                'filename'   => $media->filename,
+                'alt_text'   => $media->alt_text,
+                'is_icon'    => (bool) $media->is_icon,
+                'icon_class' => $media->icon_class,
+                'url'        => $media->filename
+                    ? url('storage/' . $media->filename)
+                    : null,
             ] : null,
             'created_at'  => $industry->created_at->format('Y-m-d'),
         ];
+
+        // ✅ Include gallery only for detail view
+        if ($withGallery && $industry->relationLoaded('gallery')) {
+            $result['gallery'] = $industry->gallery->map(fn (Media $m) => [
+                'id'       => $m->id,
+                'filename' => $m->filename,
+                'alt_text' => $m->alt_text,
+                'url'      => $m->filename ? url('storage/' . $m->filename) : null,
+                'is_icon'  => (bool) $m->is_icon,
+            ])->values();
+        }
+
+        return $result;
     }
 
     private function validationRules(bool $isUpdate = false, ?Industry $industry = null): array
@@ -67,6 +74,8 @@ class IndustryController extends Controller
             'media_id'    => ['nullable', 'exists:media,id'],
             'sort_order'  => ['nullable', 'integer', 'min:0'],
             'is_active'   => ['boolean'],
+            'media_ids'   => ['array'],
+            'media_ids.*' => ['exists:media,id'],
         ];
     }
 
@@ -89,7 +98,7 @@ class IndustryController extends Controller
         $industries = Industry::with('media')
             ->orderBy('sort_order')
             ->get()
-            ->map(fn (Industry $industry) => $this->formatIndustry($industry));
+            ->map(fn (Industry $i) => $this->formatIndustry($i));
 
         if ($this->isApi($request)) {
             return response()->json([
@@ -102,10 +111,11 @@ class IndustryController extends Controller
         return Inertia::render('industries/index', compact('industries'));
     }
 
-    // ── Show (public, by slugs) ────────────────────────────────────────────────
+    // ── Show (public, by slug) ────────────────────────────────────────────────
+
     public function show(Request $request, string $slug)
     {
-        $industry = Industry::with('media')
+        $industry = Industry::with(['media', 'gallery'])
             ->where('slug', $slug)
             ->where('is_active', true)
             ->firstOrFail();
@@ -114,30 +124,24 @@ class IndustryController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Industry retrieved successfully.',
-                'data'    => $this->formatIndustry($industry),
+                'data'    => $this->formatIndustry($industry, withGallery: true),
             ]);
         }
 
         return Inertia::render('industries/show', [
-            'industry' => $this->formatIndustry($industry),
+            'industry' => $this->formatIndustry($industry, withGallery: true),
         ]);
     }
-
 
     // ── Create ────────────────────────────────────────────────────────────────
 
     public function create(Request $request)
     {
         if ($this->isApi($request)) {
-            return response()->json([
-                'success' => true,
-                'data'    => ['media' => $this->mediaList()],
-            ]);
+            return response()->json(['success' => true, 'data' => ['media' => $this->mediaList()]]);
         }
 
-        return Inertia::render('industries/create', [
-            'media' => $this->mediaList(),
-        ]);
+        return Inertia::render('industries/create', ['media' => $this->mediaList()]);
     }
 
     // ── Store ─────────────────────────────────────────────────────────────────
@@ -148,29 +152,34 @@ class IndustryController extends Controller
 
         $industry = Industry::create($this->buildPayload($data));
 
+        // ✅ Sync gallery
+        if (!empty($data['media_ids'])) {
+            $industry->gallery()->sync(
+                collect($data['media_ids'])->mapWithKeys(fn ($id, $i) => [$id => ['sort_order' => $i]])
+            );
+        }
+
         if ($this->isApi($request)) {
             return response()->json([
                 'success' => true,
                 'message' => 'Industry created successfully.',
-                'data'    => $this->formatIndustry($industry->load('media')),
+                'data'    => $this->formatIndustry($industry->load(['media', 'gallery']), withGallery: true),
             ], 201);
         }
 
-        return redirect()->route('industries.index')
-            ->with('success', 'Industry created successfully.');
+        return redirect()->route('industries.index')->with('success', 'Industry created successfully.');
     }
 
     // ── Edit ──────────────────────────────────────────────────────────────────
 
     public function edit(Request $request, Industry $industry)
     {
-        $industry->load('media');
+        $industry->load(['media', 'gallery']);
 
         if ($this->isApi($request)) {
             return response()->json([
                 'success' => true,
-                'message' => 'Industry retrieved successfully.',
-                'data'    => $this->formatIndustry($industry),
+                'data'    => $this->formatIndustry($industry, withGallery: true),
             ]);
         }
 
@@ -183,6 +192,7 @@ class IndustryController extends Controller
                 'media_id'    => $industry->media_id,
                 'sort_order'  => $industry->sort_order,
                 'is_active'   => (bool) $industry->is_active,
+                'media_ids'   => $industry->gallery->pluck('id')->toArray(),
             ],
             'media' => $this->mediaList(),
         ]);
@@ -196,16 +206,22 @@ class IndustryController extends Controller
 
         $industry->update($this->buildPayload($data));
 
+        // ✅ Sync gallery
+        if (isset($data['media_ids'])) {
+            $industry->gallery()->sync(
+                collect($data['media_ids'])->mapWithKeys(fn ($id, $i) => [$id => ['sort_order' => $i]])
+            );
+        }
+
         if ($this->isApi($request)) {
             return response()->json([
                 'success' => true,
                 'message' => 'Industry updated successfully.',
-                'data'    => $this->formatIndustry($industry->load('media')),
+                'data'    => $this->formatIndustry($industry->load(['media', 'gallery']), withGallery: true),
             ]);
         }
 
-        return redirect()->route('industries.index')
-            ->with('success', 'Industry updated successfully.');
+        return redirect()->route('industries.index')->with('success', 'Industry updated successfully.');
     }
 
     // ── Toggle ────────────────────────────────────────────────────────────────
@@ -213,15 +229,10 @@ class IndustryController extends Controller
     public function toggle(Request $request, Industry $industry)
     {
         $industry->update(['is_active' => !$industry->is_active]);
-
         $message = $industry->is_active ? 'Industry activated.' : 'Industry deactivated.';
 
         if ($this->isApi($request)) {
-            return response()->json([
-                'success' => true,
-                'message' => $message,
-                'data'    => $this->formatIndustry($industry->load('media')),
-            ]);
+            return response()->json(['success' => true, 'message' => $message, 'data' => $this->formatIndustry($industry->load('media'))]);
         }
 
         return back()->with('success', $message);
@@ -231,16 +242,13 @@ class IndustryController extends Controller
 
     public function destroy(Request $request, Industry $industry)
     {
+        $industry->gallery()->detach();
         $industry->delete();
 
         if ($this->isApi($request)) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Industry deleted successfully.',
-            ]);
+            return response()->json(['success' => true, 'message' => 'Industry deleted successfully.']);
         }
 
-        return redirect()->route('industries.index')
-            ->with('success', 'Industry deleted successfully.');
+        return redirect()->route('industries.index')->with('success', 'Industry deleted successfully.');
     }
 }

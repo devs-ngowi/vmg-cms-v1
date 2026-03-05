@@ -1,8 +1,6 @@
 import { Link } from '@inertiajs/react';
 import {
-    BarChart2,
     BookOpen,
-    Briefcase,
     ClipboardList,
     Factory,
     FileText,
@@ -11,11 +9,12 @@ import {
     GitPullRequest,
     Image,
     LayoutGrid,
+    LibraryBig,
     Mail,
     Navigation,
+    NotebookTabs,
     PanelTop,
     PenLine,
-    ScrollText,
     Search,
     Settings,
     ShieldCheck,
@@ -26,7 +25,6 @@ import {
 } from 'lucide-react';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
-import users from '@/routes/users';
 import {
     Sidebar,
     SidebarContent,
@@ -52,7 +50,7 @@ const overviewItems: NavItem[] = [
 
 // ── Auth & Users ──────────────────────────────────────
 const authItems: NavItem[] = [
-     {
+    {
         title: 'Users',
         href: '/users',
         icon: Users,
@@ -102,6 +100,18 @@ const contentItems: NavItem[] = [
         ],
     },
     {
+
+        title: 'Knowledge',
+        href: '/knowledge',
+        icon: LibraryBig,
+        items: [
+            { title: 'Categories',   href: '/knowledge/categories',        icon: NotebookTabs },
+            { title: 'Add Category', href: '/knowledge/categories/create', icon: NotebookTabs },
+            { title: 'Articles',     href: '/knowledge/articles',          icon: BookOpen },
+            { title: 'Add Article',  href: '/knowledge/articles/create',   icon: BookOpen },
+        ],
+    },
+    {
         title: 'Blog / Insights',
         href: '/blog',
         icon: BookOpen,
@@ -130,8 +140,8 @@ const formItems: NavItem[] = [
         href: '/forms',
         icon: ClipboardList,
         items: [
-            { title: 'All Forms',   href: '/forms',        icon: ClipboardList },
-            { title: 'New Form',    href: '/forms/create', icon: ClipboardList }, // ← was /forms/builder (404)
+            { title: 'All Forms', href: '/forms',        icon: ClipboardList },
+            { title: 'New Form',  href: '/forms/create', icon: ClipboardList },
         ],
     },
     {
@@ -188,7 +198,7 @@ const seoNavItems: NavItem[] = [
     },
     {
         title: 'Menu Manager',
-        href: '/menus/primary', // ← was /menus (no such route → 404)
+        href: '/menus/primary',
         icon: Navigation,
         items: [
             { title: 'Primary Navigation', href: '/menus/primary', icon: Navigation },
@@ -196,20 +206,6 @@ const seoNavItems: NavItem[] = [
         ],
     },
 ];
-
-// ── Analytics & Logs ──────────────────────────────────
-// const analyticsItems: NavItem[] = [
-//     {
-//         title: 'Page Views',
-//         href: '/analytics/page-views',
-//         icon: BarChart2,
-//     },
-//     {
-//         title: 'Audit Log',
-//         href: '/analytics/audit-log',
-//         icon: ScrollText,
-//     },
-// ];
 
 export function AppSidebar() {
     return (
@@ -249,9 +245,6 @@ export function AppSidebar() {
 
                 <SidebarSeparator />
                 <NavMain items={seoNavItems} groupLabel="SEO & Navigation" />
-
-                <SidebarSeparator />
-                {/* <NavMain items={analyticsItems} groupLabel="Analytics & Logs" /> */}
             </SidebarContent>
 
             <SidebarFooter>

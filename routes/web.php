@@ -9,6 +9,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FormController;
 use App\Http\Controllers\HeroSlideController;
 use App\Http\Controllers\IndustryController;
+use App\Http\Controllers\KnowledgeController;
 use App\Http\Controllers\MediaController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\PageController;
@@ -208,4 +209,24 @@ Route::middleware('auth')->group(function () {
     // ── Analytics & Logs ──────────────────────────────
     Route::get('/analytics/page-views', fn () => Inertia::render('analytics/page-views'))->name('analytics.page-views');
     Route::get('/analytics/audit-log',  fn () => Inertia::render('analytics/audit-log'))->name('analytics.audit-log');
+
+    // ── Knowledge Categories ──────────────────────────────────────────────────────
+    Route::get('/knowledge', [KnowledgeController::class, 'index'])->name('knowledge.index');
+Route::get('/knowledge/categories',                         [KnowledgeController::class, 'categoriesIndex'])->name('knowledge.categories.index');
+Route::get('/knowledge/categories/create',                  [KnowledgeController::class, 'categoriesCreate'])->name('knowledge.categories.create');
+Route::post('/knowledge/categories',                        [KnowledgeController::class, 'categoriesStore'])->name('knowledge.categories.store');
+Route::get('/knowledge/categories/{category}/edit',         [KnowledgeController::class, 'categoriesEdit'])->name('knowledge.categories.edit');
+Route::patch('/knowledge/categories/{category}',            [KnowledgeController::class, 'categoriesUpdate'])->name('knowledge.categories.update');
+Route::delete('/knowledge/categories/{category}',           [KnowledgeController::class, 'categoriesDestroy'])->name('knowledge.categories.destroy');
+Route::patch('/knowledge/categories/{category}/toggle',     [KnowledgeController::class, 'categoriesToggle'])->name('knowledge.categories.toggle');
+
+// ── Knowledge Articles ────────────────────────────────────────────────────────
+Route::get('/knowledge/articles',                           [KnowledgeController::class, 'articlesIndex'])->name('knowledge.articles.index');
+Route::get('/knowledge/articles/create',                    [KnowledgeController::class, 'articlesCreate'])->name('knowledge.articles.create');
+Route::post('/knowledge/articles',                          [KnowledgeController::class, 'articlesStore'])->name('knowledge.articles.store');
+Route::get('/knowledge/articles/{article}/edit',            [KnowledgeController::class, 'articlesEdit'])->name('knowledge.articles.edit');
+Route::patch('/knowledge/articles/{article}',               [KnowledgeController::class, 'articlesUpdate'])->name('knowledge.articles.update');
+Route::delete('/knowledge/articles/{article}',              [KnowledgeController::class, 'articlesDestroy'])->name('knowledge.articles.destroy');
+Route::patch('/knowledge/articles/{article}/toggle',        [KnowledgeController::class, 'articlesToggle'])->name('knowledge.articles.toggle');
+
 });
