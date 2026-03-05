@@ -89,7 +89,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/knowledge/categories',                      [KnowledgeController::class, 'publicCategories']);
     Route::get('/knowledge/categories/{slug}',               [KnowledgeController::class, 'publicCategoryBySlug']);
     Route::get('/knowledge/{categorySlug}/{articleSlug}',    [KnowledgeController::class, 'publicArticleBySlug']);
-
+    Route::get('/knowledge/articles', [KnowledgeController::class, 'publicArticlesList']);
     // ════════════════════════════════════════════════════════════════════════
     // 🔴 PROTECTED ROUTES (Requires Sanctum token)
     // ════════════════════════════════════════════════════════════════════════

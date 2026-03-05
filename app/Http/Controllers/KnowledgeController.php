@@ -272,6 +272,16 @@ class KnowledgeController extends Controller
     // =========================================================================
     // ARTICLES
     // =========================================================================
+    public function publicArticlesList(Request $request)
+{
+    $articles = KnowledgeArticle::with(['category', 'media'])
+        ->where('is_active', true)
+        ->orderBy('sort_order')
+        ->get()
+        ->map(fn ($a) => $this->formatArticle($a));
+
+    return response()->json(['success' => true, 'data' => $articles]);
+}
 
     public function articlesIndex(Request $request)
     {

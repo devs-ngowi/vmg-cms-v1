@@ -1,1 +1,0 @@
-import{a as e}from"./createLucideIcon-C7Rd10ug.js";const t=[["path",{d:"M15 12H3",key:"6jk70r"}],["path",{d:"M17 18H3",key:"1amg6g"}],["path",{d:"M21 6H3",key:"1jwq7v"}]],o=e("AlignLeft",t);export{o as A};
