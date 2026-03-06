@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { DataTable, type ColumnDef } from '@/components/ui/data-table';
 import type { BreadcrumbItem } from '@/types';
-import { MoreHorizontal, Pencil, Plus, Trash2, Wrench } from 'lucide-react';
+import { ExternalLink, MoreHorizontal, Pencil, Plus, Trash2, Wrench } from 'lucide-react';
 import { useState } from 'react';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -23,6 +23,7 @@ type Service = {
     slug:              string;
     short_description: string | null;
     icon:              string | null;
+    website_url:       string | null;   // ✅ NEW
     order_number:      number;
     status:            'draft' | 'review' | 'published' | 'archived';
     image:             { id: number; filename: string; alt_text: string | null } | null;
@@ -94,7 +95,22 @@ export default function ServicesIndex({ services }: { services: Service[] }) {
                                 {row.short_description}
                             </p>
                         )}
-                        <p className="mt-0.5 truncate text-xs text-muted-foreground/60">/{row.slug}</p>
+                        <div className="mt-0.5 flex items-center gap-2">
+                            <p className="truncate text-xs text-muted-foreground/60">/{row.slug}</p>
+                            {/* ✅ NEW: Show external website link inline */}
+                            {row.website_url && (
+                                <a
+                                    href={row.website_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={e => e.stopPropagation()}
+                                    className="inline-flex items-center gap-0.5 text-xs text-primary hover:underline underline-offset-2"
+                                >
+                                    <ExternalLink className="h-3 w-3" />
+                                    Website
+                                </a>
+                            )}
+                        </div>
                     </div>
                 </div>
             ),
@@ -147,6 +163,20 @@ export default function ServicesIndex({ services }: { services: Service[] }) {
                                 Edit
                             </Link>
                         </DropdownMenuItem>
+                        {/* ✅ NEW: Open website from dropdown */}
+                        {row.website_url && (
+                            <DropdownMenuItem asChild>
+                                <a
+                                    href={row.website_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-2"
+                                >
+                                    <ExternalLink className="h-3.5 w-3.5" />
+                                    Visit Website
+                                </a>
+                            </DropdownMenuItem>
+                        )}
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                             className="flex cursor-pointer items-center gap-2 text-destructive focus:text-destructive"

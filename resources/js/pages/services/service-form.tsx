@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, Save, X, Plus, Trash2, AlertCircle } from 'lucide-react';
+import { Loader2, Save, X, Plus, Trash2, AlertCircle, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import RichTextEditor from '@/components/rich-text-editor';
 import { useState } from 'react';
@@ -33,6 +33,8 @@ type ServiceFormData = {
     short_description: string;
     description:       string;
     icon:              string;
+    website_url:       string;
+    website_logo_id:   string;   // ✅ NEW
     image_id:          string;
     order_number:      string;
     status:            string;
@@ -50,6 +52,8 @@ type DefaultValues = Partial<{
     short_description: string;
     description:       string;
     icon:              string;
+    website_url:       string;
+    website_logo_id:   number;   // ✅ NEW
     image_id:          number;
     order_number:      number;
     status:            string;
@@ -111,6 +115,8 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
         short_description: defaultValues.short_description ?? '',
         description:       defaultValues.description       ?? '',
         icon:              defaultValues.icon              ?? '',
+        website_url:       defaultValues.website_url       ?? '',
+        website_logo_id:   defaultValues.website_logo_id   ? String(defaultValues.website_logo_id) : '',   // ✅ NEW
         image_id:          defaultValues.image_id          ? String(defaultValues.image_id) : '',
         order_number:      defaultValues.order_number      !== undefined ? String(defaultValues.order_number) : '0',
         status:            defaultValues.status            ?? 'draft',
@@ -155,13 +161,7 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
     // ── Package Management ─────────────────────────────────────────────────
 
     const addPackage = () => {
-        const newPackages = [...data.packages, {
-            title: '',
-            short_description: '',
-            description: '',
-            features: [],
-        }];
-        setData('packages', newPackages);
+        setData('packages', [...data.packages, { title: '', short_description: '', description: '', features: [] }]);
     };
 
     const updatePackage = (idx: number, field: keyof ServicePackageFormData, value: any) => {
@@ -171,15 +171,12 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
     };
 
     const removePackage = (idx: number) => {
-        const newPackages = data.packages.filter((_, i) => i !== idx);
-        setData('packages', newPackages);
+        setData('packages', data.packages.filter((_, i) => i !== idx));
     };
 
     const addFeature = (pkgIdx: number) => {
         const newPackages = [...data.packages];
-        const pkg = { ...newPackages[pkgIdx] };
-        pkg.features = [...(pkg.features || []), ''];
-        newPackages[pkgIdx] = pkg;
+        newPackages[pkgIdx] = { ...newPackages[pkgIdx], features: [...(newPackages[pkgIdx].features || []), ''] };
         setData('packages', newPackages);
     };
 
@@ -193,8 +190,10 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
 
     const removeFeature = (pkgIdx: number, featureIdx: number) => {
         const newPackages = [...data.packages];
-        const features = (newPackages[pkgIdx].features || []).filter((_, i) => i !== featureIdx);
-        newPackages[pkgIdx] = { ...newPackages[pkgIdx], features };
+        newPackages[pkgIdx] = {
+            ...newPackages[pkgIdx],
+            features: (newPackages[pkgIdx].features || []).filter((_, i) => i !== featureIdx),
+        };
         setData('packages', newPackages);
     };
 
@@ -203,16 +202,11 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
         mode === 'create' ? post('/services') : patch(`/services/${defaultValues.id}`);
     };
 
-    // ── Get error message array ─────────────────────────────────────────────
-    const getErrorArray = (fieldName: string): string[] => {
-        const err = errors[fieldName as keyof typeof errors];
-        if (Array.isArray(err)) return err;
-        if (typeof err === 'string') return [err];
-        return [];
-    };
-
     const getFirstError = (fieldName: string): string | undefined => {
-        return getErrorArray(fieldName)[0];
+        const err = errors[fieldName as keyof typeof errors];
+        if (Array.isArray(err)) return err[0];
+        if (typeof err === 'string') return err;
+        return undefined;
     };
 
     return (
@@ -223,11 +217,7 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
 
                 <Section title="Service Details">
                     <div className="grid gap-4">
-                        <Field
-                            label="Service Title"
-                            required
-                            error={getFirstError('title')}
-                        >
+                        <Field label="Service Title" required error={getFirstError('title')}>
                             <Input
                                 value={data.title}
                                 onChange={e => handleTitleChange(e.target.value)}
@@ -292,7 +282,7 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
                             label="Service Description"
                             required
                             error={getFirstError('description')}
-                            hint="Overview/introduction of the service (HTML supported). This is required and will be displayed on the service page."
+                            hint="Overview/introduction of the service (HTML supported)."
                         >
                             <RichTextEditor
                                 value={data.description}
@@ -311,20 +301,13 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
                 {/* ── Service Packages ──────────────────────────────────── */}
                 <Section title="Service Packages">
                     <p className="mb-4 text-sm text-muted-foreground">
-                        Create package cards that will be displayed in a grid on the service detail page.
-                        Each package shows its short description in the card preview, with full description available via "Learn more".
+                        Create package cards displayed in a grid on the service detail page.
                     </p>
 
                     {data.packages.length === 0 ? (
                         <div className="rounded-lg border border-dashed p-4 text-center">
                             <p className="text-sm text-muted-foreground mb-3">No packages yet.</p>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={addPackage}
-                                className="gap-1.5"
-                            >
+                            <Button type="button" variant="outline" size="sm" onClick={addPackage} className="gap-1.5">
                                 <Plus className="h-3.5 w-3.5" />
                                 Add Package
                             </Button>
@@ -333,7 +316,6 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
                         <div className="space-y-4">
                             {data.packages.map((pkg, pkgIdx) => (
                                 <div key={pkgIdx} className="rounded-lg border p-4 space-y-4">
-                                    {/* Header */}
                                     <div className="flex items-start justify-between gap-4">
                                         <div className="flex-1">
                                             <Input
@@ -344,9 +326,7 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
                                             />
                                         </div>
                                         <Button
-                                            type="button"
-                                            variant="ghost"
-                                            size="sm"
+                                            type="button" variant="ghost" size="sm"
                                             onClick={() => removePackage(pkgIdx)}
                                             className="text-destructive hover:text-destructive"
                                         >
@@ -354,10 +334,9 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
                                         </Button>
                                     </div>
 
-                                    {/* Short Description */}
                                     <div>
                                         <Label className="text-xs font-semibold mb-2 block">
-                                            Card Description (Shows in preview) <span className="text-destructive">*</span>
+                                            Card Description <span className="text-destructive">*</span>
                                         </Label>
                                         <Textarea
                                             value={pkg.short_description}
@@ -367,22 +346,16 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
                                         />
                                     </div>
 
-                                    {/* Full Description */}
                                     <div>
-                                        <Label className="text-xs font-semibold mb-2 block">
-                                            Full Description (Optional)
-                                        </Label>
+                                        <Label className="text-xs font-semibold mb-2 block">Full Description (Optional)</Label>
                                         <RichTextEditor
                                             value={pkg.description}
                                             onChange={v => updatePackage(pkgIdx, 'description', v)}
                                         />
                                     </div>
 
-                                    {/* Features */}
                                     <div>
-                                        <Label className="text-xs font-semibold mb-2 block">
-                                            Features (Displayed as pills/badges)
-                                        </Label>
+                                        <Label className="text-xs font-semibold mb-2 block">Features</Label>
                                         <div className="space-y-2">
                                             {pkg.features?.map((feature, featureIdx) => (
                                                 <div key={featureIdx} className="flex gap-2">
@@ -392,23 +365,14 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
                                                         placeholder="Feature name"
                                                         className="text-sm"
                                                     />
-                                                    <Button
-                                                        type="button"
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        onClick={() => removeFeature(pkgIdx, featureIdx)}
-                                                    >
+                                                    <Button type="button" variant="ghost" size="sm"
+                                                        onClick={() => removeFeature(pkgIdx, featureIdx)}>
                                                         <X className="h-4 w-4" />
                                                     </Button>
                                                 </div>
                                             ))}
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => addFeature(pkgIdx)}
-                                                className="gap-1.5 w-full"
-                                            >
+                                            <Button type="button" variant="outline" size="sm"
+                                                onClick={() => addFeature(pkgIdx)} className="gap-1.5 w-full">
                                                 <Plus className="h-3.5 w-3.5" />
                                                 Add Feature
                                             </Button>
@@ -417,19 +381,13 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
                                 </div>
                             ))}
 
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={addPackage}
-                                className="w-full gap-1.5"
-                            >
+                            <Button type="button" variant="outline" onClick={addPackage} className="w-full gap-1.5">
                                 <Plus className="h-4 w-4" />
                                 Add Another Package
                             </Button>
                         </div>
                     )}
                 </Section>
-
             </div>
 
             {/* ── Right: sidebar ────────────────────────────────────────── */}
@@ -438,11 +396,7 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
                 {/* Publish */}
                 <Section title="Publish">
                     <div className="grid gap-4">
-                        <Field
-                            label="Status"
-                            required
-                            error={getFirstError('status')}
-                        >
+                        <Field label="Status" required error={getFirstError('status')}>
                             <Select value={data.status} onValueChange={v => setData('status', v)}>
                                 <SelectTrigger className={cn(errors.status && 'border-destructive')}>
                                     <SelectValue />
@@ -466,6 +420,35 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
                                 onChange={e => setData('icon', e.target.value)}
                                 placeholder="🏢"
                             />
+                        </Field>
+
+                        {/* ✅ NEW: Website URL */}
+                        <Field
+                            label="Service Website URL"
+                            error={getFirstError('website_url')}
+                            hint="External website for this service (optional)"
+                        >
+                            <div className="relative">
+                                <ExternalLink className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+                                <Input
+                                    value={data.website_url}
+                                    onChange={e => setData('website_url', e.target.value)}
+                                    placeholder="https://example.com"
+                                    type="url"
+                                    className={cn('pl-9', errors.website_url && 'border-destructive')}
+                                />
+                            </div>
+                            {data.website_url && (
+                                <a
+                                    href={data.website_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-xs text-primary underline-offset-4 hover:underline inline-flex items-center gap-1"
+                                >
+                                    <ExternalLink className="h-3 w-3" />
+                                    Preview link
+                                </a>
+                            )}
                         </Field>
                     </div>
 
@@ -507,9 +490,7 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
                             <label key={m.id}
                                 className={cn(
                                     'flex cursor-pointer items-center gap-2 rounded-lg border p-2 transition-colors',
-                                    data.image_id === String(m.id)
-                                        ? 'border-primary bg-primary/5'
-                                        : 'hover:bg-muted/50',
+                                    data.image_id === String(m.id) ? 'border-primary bg-primary/5' : 'hover:bg-muted/50',
                                 )}>
                                 <input
                                     type="radio"
@@ -533,13 +514,61 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
                     </div>
                 </Section>
 
+                {/* ✅ NEW: Website Logo */}
+                <Section title="Website CTA Logo">
+                    <p className="text-xs text-muted-foreground mb-3">
+                        Logo shown in the "Visit Website" call-to-action card on the service detail page.
+                    </p>
+                    {data.website_logo_id && (() => {
+                        const logo = media.find(m => String(m.id) === data.website_logo_id);
+                        return logo ? (
+                            <div className="mb-3 relative inline-block">
+                                <img
+                                    src={`/storage/${logo.filename}`}
+                                    alt={logo.alt_text ?? logo.original_name}
+                                    className="h-14 rounded-lg object-contain border p-1 bg-white"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setData('website_logo_id', '')}
+                                    className="absolute -right-2 -top-2 rounded-full bg-black/50 p-1 text-white hover:bg-black/70"
+                                >
+                                    <X className="h-3 w-3" />
+                                </button>
+                            </div>
+                        ) : null;
+                    })()}
+                    <div className="max-h-40 overflow-y-auto space-y-1">
+                        {media.filter(m => m.mime_type.startsWith('image/')).map(m => (
+                            <label key={m.id}
+                                className={cn(
+                                    'flex cursor-pointer items-center gap-2 rounded-lg border p-2 transition-colors',
+                                    data.website_logo_id === String(m.id) ? 'border-primary bg-primary/5' : 'hover:bg-muted/50',
+                                )}>
+                                <input
+                                    type="radio"
+                                    name="website_logo_id"
+                                    value={m.id}
+                                    checked={data.website_logo_id === String(m.id)}
+                                    onChange={() => setData('website_logo_id', String(m.id))}
+                                    className="accent-primary"
+                                />
+                                <img
+                                    src={`/storage/${m.filename}`}
+                                    alt={m.alt_text ?? m.original_name}
+                                    className="h-8 w-8 rounded object-contain bg-muted p-0.5"
+                                />
+                                <span className="min-w-0 truncate text-xs">{m.original_name}</span>
+                            </label>
+                        ))}
+                    </div>
+                </Section>
+
                 {/* Categories */}
                 <Section title="Categories">
                     {categories.length === 0
                         ? <p className="text-xs text-muted-foreground">No categories yet.</p>
-                        : <div className="max-h-48 overflow-y-auto">
-                            {renderCategories(categories)}
-                        </div>
+                        : <div className="max-h-48 overflow-y-auto">{renderCategories(categories)}</div>
                     }
                 </Section>
 

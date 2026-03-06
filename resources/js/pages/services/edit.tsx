@@ -14,6 +14,7 @@ type ServiceData = {
     short_description: string;
     description:       string;
     icon:              string | null;
+    website_url:       string | null;   // ✅ NEW
     image_id:          number | null;
     order_number:      number;
     status:            string;
@@ -52,16 +53,28 @@ export default function EditService({ service, categories, tags, media }: Props)
                             </span>
                         </p>
                     </div>
-                    <a
-                        href={`/services/${service.slug}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-primary underline-offset-4 hover:underline"
-                    >
-                        Preview ↗
-                    </a>
+                    <div className="flex items-center gap-3">
+                        {/* ✅ NEW: Show external website link if set */}
+                        {service.website_url && (
+                            <a
+                                href={service.website_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sm text-muted-foreground underline-offset-4 hover:underline"
+                            >
+                                Service Website ↗
+                            </a>
+                        )}
+                        <a
+                            href={`/main-services/${service.slug}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-primary underline-offset-4 hover:underline"
+                        >
+                            Preview ↗
+                        </a>
+                    </div>
                 </div>
-
                 <ServiceForm
                     mode="edit"
                     categories={categories}
