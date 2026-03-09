@@ -12,6 +12,8 @@ export type User = {
 
 export type Auth = {
     user: User;
+    is_admin:    boolean;  // ← add this
+    permissions: Permissions[];
 };
 
 export type TwoFactorSetupData = {

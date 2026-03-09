@@ -8,6 +8,7 @@ import {
     Settings, Star, TrendingUp, Users, Wrench,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { usePermission } from '../utils/permissions';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -53,34 +54,49 @@ function StatusBadge({ status }: { status: string }) {
 
 // ── Stat card ─────────────────────────────────────────────────────────────────
 
-function StatCard({ label, value, icon: Icon, href, accent, sub }: {
-    label:  string;
-    value:  number | string;
-    icon:   React.ElementType;
-    href?:  string;
-    accent: string;
-    sub?:   string;
+function StatCard({ label, value, icon: Icon, href, accent, sub, allowed = true }: {
+    label:    string;
+    value:    number | string;
+    icon:     React.ElementType;
+    href?:    string;
+    accent:   string;
+    sub?:     string;
+    allowed?: boolean;
 }) {
+    // If no permission, render without link and dim slightly
+    const effectiveHref = allowed ? href : undefined;
+
     const inner = (
         <div className={cn(
             'group relative overflow-hidden rounded-2xl border bg-card p-5 shadow-sm transition-all duration-200',
-            href && 'hover:shadow-md hover:-translate-y-0.5 cursor-pointer',
+            effectiveHref && 'hover:shadow-md hover:-translate-y-0.5 cursor-pointer',
+            !allowed && 'opacity-50 grayscale',
         )}>
-            {/* Accent bar */}
             <div className={cn('absolute inset-x-0 top-0 h-0.5', accent)} />
-
             <div className="flex items-start justify-between">
                 <div>
                     <p className="text-xs font-medium text-muted-foreground">{label}</p>
-                    <p className="mt-1.5 text-3xl font-bold tabular-nums tracking-tight">{value}</p>
-                    {sub && <p className="mt-1 text-xs text-muted-foreground">{sub}</p>}
+                    <p className="mt-1.5 text-3xl font-bold tabular-nums tracking-tight">
+                        {allowed ? value : '—'}
+                    </p>
+                    {sub && allowed && <p className="mt-1 text-xs text-muted-foreground">{sub}</p>}
+                    {!allowed && <p className="mt-1 text-xs text-muted-foreground">No access</p>}
                 </div>
-                <div className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-xl', accent.replace('bg-', 'bg-').replace('-500', '-100').replace('-600', '-100'), 'text-current')}>
-                    <Icon className={cn('h-5 w-5', accent.includes('emerald') ? 'text-emerald-600' : accent.includes('amber') ? 'text-amber-600' : accent.includes('blue') ? 'text-blue-600' : accent.includes('rose') ? 'text-rose-600' : accent.includes('violet') ? 'text-violet-600' : 'text-slate-600')} />
+                <div className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-xl',
+                    accent.replace('bg-', 'bg-').replace('-500', '-100').replace('-600', '-100'))}>
+                    <Icon className={cn('h-5 w-5',
+                        accent.includes('emerald') ? 'text-emerald-600' :
+                        accent.includes('amber')   ? 'text-amber-600'   :
+                        accent.includes('blue')    ? 'text-blue-600'    :
+                        accent.includes('rose')    ? 'text-rose-600'    :
+                        accent.includes('violet')  ? 'text-violet-600'  :
+                        accent.includes('cyan')    ? 'text-cyan-600'    :
+                        accent.includes('fuchsia') ? 'text-fuchsia-600' :
+                        'text-slate-600'
+                    )} />
                 </div>
             </div>
-
-            {href && (
+            {effectiveHref && (
                 <div className="mt-3 flex items-center gap-1 text-xs text-muted-foreground transition-colors group-hover:text-primary">
                     View all <ArrowRight className="h-3 w-3" />
                 </div>
@@ -88,7 +104,7 @@ function StatCard({ label, value, icon: Icon, href, accent, sub }: {
         </div>
     );
 
-    return href ? <Link href={href}>{inner}</Link> : inner;
+    return effectiveHref ? <Link href={effectiveHref}>{inner}</Link> : inner;
 }
 
 // ── Sparkline chart ───────────────────────────────────────────────────────────
@@ -112,7 +128,6 @@ function Sparkline({ data }: { data: ChartPoint[] }) {
     }).join(' ');
 
     const area = `M${pts.split(' ')[0]} L${pts} L${W - PAD},${H - PAD} L${PAD},${H - PAD} Z`;
-    const line = `M${pts.split(' ').join(' L')}`;
     const total = data.reduce((s, d) => s + d.views, 0);
 
     return (
@@ -153,7 +168,6 @@ const workflowColors: Record<string, { bg: string; text: string; bar: string }> 
 
 function WorkflowPipeline({ data }: { data: WorkflowCount[] }) {
     const total = data.reduce((s, d) => s + d.count, 0) || 1;
-
     return (
         <div className="space-y-3">
             {data.map(item => {
@@ -168,18 +182,12 @@ function WorkflowPipeline({ data }: { data: WorkflowCount[] }) {
                             </span>
                         </div>
                         <div className="h-2 w-full rounded-full bg-muted">
-                            <div
-                                className={cn('h-2 rounded-full transition-all duration-700', cfg.bar)}
-                                style={{ width: `${pct}%` }}
-                            />
+                            <div className={cn('h-2 rounded-full transition-all duration-700', cfg.bar)} style={{ width: `${pct}%` }} />
                         </div>
                     </div>
                 );
             })}
-            <Link
-                href="/workflow"
-                className="flex items-center gap-1.5 pt-1 text-xs text-primary hover:underline"
-            >
+            <Link href="/workflow" className="flex items-center gap-1.5 pt-1 text-xs text-primary hover:underline">
                 Open workflow board <ArrowRight className="h-3 w-3" />
             </Link>
         </div>
@@ -193,12 +201,10 @@ function ContentBreakdown({ blogPosts, projects }: {
     projects:  ContentStatus;
 }) {
     const sections = [
-        { label: 'Blog Posts', data: blogPosts, href: '/blog',     icon: BookOpen },
+        { label: 'Blog Posts', data: blogPosts, href: '/blog',     icon: BookOpen  },
         { label: 'Projects',   data: projects,  href: '/projects', icon: FolderOpen },
     ];
-
     const statusList = ['draft', 'review', 'published', 'archived'];
-
     return (
         <div className="space-y-5">
             {sections.map(s => (
@@ -221,17 +227,6 @@ function ContentBreakdown({ blogPosts, projects }: {
     );
 }
 
-// ── Quick actions ─────────────────────────────────────────────────────────────
-
-const quickActions = [
-    { label: 'New Blog Post',  href: '/blog/create',       icon: BookOpen,          color: 'text-blue-600   bg-blue-50   border-blue-100'   },
-    { label: 'New Page',       href: '/pages/create',      icon: FileText,          color: 'text-violet-600 bg-violet-50 border-violet-100' },
-    { label: 'New Project',    href: '/projects/create',   icon: FolderOpen,        color: 'text-emerald-600 bg-emerald-50 border-emerald-100' },
-    { label: 'Upload Media',   href: '/media',             icon: Image,             color: 'text-amber-600  bg-amber-50  border-amber-100'  },
-    { label: 'New Form',       href: '/forms/create',      icon: Mail,              color: 'text-rose-600   bg-rose-50   border-rose-100'   },
-    { label: 'Site Settings',  href: '/settings',          icon: Settings,          color: 'text-slate-600  bg-slate-50  border-slate-100'  },
-];
-
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function Dashboard({
@@ -253,12 +248,24 @@ export default function Dashboard({
     storageStats:       StorageStats;
     topPages:           TopPage[];
 }) {
+    const { canView, canCreate, isAdmin } = usePermission();
+
     const greeting = () => {
         const h = new Date().getHours();
         if (h < 12) return 'Good morning';
         if (h < 17) return 'Good afternoon';
         return 'Good evening';
     };
+
+    // Quick actions filtered by create permission
+    const quickActions = [
+        { label: 'New Blog Post', href: '/blog/create',     icon: BookOpen,   color: 'text-blue-600    bg-blue-50    border-blue-100',    module: 'Blog'     },
+        { label: 'New Page',      href: '/pages/create',    icon: FileText,   color: 'text-violet-600  bg-violet-50  border-violet-100',  module: 'Pages'    },
+        { label: 'New Project',   href: '/projects/create', icon: FolderOpen, color: 'text-emerald-600 bg-emerald-50 border-emerald-100', module: 'Projects' },
+        { label: 'Upload Media',  href: '/media',           icon: Image,      color: 'text-amber-600   bg-amber-50   border-amber-100',   module: 'Media'    },
+        { label: 'New Form',      href: '/forms/create',    icon: Mail,       color: 'text-rose-600    bg-rose-50    border-rose-100',    module: 'Forms'    },
+        { label: 'Site Settings', href: '/settings',        icon: Settings,   color: 'text-slate-600   bg-slate-50   border-slate-100',   module: 'Settings' },
+    ].filter(a => canCreate(a.module));
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -273,16 +280,15 @@ export default function Dashboard({
                             Here's what's happening with your CMS today.
                         </p>
                     </div>
-                    {/* Alerts */}
                     <div className="flex flex-wrap gap-2">
-                        {stats.submissions_new > 0 && (
+                        {canView('Submissions') && stats.submissions_new > 0 && (
                             <Link href="/submissions"
                                 className="flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-medium text-blue-700 hover:bg-blue-100 transition-colors">
                                 <Mail className="h-3.5 w-3.5" />
                                 {stats.submissions_new} new submission{stats.submissions_new !== 1 ? 's' : ''}
                             </Link>
                         )}
-                        {stats.testimonials_pending > 0 && (
+                        {canView('Testimonials') && stats.testimonials_pending > 0 && (
                             <Link href="/testimonials"
                                 className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700 hover:bg-amber-100 transition-colors">
                                 <Star className="h-3.5 w-3.5" />
@@ -294,135 +300,147 @@ export default function Dashboard({
 
                 {/* ── Primary stat grid ───────────────────────────────────── */}
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    <StatCard label="Blog Posts"  value={stats.blog_posts}  icon={BookOpen}  href="/blog"        accent="bg-blue-500"    sub={`${stats.published_posts} published`} />
-                    <StatCard label="Pages"        value={stats.pages}       icon={FileText}  href="/pages"       accent="bg-violet-500" />
-                    <StatCard label="Projects"     value={stats.projects}    icon={FolderOpen} href="/projects"   accent="bg-emerald-500" />
-                    <StatCard label="Media Files"  value={stats.media_files} icon={Image}     href="/media"       accent="bg-amber-500"   sub={storageStats.human_size} />
+                    <StatCard label="Blog Posts"   value={stats.blog_posts}          icon={BookOpen}          href="/blog"         accent="bg-blue-500"    sub={`${stats.published_posts} published`} allowed={canView('Blog')}       />
+                    <StatCard label="Pages"         value={stats.pages}               icon={FileText}          href="/pages"        accent="bg-violet-500"                                             allowed={canView('Pages')}      />
+                    <StatCard label="Projects"      value={stats.projects}            icon={FolderOpen}        href="/projects"     accent="bg-emerald-500"                                            allowed={canView('Projects')}   />
+                    <StatCard label="Media Files"   value={stats.media_files}         icon={Image}             href="/media"        accent="bg-amber-500"   sub={storageStats.human_size}              allowed={canView('Media')}      />
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    <StatCard label="Users"        value={stats.users}       icon={Users}     href="/users"       accent="bg-slate-500" />
-                    <StatCard label="Services"     value={stats.services}    icon={Wrench}    href="/services"    accent="bg-cyan-500" />
-                    <StatCard label="Forms"        value={stats.forms}       icon={Mail}      href="/forms"       accent="bg-rose-500"    sub={stats.submissions_new ? `${stats.submissions_new} new` : undefined} />
-                    <StatCard label="Active Slides" value={stats.hero_slides_active} icon={GalleryHorizontal} href="/hero-slides" accent="bg-fuchsia-500" />
+                    <StatCard label="Users"         value={stats.users}               icon={Users}             href="/users"        accent="bg-slate-500"                                              allowed={canView('Users')}      />
+                    <StatCard label="Services"      value={stats.services}            icon={Wrench}            href="/services"     accent="bg-cyan-500"                                               allowed={canView('Services')}   />
+                    <StatCard label="Forms"         value={stats.forms}               icon={Mail}              href="/forms"        accent="bg-rose-500"    sub={stats.submissions_new ? `${stats.submissions_new} new` : undefined} allowed={canView('Forms')} />
+                    <StatCard label="Active Slides" value={stats.hero_slides_active}  icon={GalleryHorizontal} href="/hero-slides"  accent="bg-fuchsia-500"                                            allowed={canView('Hero Slides')} />
                 </div>
 
                 {/* ── Main content grid ───────────────────────────────────── */}
                 <div className="grid gap-6 xl:grid-cols-3">
 
-                    {/* Page views chart — 2 cols */}
-                    <div className="xl:col-span-2 rounded-2xl border bg-card p-6 shadow-sm">
-                        <div className="mb-4 flex items-center justify-between">
-                            <h2 className="text-sm font-semibold">Page Views</h2>
-                            <Link href="/analytics/page-views"
-                                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary">
-                                Details <ArrowRight className="h-3 w-3" />
-                            </Link>
-                        </div>
-                        <Sparkline data={pageViewsChart} />
-
-                        {/* Top pages */}
-                        {topPages.length > 0 && (
-                            <div className="mt-5 space-y-2 border-t pt-4">
-                                <p className="text-xs font-medium text-muted-foreground mb-2">Top Content (30d)</p>
-                                {topPages.map((p, i) => (
-                                    <div key={i} className="flex items-center gap-2 text-xs">
-                                        <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-muted text-[10px] font-bold text-muted-foreground">
-                                            {i + 1}
-                                        </span>
-                                        <span className="flex-1 truncate text-muted-foreground">{p.label}</span>
-                                        <span className="tabular-nums font-medium">{p.views.toLocaleString()}</span>
-                                    </div>
-                                ))}
+                    {/* Page views — only if Analytics permission */}
+                    {canView('Analytics') ? (
+                        <div className="xl:col-span-2 rounded-2xl border bg-card p-6 shadow-sm">
+                            <div className="mb-4 flex items-center justify-between">
+                                <h2 className="text-sm font-semibold">Page Views</h2>
+                                <Link href="/analytics/page-views"
+                                    className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary">
+                                    Details <ArrowRight className="h-3 w-3" />
+                                </Link>
                             </div>
-                        )}
-                    </div>
-
-                    {/* Workflow pipeline — 1 col */}
-                    <div className="rounded-2xl border bg-card p-6 shadow-sm">
-                        <div className="mb-4 flex items-center justify-between">
-                            <h2 className="text-sm font-semibold">Workflow Pipeline</h2>
-                            <Link href="/workflow"
-                                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary">
-                                Board <ArrowRight className="h-3 w-3" />
-                            </Link>
+                            <Sparkline data={pageViewsChart} />
+                            {topPages.length > 0 && (
+                                <div className="mt-5 space-y-2 border-t pt-4">
+                                    <p className="text-xs font-medium text-muted-foreground mb-2">Top Content (30d)</p>
+                                    {topPages.map((p, i) => (
+                                        <div key={i} className="flex items-center gap-2 text-xs">
+                                            <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-muted text-[10px] font-bold text-muted-foreground">
+                                                {i + 1}
+                                            </span>
+                                            <span className="flex-1 truncate text-muted-foreground">{p.label}</span>
+                                            <span className="tabular-nums font-medium">{p.views.toLocaleString()}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
-                        {workflowCounts.length > 0
-                            ? <WorkflowPipeline data={workflowCounts} />
-                            : <p className="text-xs text-muted-foreground">No workflow data yet.</p>
-                        }
-                    </div>
+                    ) : (
+                        // Placeholder when no analytics access — keeps grid layout intact
+                        <div className="xl:col-span-2 rounded-2xl border bg-muted/30 p-6 shadow-sm flex items-center justify-center">
+                            <p className="text-sm text-muted-foreground">Analytics not available for your role.</p>
+                        </div>
+                    )}
+
+                    {/* Workflow pipeline */}
+                    {canView('Workflow') && (
+                        <div className="rounded-2xl border bg-card p-6 shadow-sm">
+                            <div className="mb-4 flex items-center justify-between">
+                                <h2 className="text-sm font-semibold">Workflow Pipeline</h2>
+                                <Link href="/workflow"
+                                    className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary">
+                                    Board <ArrowRight className="h-3 w-3" />
+                                </Link>
+                            </div>
+                            {workflowCounts.length > 0
+                                ? <WorkflowPipeline data={workflowCounts} />
+                                : <p className="text-xs text-muted-foreground">No workflow data yet.</p>
+                            }
+                        </div>
+                    )}
                 </div>
 
                 {/* ── Second row ──────────────────────────────────────────── */}
                 <div className="grid gap-6 xl:grid-cols-3">
 
-                    {/* Recent blog posts — 2 cols */}
-                    <div className="xl:col-span-2 rounded-2xl border bg-card p-6 shadow-sm">
-                        <div className="mb-4 flex items-center justify-between">
-                            <h2 className="text-sm font-semibold">Recent Posts</h2>
-                            <Link href="/blog/create"
-                                className="flex items-center gap-1 text-xs text-primary hover:underline">
-                                <BookOpen className="h-3 w-3" /> New post
+                    {/* Recent blog posts */}
+                    {canView('Blog') && (
+                        <div className="xl:col-span-2 rounded-2xl border bg-card p-6 shadow-sm">
+                            <div className="mb-4 flex items-center justify-between">
+                                <h2 className="text-sm font-semibold">Recent Posts</h2>
+                                {canCreate('Blog') && (
+                                    <Link href="/blog/create"
+                                        className="flex items-center gap-1 text-xs text-primary hover:underline">
+                                        <BookOpen className="h-3 w-3" /> New post
+                                    </Link>
+                                )}
+                            </div>
+                            {recentPosts.length === 0 ? (
+                                <p className="text-xs text-muted-foreground">No posts yet.</p>
+                            ) : (
+                                <div className="divide-y">
+                                    {recentPosts.map(post => (
+                                        <div key={post.id} className="flex items-center gap-3 py-3">
+                                            <div className="min-w-0 flex-1">
+                                                <a href={post.edit_url}
+                                                    className="truncate text-sm font-medium hover:text-primary transition-colors block">
+                                                    {post.title}
+                                                </a>
+                                                <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
+                                                    {post.author && <span className="flex items-center gap-1"><PenLine className="h-3 w-3" />{post.author}</span>}
+                                                    <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{post.created_at}</span>
+                                                </div>
+                                            </div>
+                                            <StatusBadge status={post.status} />
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                            <Link href="/blog" className="mt-3 flex items-center gap-1 text-xs text-muted-foreground hover:text-primary">
+                                View all posts <ArrowRight className="h-3 w-3" />
                             </Link>
                         </div>
-                        {recentPosts.length === 0 ? (
-                            <p className="text-xs text-muted-foreground">No posts yet.</p>
-                        ) : (
-                            <div className="divide-y">
-                                {recentPosts.map(post => (
-                                    <div key={post.id} className="flex items-center gap-3 py-3">
-                                        <div className="min-w-0 flex-1">
-                                            <a href={post.edit_url}
-                                                className="truncate text-sm font-medium hover:text-primary transition-colors block">
-                                                {post.title}
-                                            </a>
-                                            <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
-                                                {post.author && <span className="flex items-center gap-1"><PenLine className="h-3 w-3" />{post.author}</span>}
-                                                <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{post.created_at}</span>
-                                            </div>
-                                        </div>
-                                        <StatusBadge status={post.status} />
+                    )}
+
+                    {/* Storage + content breakdown */}
+                    <div className="space-y-6">
+                        {canView('Media') && (
+                            <div className="rounded-2xl border bg-card p-5 shadow-sm">
+                                <div className="mb-3 flex items-center gap-2">
+                                    <HardDrive className="h-4 w-4 text-muted-foreground" />
+                                    <h2 className="text-sm font-semibold">Storage</h2>
+                                </div>
+                                <p className="text-2xl font-bold">{storageStats.human_size}</p>
+                                <p className="mt-0.5 text-xs text-muted-foreground">{storageStats.total_files} files total</p>
+                                <div className="mt-3 grid grid-cols-2 gap-2">
+                                    <div className="rounded-lg bg-muted/30 p-2.5 text-center">
+                                        <p className="text-base font-bold tabular-nums">{storageStats.images}</p>
+                                        <p className="text-[10px] text-muted-foreground">Images</p>
                                     </div>
-                                ))}
+                                    <div className="rounded-lg bg-muted/30 p-2.5 text-center">
+                                        <p className="text-base font-bold tabular-nums">{storageStats.documents}</p>
+                                        <p className="text-[10px] text-muted-foreground">Documents</p>
+                                    </div>
+                                </div>
                             </div>
                         )}
-                        <Link href="/blog"
-                            className="mt-3 flex items-center gap-1 text-xs text-muted-foreground hover:text-primary">
-                            View all posts <ArrowRight className="h-3 w-3" />
-                        </Link>
-                    </div>
 
-                    {/* Storage + content breakdown — 1 col */}
-                    <div className="space-y-6">
-                        {/* Storage */}
-                        <div className="rounded-2xl border bg-card p-5 shadow-sm">
-                            <div className="mb-3 flex items-center gap-2">
-                                <HardDrive className="h-4 w-4 text-muted-foreground" />
-                                <h2 className="text-sm font-semibold">Storage</h2>
+                        {(canView('Blog') || canView('Projects')) && (
+                            <div className="rounded-2xl border bg-card p-5 shadow-sm">
+                                <h2 className="mb-3 text-sm font-semibold">Content Status</h2>
+                                <ContentBreakdown
+                                    blogPosts={contentByStatus.blog_posts}
+                                    projects={contentByStatus.projects}
+                                />
                             </div>
-                            <p className="text-2xl font-bold">{storageStats.human_size}</p>
-                            <p className="mt-0.5 text-xs text-muted-foreground">{storageStats.total_files} files total</p>
-                            <div className="mt-3 grid grid-cols-2 gap-2">
-                                <div className="rounded-lg bg-muted/30 p-2.5 text-center">
-                                    <p className="text-base font-bold tabular-nums">{storageStats.images}</p>
-                                    <p className="text-[10px] text-muted-foreground">Images</p>
-                                </div>
-                                <div className="rounded-lg bg-muted/30 p-2.5 text-center">
-                                    <p className="text-base font-bold tabular-nums">{storageStats.documents}</p>
-                                    <p className="text-[10px] text-muted-foreground">Documents</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Content by status */}
-                        <div className="rounded-2xl border bg-card p-5 shadow-sm">
-                            <h2 className="mb-3 text-sm font-semibold">Content Status</h2>
-                            <ContentBreakdown
-                                blogPosts={contentByStatus.blog_posts}
-                                projects={contentByStatus.projects}
-                            />
-                        </div>
+                        )}
                     </div>
                 </div>
 
@@ -430,71 +448,77 @@ export default function Dashboard({
                 <div className="grid gap-6 xl:grid-cols-3">
 
                     {/* Recent submissions */}
-                    <div className="xl:col-span-2 rounded-2xl border bg-card p-6 shadow-sm">
-                        <div className="mb-4 flex items-center justify-between">
-                            <h2 className="text-sm font-semibold">Recent Submissions</h2>
-                            <Link href="/submissions"
-                                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary">
-                                All submissions <ArrowRight className="h-3 w-3" />
-                            </Link>
+                    {canView('Submissions') && (
+                        <div className="xl:col-span-2 rounded-2xl border bg-card p-6 shadow-sm">
+                            <div className="mb-4 flex items-center justify-between">
+                                <h2 className="text-sm font-semibold">Recent Submissions</h2>
+                                <Link href="/submissions"
+                                    className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary">
+                                    All submissions <ArrowRight className="h-3 w-3" />
+                                </Link>
+                            </div>
+                            {recentSubmissions.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center py-8 text-center">
+                                    <Mail className="mb-2 h-8 w-8 text-muted-foreground/20" />
+                                    <p className="text-xs text-muted-foreground">No submissions yet.</p>
+                                </div>
+                            ) : (
+                                <div className="divide-y">
+                                    {recentSubmissions.map(sub => (
+                                        <div key={sub.id} className="flex items-center gap-3 py-3">
+                                            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                                                <Mail className="h-3.5 w-3.5 text-primary" />
+                                            </div>
+                                            <div className="min-w-0 flex-1">
+                                                <p className="truncate text-sm font-medium">{sub.form_name}</p>
+                                                <p className="text-xs text-muted-foreground">{sub.received}</p>
+                                            </div>
+                                            <StatusBadge status={sub.status} />
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
-                        {recentSubmissions.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-8 text-center">
-                                <Mail className="mb-2 h-8 w-8 text-muted-foreground/20" />
-                                <p className="text-xs text-muted-foreground">No submissions yet.</p>
-                            </div>
-                        ) : (
-                            <div className="divide-y">
-                                {recentSubmissions.map(sub => (
-                                    <div key={sub.id} className="flex items-center gap-3 py-3">
-                                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                                            <Mail className="h-3.5 w-3.5 text-primary" />
-                                        </div>
-                                        <div className="min-w-0 flex-1">
-                                            <p className="truncate text-sm font-medium">{sub.form_name}</p>
-                                            <p className="text-xs text-muted-foreground">{sub.received}</p>
-                                        </div>
-                                        <StatusBadge status={sub.status} />
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
+                    )}
 
                     {/* Quick actions */}
-                    <div className="rounded-2xl border bg-card p-6 shadow-sm">
-                        <h2 className="mb-4 text-sm font-semibold">Quick Actions</h2>
-                        <div className="grid grid-cols-2 gap-2">
-                            {quickActions.map(action => (
-                                <Link
-                                    key={action.label}
-                                    href={action.href}
-                                    className={cn(
-                                        'flex flex-col items-center gap-2 rounded-xl border p-3 text-center transition-all hover:-translate-y-0.5 hover:shadow-sm',
-                                        action.color,
-                                    )}
-                                >
-                                    <action.icon className="h-5 w-5" />
-                                    <span className="text-[11px] font-medium leading-tight">{action.label}</span>
-                                </Link>
-                            ))}
-                        </div>
+                    {quickActions.length > 0 && (
+                        <div className="rounded-2xl border bg-card p-6 shadow-sm">
+                            <h2 className="mb-4 text-sm font-semibold">Quick Actions</h2>
+                            <div className="grid grid-cols-2 gap-2">
+                                {quickActions.map(action => (
+                                    <Link
+                                        key={action.label}
+                                        href={action.href}
+                                        className={cn(
+                                            'flex flex-col items-center gap-2 rounded-xl border p-3 text-center transition-all hover:-translate-y-0.5 hover:shadow-sm',
+                                            action.color,
+                                        )}
+                                    >
+                                        <action.icon className="h-5 w-5" />
+                                        <span className="text-[11px] font-medium leading-tight">{action.label}</span>
+                                    </Link>
+                                ))}
+                            </div>
 
-                        {/* Mini system summary */}
-                        <div className="mt-4 space-y-1.5 border-t pt-4">
-                            {[
-                                { label: 'Authors',    value: stats.authors,    href: '/authors'      },
-                                { label: 'Industries', value: stats.industries, href: '/industries'   },
-                                { label: 'Roles',      value: stats.roles,      href: '/roles'        },
-                            ].map(r => (
-                                <Link key={r.label} href={r.href}
-                                    className="flex items-center justify-between rounded-lg px-2 py-1.5 text-xs hover:bg-muted/50 transition-colors">
-                                    <span className="text-muted-foreground">{r.label}</span>
-                                    <span className="font-semibold tabular-nums">{r.value}</span>
-                                </Link>
-                            ))}
+                            {/* Mini system summary */}
+                            <div className="mt-4 space-y-1.5 border-t pt-4">
+                                {[
+                                    { label: 'Authors',    value: stats.authors,    href: '/authors',    module: 'Users' },
+                                    { label: 'Industries', value: stats.industries, href: '/industries', module: 'Industries' },
+                                    { label: 'Roles',      value: stats.roles,      href: '/roles',      module: 'Roles' },
+                                ]
+                                .filter(r => canView(r.module))
+                                .map(r => (
+                                    <Link key={r.label} href={r.href}
+                                        className="flex items-center justify-between rounded-lg px-2 py-1.5 text-xs hover:bg-muted/50 transition-colors">
+                                        <span className="text-muted-foreground">{r.label}</span>
+                                        <span className="font-semibold tabular-nums">{r.value}</span>
+                                    </Link>
+                                ))}
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </div>
 
             </div>

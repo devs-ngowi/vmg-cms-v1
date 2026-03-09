@@ -7,39 +7,32 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2, Save } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-// ── Modules list ──────────────────────────────────────────────────────────────
-
-const MODULES = [
-    'Dashboard',
-    'Users',
-    'Roles',
-    'Pages',
-    'Services',
-    'Industries',
-    'Projects',
-    'Blog',
-    'Vacancies',
-    'Media',
-    'Forms',
-    'Submissions',
-    'Workflow',
-    'Hero Slides',
-    'Client Logos',
-    'Testimonials',
-    'Settings',
-    'SEO',
-    'Menus',
-    'Analytics',
+const MODULE_GROUPS: { label: string; modules: string[] }[] = [
+    { label: 'Overview',           modules: ['Dashboard']                                                        },
+    { label: 'Auth & Users',       modules: ['Users', 'Roles']                                                   },
+    { label: 'Content Management', modules: ['Pages', 'Services', 'Industries', 'Projects', 'Blog', 'Vacancies'] },
+    { label: 'Assets',             modules: ['Media']                                                            },
+    { label: 'Forms & Inquiries',  modules: ['Forms', 'Submissions']                                             },
+    { label: 'Publishing',         modules: ['Workflow']                                                         },
+    { label: 'Site Configuration', modules: ['Hero Slides', 'Client Logos', 'Testimonials', 'Settings']          },
+    { label: 'SEO & Navigation',   modules: ['SEO', 'Menus']                                                     },
+    { label: 'Analytics',          modules: ['Analytics']                                                        },
 ];
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+const ALL_MODULES = MODULE_GROUPS.flatMap(g => g.modules);
+
+const ACTION_KEYS: (keyof Omit<Permission, 'module'>)[] = [
+    'can_view', 'can_create', 'can_edit', 'can_delete', 'can_publish',
+];
+const ACTION_LABELS = ['View', 'Create', 'Edit', 'Delete', 'Publish'];
 
 type Permission = {
-    module:     string;
-    can_view:   boolean;
-    can_create: boolean;
-    can_edit:   boolean;
-    can_delete: boolean;
+    module:      string;
+    can_view:    boolean;
+    can_create:  boolean;
+    can_edit:    boolean;
+    can_delete:  boolean;
+    can_publish: boolean;
 };
 
 type RoleFormData = {
@@ -52,25 +45,24 @@ type DefaultValues = {
     id?:          number;
     name?:        string;
     description?: string;
-    permissions?: Permission[];
+    permissions?: Partial<Permission>[];
 };
 
-// ── Build default permissions ─────────────────────────────────────────────────
-
-function buildPermissions(existing: Permission[] = []): Permission[] {
-    return MODULES.map(module => {
-        const found = existing.find(p => p.module === module);
-        return found ?? {
+function buildPermissions(existing: Partial<Permission>[] = []): Permission[] {
+    return ALL_MODULES.map(module => {
+        const found = existing.find(
+            p => p.module?.toLowerCase() === module.toLowerCase(),
+        );
+        return {
             module,
-            can_view:   false,
-            can_create: false,
-            can_edit:   false,
-            can_delete: false,
+            can_view:    Boolean(found?.can_view),
+            can_create:  Boolean(found?.can_create),
+            can_edit:    Boolean(found?.can_edit),
+            can_delete:  Boolean(found?.can_delete),
+            can_publish: Boolean(found?.can_publish),
         };
     });
 }
-
-// ── Field wrapper ─────────────────────────────────────────────────────────────
 
 function Field({
     label, error, required, children,
@@ -88,8 +80,6 @@ function Field({
     );
 }
 
-// ── Component ─────────────────────────────────────────────────────────────────
-
 export default function RoleForm({
     mode,
     defaultValues = {},
@@ -103,45 +93,41 @@ export default function RoleForm({
         permissions: buildPermissions(defaultValues.permissions),
     });
 
-    // Toggle a single permission cell
-    const togglePermission = (
-        moduleIndex: number,
-        key: keyof Omit<Permission, 'module'>,
-    ) => {
-        const updated = data.permissions.map((p, i) =>
+    const togglePermission = (moduleIndex: number, key: keyof Omit<Permission, 'module'>) => {
+        setData('permissions', data.permissions.map((p, i) =>
             i === moduleIndex ? { ...p, [key]: !p[key] } : p,
-        );
-        setData('permissions', updated);
+        ));
     };
 
-    // Toggle an entire row (all actions for a module)
     const toggleRow = (moduleIndex: number) => {
         const current = data.permissions[moduleIndex];
-        const allOn   = current.can_view && current.can_create && current.can_edit && current.can_delete;
-        const updated = data.permissions.map((p, i) =>
+        const allOn   = ACTION_KEYS.every(k => current[k]);
+        setData('permissions', data.permissions.map((p, i) =>
             i === moduleIndex
-                ? { ...p, can_view: !allOn, can_create: !allOn, can_edit: !allOn, can_delete: !allOn }
+                ? { ...p, can_view: !allOn, can_create: !allOn, can_edit: !allOn, can_delete: !allOn, can_publish: !allOn }
                 : p,
-        );
-        setData('permissions', updated);
+        ));
     };
 
-    // Toggle an entire column (all modules for one action)
     const toggleColumn = (key: keyof Omit<Permission, 'module'>) => {
         const allOn = data.permissions.every(p => p[key]);
-        const updated = data.permissions.map(p => ({ ...p, [key]: !allOn }));
-        setData('permissions', updated);
+        setData('permissions', data.permissions.map(p => ({ ...p, [key]: !allOn })));
+    };
+
+    const toggleGroup = (modules: string[]) => {
+        const groupPerms = data.permissions.filter(p => modules.includes(p.module));
+        const allOn      = groupPerms.every(p => ACTION_KEYS.every(k => p[k]));
+        setData('permissions', data.permissions.map(p =>
+            modules.includes(p.module)
+                ? { ...p, can_view: !allOn, can_create: !allOn, can_edit: !allOn, can_delete: !allOn, can_publish: !allOn }
+                : p,
+        ));
     };
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
         mode === 'create' ? post('/roles') : patch(`/roles/${defaultValues.id}`);
     };
-
-    const actionKeys: (keyof Omit<Permission, 'module'>)[] = [
-        'can_view', 'can_create', 'can_edit', 'can_delete',
-    ];
-    const actionLabels = ['View', 'Create', 'Edit', 'Delete'];
 
     return (
         <form onSubmit={submit} className="space-y-6">
@@ -160,7 +146,6 @@ export default function RoleForm({
                             autoFocus
                         />
                     </Field>
-
                     <Field label="Description" error={errors.description}>
                         <Textarea
                             value={data.description}
@@ -179,7 +164,7 @@ export default function RoleForm({
                         Permissions
                     </h2>
                     <p className="mt-0.5 text-xs text-muted-foreground">
-                        Click a column header to toggle all, or a row label to toggle the whole row.
+                        Click a column header to toggle all, a group label to toggle the group, or a row to toggle that module.
                     </p>
                 </div>
 
@@ -190,11 +175,12 @@ export default function RoleForm({
                                 <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                                     Module
                                 </th>
-                                {actionLabels.map((label, ci) => (
+                                {ACTION_LABELS.map((label, ci) => (
                                     <th
                                         key={label}
                                         className="cursor-pointer px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground"
-                                        onClick={() => toggleColumn(actionKeys[ci])}
+                                        onClick={() => toggleColumn(ACTION_KEYS[ci])}
+                                        title={`Toggle all ${label}`}
                                     >
                                         {label}
                                     </th>
@@ -202,31 +188,65 @@ export default function RoleForm({
                             </tr>
                         </thead>
                         <tbody className="divide-y">
-                            {data.permissions.map((perm, ri) => {
-                                const allOn = perm.can_view && perm.can_create && perm.can_edit && perm.can_delete;
+                            {MODULE_GROUPS.map(group => {
+                                const groupPerms  = data.permissions.filter(p => group.modules.includes(p.module));
+                                const groupAllOn  = groupPerms.every(p => ACTION_KEYS.every(k => p[k]));
+                                const groupSomeOn = groupPerms.some(p => ACTION_KEYS.some(k => p[k]));
+
                                 return (
-                                    <tr key={perm.module} className="transition-colors hover:bg-muted/20">
-                                        <td className="px-6 py-3">
-                                            <button
-                                                type="button"
-                                                onClick={() => toggleRow(ri)}
-                                                className={cn(
-                                                    'text-sm font-medium transition-colors hover:text-primary',
-                                                    allOn ? 'text-primary' : 'text-foreground',
-                                                )}
-                                            >
-                                                {perm.module}
-                                            </button>
-                                        </td>
-                                        {actionKeys.map(key => (
-                                            <td key={key} className="px-4 py-3 text-center">
-                                                <Checkbox
-                                                    checked={perm[key]}
-                                                    onCheckedChange={() => togglePermission(ri, key)}
-                                                />
+                                    <>
+                                        <tr key={`group-${group.label}`} className="bg-muted/50">
+                                            <td colSpan={ACTION_KEYS.length + 1} className="px-6 py-2">
+                                                <div className="flex items-center gap-3">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => toggleGroup(group.modules)}
+                                                        className={cn(
+                                                            'text-xs font-semibold uppercase tracking-wide transition-colors hover:text-primary',
+                                                            groupAllOn  ? 'text-primary' :
+                                                            groupSomeOn ? 'text-primary/60' :
+                                                            'text-muted-foreground',
+                                                        )}
+                                                    >
+                                                        {group.label}
+                                                    </button>
+                                                    <span className="text-xs text-muted-foreground">— click to toggle all</span>
+                                                </div>
                                             </td>
-                                        ))}
-                                    </tr>
+                                        </tr>
+
+                                        {group.modules.map(moduleName => {
+                                            const ri   = data.permissions.findIndex(p => p.module === moduleName);
+                                            const perm = data.permissions[ri];
+                                            if (!perm) return null;
+                                            const allOn = ACTION_KEYS.every(k => perm[k]);
+
+                                            return (
+                                                <tr key={perm.module} className="transition-colors hover:bg-muted/20">
+                                                    <td className="px-6 py-3 pl-10">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => toggleRow(ri)}
+                                                            className={cn(
+                                                                'text-sm font-medium transition-colors hover:text-primary',
+                                                                allOn ? 'text-primary' : 'text-foreground',
+                                                            )}
+                                                        >
+                                                            {perm.module}
+                                                        </button>
+                                                    </td>
+                                                    {ACTION_KEYS.map(key => (
+                                                        <td key={key} className="px-4 py-3 text-center">
+                                                            <Checkbox
+                                                                checked={perm[key]}
+                                                                onCheckedChange={() => togglePermission(ri, key)}
+                                                            />
+                                                        </td>
+                                                    ))}
+                                                </tr>
+                                            );
+                                        })}
+                                    </>
                                 );
                             })}
                         </tbody>
@@ -234,7 +254,7 @@ export default function RoleForm({
                 </div>
             </div>
 
-            {/* ── Submit ─────────────────────────────────────────────────── */}
+            {/* ── Submit ───────────────────────────────────────────────── */}
             <div className="flex justify-end gap-3">
                 <Button type="button" variant="outline" onClick={() => window.history.back()}>
                     Cancel

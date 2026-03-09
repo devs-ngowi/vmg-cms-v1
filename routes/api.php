@@ -105,7 +105,13 @@ Route::prefix('v1')->group(function () {
             'data'    => $request->user(),
         ]));
 
-        Route::apiResource('users', UserController::class);
+        Route::apiResource('users', UserController::class)->names([
+            'index'   => 'api.users.index',
+            'store'   => 'api.users.store',
+            'show'    => 'api.users.show',
+            'update'  => 'api.users.update',
+            'destroy' => 'api.users.destroy',
+        ]);
 
         // Blog writes
         Route::prefix('blog')->group(function () {

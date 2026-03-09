@@ -93,10 +93,10 @@ export default function Login() {
                             </Button>
                         </div>
 
-                        <div className="text-center text-sm text-muted-foreground">
+                        {/* <div className="text-center text-sm text-muted-foreground">
                             Don&apos;t have an account?{' '}
                             <TextLink href="/register">Sign up</TextLink>
-                        </div>
+                        </div> */}
                     </>
                 )}
             </Form>

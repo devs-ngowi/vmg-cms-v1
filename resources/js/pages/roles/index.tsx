@@ -23,6 +23,7 @@ import { DataTable, type ColumnDef } from '@/components/ui/data-table';
 import type { BreadcrumbItem } from '@/types';
 import { MoreHorizontal, Pencil, Plus, ShieldCheck, Trash2, Users } from 'lucide-react';
 import { useState } from 'react';
+import { usePermission } from '../../utils/permissions'; // ← added
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -37,7 +38,7 @@ type Role = {
 // ── Breadcrumbs ───────────────────────────────────────────────────────────────
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard', href: '/dashboard' },
+    { title: 'Dashboard',           href: '/dashboard' },
     { title: 'Roles & Permissions', href: '/roles' },
 ];
 
@@ -45,6 +46,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function RolesIndex({ roles }: { roles: Role[] }) {
     const [deleteTarget, setDeleteTarget] = useState<Role | null>(null);
+    const { canCreate, canEdit, canDelete } = usePermission(); // ← added
 
     const confirmDelete = () => {
         if (!deleteTarget) return;
@@ -97,11 +99,12 @@ export default function RolesIndex({ roles }: { roles: Role[] }) {
                 </span>
             ),
         },
-        {
-            key: 'actions',
+        // Only render the actions column if user has at least edit or delete
+        ...(canEdit('Roles') || canDelete('Roles') ? [{
+            key: 'actions' as const,
             header: '',
             className: 'w-10 text-right',
-            cell: (row) => (
+            cell: (row: Role) => (
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -110,25 +113,41 @@ export default function RolesIndex({ roles }: { roles: Role[] }) {
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-44">
-                        <DropdownMenuItem asChild>
-                            <Link href={`/roles/${row.id}/edit`} className="flex items-center gap-2">
-                                <Pencil className="h-3.5 w-3.5" />
-                                Edit
-                            </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                            className="flex cursor-pointer items-center gap-2 text-destructive focus:text-destructive"
-                            onClick={() => setDeleteTarget(row)}
-                            disabled={row.users_count > 0}
-                        >
-                            <Trash2 className="h-3.5 w-3.5" />
-                            {row.users_count > 0 ? 'Has users' : 'Delete'}
-                        </DropdownMenuItem>
+
+                        {/* Edit — only if canEdit */}
+                        {canEdit('Roles') && (
+                            <DropdownMenuItem asChild>
+                                <Link
+                                    href={`/roles/${row.id}/edit`}
+                                    className="flex items-center gap-2"
+                                >
+                                    <Pencil className="h-3.5 w-3.5" />
+                                    Edit
+                                </Link>
+                            </DropdownMenuItem>
+                        )}
+
+                        {/* Separator only if both actions are visible */}
+                        {canEdit('Roles') && canDelete('Roles') && (
+                            <DropdownMenuSeparator />
+                        )}
+
+                        {/* Delete — only if canDelete */}
+                        {canDelete('Roles') && (
+                            <DropdownMenuItem
+                                className="flex cursor-pointer items-center gap-2 text-destructive focus:text-destructive"
+                                onClick={() => setDeleteTarget(row)}
+                                disabled={row.users_count > 0}
+                            >
+                                <Trash2 className="h-3.5 w-3.5" />
+                                {row.users_count > 0 ? 'Has users' : 'Delete'}
+                            </DropdownMenuItem>
+                        )}
+
                     </DropdownMenuContent>
                 </DropdownMenu>
             ),
-        },
+        }] : []),
     ];
 
     return (
@@ -149,13 +168,16 @@ export default function RolesIndex({ roles }: { roles: Role[] }) {
                     searchPlaceholder="Search roles…"
                     searchKeys={['name', 'description']}
                     emptyMessage="No roles found."
+                    // Add Role button — only if canCreate
                     action={
-                        <Button asChild size="sm" className="gap-1.5">
-                            <Link href="/roles/create">
-                                <Plus className="h-4 w-4" />
-                                Add Role
-                            </Link>
-                        </Button>
+                        canCreate('Roles') ? (
+                            <Button asChild size="sm" className="gap-1.5">
+                                <Link href="/roles/create">
+                                    <Plus className="h-4 w-4" />
+                                    Add Role
+                                </Link>
+                            </Button>
+                        ) : undefined
                     }
                 />
             </div>

@@ -73,7 +73,7 @@ function SortIcon({ column, sort }: { column: string; sort: SortState }) {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function DataTable<T extends Record<string, unknown>>({
-    data,
+    data = [],
     columns,
     action,
     searchPlaceholder = 'Search…',

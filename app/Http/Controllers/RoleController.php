@@ -52,6 +52,7 @@ class RoleController extends Controller
             'permissions.*.can_create' => ['boolean'],
             'permissions.*.can_edit'   => ['boolean'],
             'permissions.*.can_delete' => ['boolean'],
+            'permissions.*.can_publish' => ['boolean'],
         ]);
 
         $role = Role::create([
@@ -69,14 +70,25 @@ class RoleController extends Controller
 
     // ── Edit ──────────────────────────────────────────────────────────────────
 
+    // ── Edit ──────────────────────────────────────────────────────────────────
+
     public function edit(Role $role): Response
     {
+        $role->load('permissions');
+
         return Inertia::render('roles/edit', [
             'role' => [
                 'id'          => $role->id,
                 'name'        => $role->name,
-                'description' => $role->description,
-                'permissions' => $role->permissions()->get(['module', 'can_view', 'can_create', 'can_edit', 'can_delete']),
+                'description' => $role->description ?? '',
+                'permissions' => $role->permissions->map(fn ($p) => [  // ← 'permissions' key was missing
+                    'module'      => $p->module,
+                    'can_view'    => (bool) $p->can_view,
+                    'can_create'  => (bool) $p->can_create,
+                    'can_edit'    => (bool) $p->can_edit,
+                    'can_delete'  => (bool) $p->can_delete,
+                    'can_publish' => (bool) $p->can_publish,
+                ])->toArray(),
             ],
         ]);
     }
@@ -94,6 +106,7 @@ class RoleController extends Controller
             'permissions.*.can_create' => ['boolean'],
             'permissions.*.can_edit'   => ['boolean'],
             'permissions.*.can_delete' => ['boolean'],
+            'permissions.*.can_publish' => ['boolean'],
         ]);
 
         $role->update([
