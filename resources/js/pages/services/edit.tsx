@@ -1,7 +1,8 @@
 import AppLayout from '@/layouts/app-layout';
-import { Head } from '@inertiajs/react';
+
 import type { BreadcrumbItem } from '@/types';
 import ServiceForm from './service-form';
+import { Head } from '@inertiajs/react';
 
 type Category  = { id: number; name: string; children?: Category[] };
 type Tag       = { id: number; name: string; slug: string };
@@ -75,7 +76,7 @@ export default function EditService({ service, categories, tags, media }: Props)
                     <div className="flex items-center gap-3">
                         {service.website_url && (
 
-                                href={service.website_url}
+                               <a href={service.website_url}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-sm text-muted-foreground underline-offset-4 hover:underline"
@@ -84,7 +85,7 @@ export default function EditService({ service, categories, tags, media }: Props)
                             </a>
                         )}
 
-                            href={`/main-services/${service.slug}`}
+                          <a  href={`/main-services/${service.slug}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-sm text-primary underline-offset-4 hover:underline"
