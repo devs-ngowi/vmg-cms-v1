@@ -28,9 +28,9 @@ type ServiceSubPackageFormData = {
     title:             string;
     short_description: string;
     description:       string;
-    website_url:       string;        // ← new
+    website_url:       string;
     features:          string[];
-    published_on_site: boolean;       // ← new
+    published_on_site: boolean;
 };
 
 type ServicePackageFormData = {
@@ -38,7 +38,9 @@ type ServicePackageFormData = {
     title:             string;
     short_description: string;
     description:       string;
+    website_url:       string;        // ← new
     features:          string[];
+    published_on_site: boolean;       // ← new
     sub_packages:      ServiceSubPackageFormData[];
 };
 
@@ -121,14 +123,42 @@ function Section({ title, children }: { title: string; children: React.ReactNode
     );
 }
 
+// ── Reusable publish-control row ──────────────────────────────────────────────
+
+function PublishRow({
+    id,
+    checked,
+    onChange,
+}: {
+    id: string;
+    checked: boolean;
+    onChange: (val: boolean) => void;
+}) {
+    return (
+        <div className="flex items-center justify-between rounded-md border bg-background px-3 py-2">
+            <div>
+                <p className="text-xs font-semibold">Published on Site</p>
+                <p className="text-xs text-muted-foreground">
+                    When off, this item is hidden from the public website.
+                </p>
+            </div>
+            <div className="flex items-center gap-2">
+                <Switch id={id} checked={checked} onCheckedChange={onChange} />
+                <Label
+                    htmlFor={id}
+                    className={cn('text-xs font-medium cursor-pointer', checked ? 'text-green-600' : 'text-muted-foreground')}
+                >
+                    {checked ? 'Live' : 'Hidden'}
+                </Label>
+            </div>
+        </div>
+    );
+}
+
 // ── Sub-Package Card ──────────────────────────────────────────────────────────
 
 function SubPackageCard({
-    sub,
-    subIdx,
-    pkgIdx,
-    onUpdate,
-    onRemove,
+    sub, subIdx, pkgIdx, onUpdate, onRemove,
 }: {
     sub:      ServiceSubPackageFormData;
     subIdx:   number;
@@ -140,16 +170,11 @@ function SubPackageCard({
 
     return (
         <div className="rounded-lg border border-dashed bg-muted/30 p-3 space-y-3">
-            {/* Header row */}
+            {/* Header */}
             <div className="flex items-center gap-2">
-                <button
-                    type="button"
-                    onClick={() => setExpanded(v => !v)}
-                    className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                    {expanded
-                        ? <ChevronDown className="h-4 w-4" />
-                        : <ChevronRight className="h-4 w-4" />}
+                <button type="button" onClick={() => setExpanded(v => !v)}
+                    className="text-muted-foreground hover:text-foreground transition-colors">
+                    {expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                 </button>
                 <Input
                     value={sub.title}
@@ -157,30 +182,22 @@ function SubPackageCard({
                     placeholder="Sub-package title (e.g. Starter, Professional)"
                     className="flex-1 h-8 text-sm"
                 />
-
-                {/* Published on site toggle — visible in header for quick access */}
+                {/* Quick toggle in header */}
                 <div className="flex items-center gap-1.5 shrink-0">
                     <Switch
                         checked={sub.published_on_site}
                         onCheckedChange={val => onUpdate(pkgIdx, subIdx, 'published_on_site', val)}
-                        id={`pub-${pkgIdx}-${subIdx}`}
+                        id={`sub-pub-${pkgIdx}-${subIdx}`}
                     />
-                    <Label
-                        htmlFor={`pub-${pkgIdx}-${subIdx}`}
-                        className={cn(
-                            'text-xs font-medium cursor-pointer',
-                            sub.published_on_site ? 'text-green-600' : 'text-muted-foreground',
-                        )}
-                    >
+                    <Label htmlFor={`sub-pub-${pkgIdx}-${subIdx}`}
+                        className={cn('text-xs font-medium cursor-pointer',
+                            sub.published_on_site ? 'text-green-600' : 'text-muted-foreground')}>
                         {sub.published_on_site ? 'Live' : 'Hidden'}
                     </Label>
                 </div>
-
-                <Button
-                    type="button" variant="ghost" size="sm"
+                <Button type="button" variant="ghost" size="sm"
                     onClick={() => onRemove(pkgIdx, subIdx)}
-                    className="text-destructive hover:text-destructive h-8 w-8 p-0 shrink-0"
-                >
+                    className="text-destructive hover:text-destructive h-8 w-8 p-0 shrink-0">
                     <Trash2 className="h-3.5 w-3.5" />
                 </Button>
             </div>
@@ -194,8 +211,7 @@ function SubPackageCard({
                             value={sub.short_description}
                             onChange={e => onUpdate(pkgIdx, subIdx, 'short_description', e.target.value)}
                             placeholder="Brief description shown on the card..."
-                            rows={2}
-                            className="text-sm"
+                            rows={2} className="text-sm"
                         />
                     </div>
 
@@ -210,10 +226,10 @@ function SubPackageCard({
                         />
                     </div>
 
-                    {/* ── Website URL ── */}
+                    {/* Website URL */}
                     <div>
                         <Label className="text-xs font-semibold mb-1.5 block">
-                            Sub-Package Website Link
+                            Website Link
                             <span className="ml-1.5 font-normal text-muted-foreground">(optional)</span>
                         </Label>
                         <div className="relative">
@@ -227,33 +243,21 @@ function SubPackageCard({
                             />
                         </div>
                         {sub.website_url && (
-                            <a
-                                href={sub.website_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="mt-1 text-xs text-primary underline-offset-4 hover:underline inline-flex items-center gap-1"
-                            >
-                                <ExternalLink className="h-3 w-3" />
-                                Preview link
+                            <a href={sub.website_url} target="_blank" rel="noopener noreferrer"
+                                className="mt-1 text-xs text-primary underline-offset-4 hover:underline inline-flex items-center gap-1">
+                                <ExternalLink className="h-3 w-3" /> Preview link
                             </a>
                         )}
                     </div>
 
-                    {/* ── Published on site (also here for clarity) ── */}
-                    <div className="flex items-center justify-between rounded-md border bg-background px-3 py-2">
-                        <div>
-                            <p className="text-xs font-semibold">Published on Site</p>
-                            <p className="text-xs text-muted-foreground">
-                                When off, this sub-package is hidden from the public website.
-                            </p>
-                        </div>
-                        <Switch
-                            checked={sub.published_on_site}
-                            onCheckedChange={val => onUpdate(pkgIdx, subIdx, 'published_on_site', val)}
-                        />
-                    </div>
+                    {/* Published on site */}
+                    <PublishRow
+                        id={`sub-pub-detail-${pkgIdx}-${subIdx}`}
+                        checked={sub.published_on_site}
+                        onChange={val => onUpdate(pkgIdx, subIdx, 'published_on_site', val)}
+                    />
 
-                    {/* ── Features ── */}
+                    {/* Features */}
                     <div>
                         <Label className="text-xs font-semibold mb-1.5 block">Features</Label>
                         <div className="space-y-1.5">
@@ -266,28 +270,20 @@ function SubPackageCard({
                                             features[fi] = e.target.value;
                                             onUpdate(pkgIdx, subIdx, 'features', features);
                                         }}
-                                        placeholder="Feature"
-                                        className="h-8 text-sm"
+                                        placeholder="Feature" className="h-8 text-sm"
                                     />
-                                    <Button
-                                        type="button" variant="ghost" size="sm"
-                                        onClick={() => {
-                                            onUpdate(pkgIdx, subIdx, 'features',
-                                                sub.features.filter((_, i) => i !== fi));
-                                        }}
-                                        className="h-8 w-8 p-0"
-                                    >
+                                    <Button type="button" variant="ghost" size="sm"
+                                        onClick={() => onUpdate(pkgIdx, subIdx, 'features',
+                                            sub.features.filter((_, i) => i !== fi))}
+                                        className="h-8 w-8 p-0">
                                         <X className="h-3.5 w-3.5" />
                                     </Button>
                                 </div>
                             ))}
-                            <Button
-                                type="button" variant="outline" size="sm"
+                            <Button type="button" variant="outline" size="sm"
                                 onClick={() => onUpdate(pkgIdx, subIdx, 'features', [...sub.features, ''])}
-                                className="gap-1.5 w-full h-8 text-xs"
-                            >
-                                <Plus className="h-3 w-3" />
-                                Add Feature
+                                className="gap-1.5 w-full h-8 text-xs">
+                                <Plus className="h-3 w-3" /> Add Feature
                             </Button>
                         </div>
                     </div>
@@ -309,10 +305,13 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
             features:          s.features          ?? [],
         }));
 
-    const normalisePackages = (pkgs?: ServicePackageFormData[]): ServicePackageFormData[] =>
+    const normalisePackages = (pkgs?: any[]): ServicePackageFormData[] =>
         (pkgs ?? []).map(p => ({
             ...p,
-            sub_packages: normaliseSubPackages(p.sub_packages),
+            website_url:       p.website_url       ?? '',
+            published_on_site: p.published_on_site ?? true,
+            features:          p.features          ?? [],
+            sub_packages:      normaliseSubPackages(p.sub_packages),
         }));
 
     const { data, setData, post, patch, processing, errors } = useForm<ServiceFormData>({
@@ -368,12 +367,13 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
 
     const updatePackages = (next: ServicePackageFormData[]) => setData('packages', next);
 
-    const addPackage = () => {
-        updatePackages([
-            ...data.packages,
-            { title: '', short_description: '', description: '', features: [], sub_packages: [] },
-        ]);
-    };
+    const addPackage = () => updatePackages([
+        ...data.packages,
+        {
+            title: '', short_description: '', description: '',
+            website_url: '', features: [], published_on_site: true, sub_packages: [],
+        },
+    ]);
 
     const removePackage = (idx: number) => updatePackages(data.packages.filter((_, i) => i !== idx));
 
@@ -383,18 +383,14 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
         updatePackages(next);
     };
 
-    const addFeature = (pkgIdx: number) =>
-        updatePackage(pkgIdx, 'features', [...(data.packages[pkgIdx].features ?? []), '']);
-
+    const addFeature    = (pkgIdx: number) => updatePackage(pkgIdx, 'features', [...(data.packages[pkgIdx].features ?? []), '']);
     const updateFeature = (pkgIdx: number, fi: number, value: string) => {
         const features = [...(data.packages[pkgIdx].features ?? [])];
         features[fi] = value;
         updatePackage(pkgIdx, 'features', features);
     };
-
     const removeFeature = (pkgIdx: number, fi: number) =>
-        updatePackage(pkgIdx, 'features',
-            (data.packages[pkgIdx].features ?? []).filter((_, i) => i !== fi));
+        updatePackage(pkgIdx, 'features', (data.packages[pkgIdx].features ?? []).filter((_, i) => i !== fi));
 
     // ── Sub-package helpers ───────────────────────────────────────────────────
 
@@ -404,21 +400,13 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
             ...next[pkgIdx],
             sub_packages: [
                 ...(next[pkgIdx].sub_packages ?? []),
-                {
-                    title: '', short_description: '', description: '',
-                    website_url: '', features: [], published_on_site: true,
-                },
+                { title: '', short_description: '', description: '', website_url: '', features: [], published_on_site: true },
             ],
         };
         updatePackages(next);
     };
 
-    const updateSubPackage = (
-        pkgIdx: number,
-        subIdx: number,
-        field: keyof ServiceSubPackageFormData,
-        value: any,
-    ) => {
+    const updateSubPackage = (pkgIdx: number, subIdx: number, field: keyof ServiceSubPackageFormData, value: any) => {
         const next = [...data.packages];
         const subs = [...(next[pkgIdx].sub_packages ?? [])];
         subs[subIdx] = { ...subs[subIdx], [field]: value };
@@ -454,71 +442,47 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
     return (
         <form onSubmit={submit} className="grid gap-6 lg:grid-cols-3">
 
-            {/* ── Left: main content ────────────────────────────────────── */}
+            {/* ── Left ─────────────────────────────────────────────────── */}
             <div className="space-y-6 lg:col-span-2">
 
-                {/* Service Details */}
                 <Section title="Service Details">
                     <div className="grid gap-4">
                         <Field label="Service Title" required error={getFirstError('title')}>
-                            <Input
-                                value={data.title}
-                                onChange={e => handleTitleChange(e.target.value)}
-                                placeholder="e.g. Human Resource Management"
-                                autoFocus
-                                className={cn(errors.title && 'border-destructive')}
-                            />
+                            <Input value={data.title} onChange={e => handleTitleChange(e.target.value)}
+                                placeholder="e.g. Human Resource Management" autoFocus
+                                className={cn(errors.title && 'border-destructive')} />
                         </Field>
 
                         <div className="grid gap-4 sm:grid-cols-2">
                             <Field label="URL Slug" required error={getFirstError('slug')} hint="vmg.co.tz/services/your-slug">
                                 <div className="flex items-center rounded-md border bg-muted/30 px-3 text-sm text-muted-foreground">
                                     <span className="pr-1 shrink-0">/services/</span>
-                                    <input
-                                        value={data.slug}
-                                        onChange={e => setData('slug', e.target.value)}
+                                    <input value={data.slug} onChange={e => setData('slug', e.target.value)}
                                         placeholder="human-resource-management"
-                                        className="w-full bg-transparent py-2 outline-none"
-                                    />
+                                        className="w-full bg-transparent py-2 outline-none" />
                                 </div>
                             </Field>
-
                             <Field label="Order Number" error={getFirstError('order_number')} hint="Display order on listing page">
-                                <Input
-                                    type="number"
-                                    value={data.order_number}
-                                    onChange={e => setData('order_number', e.target.value)}
-                                    min="0"
-                                />
+                                <Input type="number" value={data.order_number}
+                                    onChange={e => setData('order_number', e.target.value)} min="0" />
                             </Field>
                         </div>
 
-                        <Field
-                            label="Short Description" required
-                            error={getFirstError('short_description')}
-                            hint="Brief summary (shows in listings) - max 500 characters"
-                        >
-                            <Textarea
-                                value={data.short_description}
+                        <Field label="Short Description" required error={getFirstError('short_description')}
+                            hint="Brief summary (shows in listings) - max 500 characters">
+                            <Textarea value={data.short_description}
                                 onChange={e => setData('short_description', e.target.value)}
-                                placeholder="A short, compelling description..."
-                                rows={2}
-                                maxLength={500}
-                                className={cn(errors.short_description && 'border-destructive')}
-                            />
+                                placeholder="A short, compelling description..." rows={2} maxLength={500}
+                                className={cn(errors.short_description && 'border-destructive')} />
                             <p className="text-xs text-muted-foreground">{data.short_description.length}/500 characters</p>
                         </Field>
 
-                        <Field
-                            label="Service Description" required
-                            error={getFirstError('description')}
-                            hint="Overview/introduction of the service (HTML supported)."
-                        >
+                        <Field label="Service Description" required error={getFirstError('description')}
+                            hint="Overview/introduction of the service (HTML supported).">
                             <RichTextEditor value={data.description} onChange={v => setData('description', v)} />
                             {!data.description && (
                                 <p className="text-xs text-destructive flex items-center gap-1">
-                                    <AlertCircle className="h-3 w-3" />
-                                    Please provide a service description
+                                    <AlertCircle className="h-3 w-3" /> Please provide a service description
                                 </p>
                             )}
                         </Field>
@@ -536,8 +500,7 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
                         <div className="rounded-lg border border-dashed p-4 text-center">
                             <p className="text-sm text-muted-foreground mb-3">No packages yet.</p>
                             <Button type="button" variant="outline" size="sm" onClick={addPackage} className="gap-1.5">
-                                <Plus className="h-3.5 w-3.5" />
-                                Add Package
+                                <Plus className="h-3.5 w-3.5" /> Add Package
                             </Button>
                         </div>
                     ) : (
@@ -545,35 +508,43 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
                             {data.packages.map((pkg, pkgIdx) => (
                                 <div key={pkgIdx} className="rounded-lg border p-4 space-y-4">
 
-                                    {/* Package title + remove */}
-                                    <div className="flex items-start justify-between gap-4">
-                                        <div className="flex-1">
-                                            <Input
-                                                value={pkg.title}
-                                                onChange={e => updatePackage(pkgIdx, 'title', e.target.value)}
-                                                placeholder="Package title (e.g. HR Compliance & Foundation Package)"
-                                                className="font-semibold"
+                                    {/* Title row + quick toggles */}
+                                    <div className="flex items-center gap-3">
+                                        <Input
+                                            value={pkg.title}
+                                            onChange={e => updatePackage(pkgIdx, 'title', e.target.value)}
+                                            placeholder="Package title (e.g. HR Compliance & Foundation Package)"
+                                            className="font-semibold flex-1"
+                                        />
+                                        {/* Quick published toggle */}
+                                        <div className="flex items-center gap-1.5 shrink-0">
+                                            <Switch
+                                                checked={pkg.published_on_site}
+                                                onCheckedChange={val => updatePackage(pkgIdx, 'published_on_site', val)}
+                                                id={`pkg-pub-${pkgIdx}`}
                                             />
+                                            <Label htmlFor={`pkg-pub-${pkgIdx}`}
+                                                className={cn('text-xs font-medium cursor-pointer',
+                                                    pkg.published_on_site ? 'text-green-600' : 'text-muted-foreground')}>
+                                                {pkg.published_on_site ? 'Live' : 'Hidden'}
+                                            </Label>
                                         </div>
-                                        <Button
-                                            type="button" variant="ghost" size="sm"
+                                        <Button type="button" variant="ghost" size="sm"
                                             onClick={() => removePackage(pkgIdx)}
-                                            className="text-destructive hover:text-destructive"
-                                        >
+                                            className="text-destructive hover:text-destructive h-9 w-9 p-0 shrink-0">
                                             <Trash2 className="h-4 w-4" />
                                         </Button>
                                     </div>
 
+                                    {/* Card Description */}
                                     <div>
                                         <Label className="text-xs font-semibold mb-2 block">Card Description</Label>
-                                        <Textarea
-                                            value={pkg.short_description}
+                                        <Textarea value={pkg.short_description}
                                             onChange={e => updatePackage(pkgIdx, 'short_description', e.target.value)}
-                                            placeholder="Brief description that appears in the card..."
-                                            rows={2}
-                                        />
+                                            placeholder="Brief description that appears in the card..." rows={2} />
                                     </div>
 
+                                    {/* Full Description */}
                                     <div>
                                         <Label className="text-xs font-semibold mb-2 block">
                                             Full Description
@@ -585,17 +556,46 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
                                         />
                                     </div>
 
+                                    {/* ── Website URL (package) ── */}
+                                    <div>
+                                        <Label className="text-xs font-semibold mb-2 block">
+                                            Package Website Link
+                                            <span className="ml-1.5 font-normal text-muted-foreground">(optional)</span>
+                                        </Label>
+                                        <div className="relative">
+                                            <ExternalLink className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+                                            <Input
+                                                value={pkg.website_url}
+                                                onChange={e => updatePackage(pkgIdx, 'website_url', e.target.value)}
+                                                placeholder="https://example.com"
+                                                type="url"
+                                                className="pl-9"
+                                            />
+                                        </div>
+                                        {pkg.website_url && (
+                                            <a href={pkg.website_url} target="_blank" rel="noopener noreferrer"
+                                                className="mt-1 text-xs text-primary underline-offset-4 hover:underline inline-flex items-center gap-1">
+                                                <ExternalLink className="h-3 w-3" /> Preview link
+                                            </a>
+                                        )}
+                                    </div>
+
+                                    {/* ── Published on site (package) ── */}
+                                    <PublishRow
+                                        id={`pkg-pub-detail-${pkgIdx}`}
+                                        checked={pkg.published_on_site}
+                                        onChange={val => updatePackage(pkgIdx, 'published_on_site', val)}
+                                    />
+
+                                    {/* Features */}
                                     <div>
                                         <Label className="text-xs font-semibold mb-2 block">Features</Label>
                                         <div className="space-y-2">
                                             {pkg.features?.map((feature, fi) => (
                                                 <div key={fi} className="flex gap-2">
-                                                    <Input
-                                                        value={feature}
+                                                    <Input value={feature}
                                                         onChange={e => updateFeature(pkgIdx, fi, e.target.value)}
-                                                        placeholder="Feature name"
-                                                        className="text-sm"
-                                                    />
+                                                        placeholder="Feature name" className="text-sm" />
                                                     <Button type="button" variant="ghost" size="sm"
                                                         onClick={() => removeFeature(pkgIdx, fi)}>
                                                         <X className="h-4 w-4" />
@@ -604,8 +604,7 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
                                             ))}
                                             <Button type="button" variant="outline" size="sm"
                                                 onClick={() => addFeature(pkgIdx)} className="gap-1.5 w-full">
-                                                <Plus className="h-3.5 w-3.5" />
-                                                Add Feature
+                                                <Plus className="h-3.5 w-3.5" /> Add Feature
                                             </Button>
                                         </div>
                                     </div>
@@ -623,13 +622,10 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
                                                     </Badge>
                                                 )}
                                             </div>
-                                            <Button
-                                                type="button" variant="outline" size="sm"
+                                            <Button type="button" variant="outline" size="sm"
                                                 onClick={() => addSubPackage(pkgIdx)}
-                                                className="gap-1.5 h-7 text-xs"
-                                            >
-                                                <Plus className="h-3 w-3" />
-                                                Add Sub-Package
+                                                className="gap-1.5 h-7 text-xs">
+                                                <Plus className="h-3 w-3" /> Add Sub-Package
                                             </Button>
                                         </div>
 
@@ -642,9 +638,7 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
                                                 {pkg.sub_packages!.map((sub, subIdx) => (
                                                     <SubPackageCard
                                                         key={subIdx}
-                                                        sub={sub}
-                                                        subIdx={subIdx}
-                                                        pkgIdx={pkgIdx}
+                                                        sub={sub} subIdx={subIdx} pkgIdx={pkgIdx}
                                                         onUpdate={updateSubPackage}
                                                         onRemove={removeSubPackage}
                                                     />
@@ -657,15 +651,14 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
                             ))}
 
                             <Button type="button" variant="outline" onClick={addPackage} className="w-full gap-1.5">
-                                <Plus className="h-4 w-4" />
-                                Add Another Package
+                                <Plus className="h-4 w-4" /> Add Another Package
                             </Button>
                         </div>
                     )}
                 </Section>
             </div>
 
-            {/* ── Right: sidebar ────────────────────────────────────────── */}
+            {/* ── Right sidebar ─────────────────────────────────────────── */}
             <div className="space-y-6">
 
                 <Section title="Publish">
@@ -685,33 +678,20 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
                         </Field>
 
                         <Field label="Icon" error={getFirstError('icon')} hint="Emoji or icon class (e.g. 🏢 or fa-users)">
-                            <Input
-                                value={data.icon}
-                                onChange={e => setData('icon', e.target.value)}
-                                placeholder="🏢"
-                            />
+                            <Input value={data.icon} onChange={e => setData('icon', e.target.value)} placeholder="🏢" />
                         </Field>
 
                         <Field label="Service Website URL" error={getFirstError('website_url')} hint="External website (optional)">
                             <div className="relative">
                                 <ExternalLink className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
-                                <Input
-                                    value={data.website_url}
-                                    onChange={e => setData('website_url', e.target.value)}
-                                    placeholder="https://example.com"
-                                    type="url"
-                                    className={cn('pl-9', errors.website_url && 'border-destructive')}
-                                />
+                                <Input value={data.website_url} onChange={e => setData('website_url', e.target.value)}
+                                    placeholder="https://example.com" type="url"
+                                    className={cn('pl-9', errors.website_url && 'border-destructive')} />
                             </div>
                             {data.website_url && (
-                                <a
-                                    href={data.website_url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-xs text-primary underline-offset-4 hover:underline inline-flex items-center gap-1"
-                                >
-                                    <ExternalLink className="h-3 w-3" />
-                                    Preview link
+                                <a href={data.website_url} target="_blank" rel="noopener noreferrer"
+                                    className="text-xs text-primary underline-offset-4 hover:underline inline-flex items-center gap-1">
+                                    <ExternalLink className="h-3 w-3" /> Preview link
                                 </a>
                             )}
                         </Field>
@@ -719,13 +699,9 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
 
                     <div className="mt-4 flex gap-2">
                         <Button type="button" variant="outline" className="flex-1"
-                            onClick={() => window.history.back()}>
-                            Cancel
-                        </Button>
+                            onClick={() => window.history.back()}>Cancel</Button>
                         <Button type="submit" disabled={processing} className="flex-1 gap-2">
-                            {processing
-                                ? <Loader2 className="h-4 w-4 animate-spin" />
-                                : <Save className="h-4 w-4" />}
+                            {processing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                             {mode === 'create' ? 'Create' : 'Update'}
                         </Button>
                     </div>
@@ -735,39 +711,26 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
                 <Section title="Featured Image">
                     {selectedImage && (
                         <div className="mb-3 relative">
-                            <img
-                                src={`/storage/${selectedImage.filename}`}
+                            <img src={`/storage/${selectedImage.filename}`}
                                 alt={selectedImage.alt_text ?? selectedImage.original_name}
-                                className="w-full rounded-lg object-cover"
-                                style={{ maxHeight: 140 }}
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setData('image_id', '')}
-                                className="absolute right-2 top-2 rounded-full bg-black/50 p-1 text-white hover:bg-black/70"
-                            >
+                                className="w-full rounded-lg object-cover" style={{ maxHeight: 140 }} />
+                            <button type="button" onClick={() => setData('image_id', '')}
+                                className="absolute right-2 top-2 rounded-full bg-black/50 p-1 text-white hover:bg-black/70">
                                 <X className="h-3 w-3" />
                             </button>
                         </div>
                     )}
                     <div className="max-h-48 overflow-y-auto space-y-1">
                         {media.filter(m => m.mime_type.startsWith('image/')).map(m => (
-                            <label key={m.id}
-                                className={cn(
-                                    'flex cursor-pointer items-center gap-2 rounded-lg border p-2 transition-colors',
-                                    data.image_id === String(m.id) ? 'border-primary bg-primary/5' : 'hover:bg-muted/50',
-                                )}>
-                                <input
-                                    type="radio" name="image_id" value={m.id}
+                            <label key={m.id} className={cn(
+                                'flex cursor-pointer items-center gap-2 rounded-lg border p-2 transition-colors',
+                                data.image_id === String(m.id) ? 'border-primary bg-primary/5' : 'hover:bg-muted/50')}>
+                                <input type="radio" name="image_id" value={m.id}
                                     checked={data.image_id === String(m.id)}
                                     onChange={() => setData('image_id', String(m.id))}
-                                    className="accent-primary"
-                                />
-                                <img
-                                    src={`/storage/${m.filename}`}
-                                    alt={m.alt_text ?? m.original_name}
-                                    className="h-8 w-8 rounded object-cover"
-                                />
+                                    className="accent-primary" />
+                                <img src={`/storage/${m.filename}`} alt={m.alt_text ?? m.original_name}
+                                    className="h-8 w-8 rounded object-cover" />
                                 <span className="min-w-0 truncate text-xs">{m.original_name}</span>
                             </label>
                         ))}
@@ -786,16 +749,10 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
                         const logo = media.find(m => String(m.id) === data.website_logo_id);
                         return logo ? (
                             <div className="mb-3 relative inline-block">
-                                <img
-                                    src={`/storage/${logo.filename}`}
-                                    alt={logo.alt_text ?? logo.original_name}
-                                    className="h-14 rounded-lg object-contain border p-1 bg-white"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setData('website_logo_id', '')}
-                                    className="absolute -right-2 -top-2 rounded-full bg-black/50 p-1 text-white hover:bg-black/70"
-                                >
+                                <img src={`/storage/${logo.filename}`} alt={logo.alt_text ?? logo.original_name}
+                                    className="h-14 rounded-lg object-contain border p-1 bg-white" />
+                                <button type="button" onClick={() => setData('website_logo_id', '')}
+                                    className="absolute -right-2 -top-2 rounded-full bg-black/50 p-1 text-white hover:bg-black/70">
                                     <X className="h-3 w-3" />
                                 </button>
                             </div>
@@ -803,22 +760,15 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
                     })()}
                     <div className="max-h-40 overflow-y-auto space-y-1">
                         {media.filter(m => m.mime_type.startsWith('image/')).map(m => (
-                            <label key={m.id}
-                                className={cn(
-                                    'flex cursor-pointer items-center gap-2 rounded-lg border p-2 transition-colors',
-                                    data.website_logo_id === String(m.id) ? 'border-primary bg-primary/5' : 'hover:bg-muted/50',
-                                )}>
-                                <input
-                                    type="radio" name="website_logo_id" value={m.id}
+                            <label key={m.id} className={cn(
+                                'flex cursor-pointer items-center gap-2 rounded-lg border p-2 transition-colors',
+                                data.website_logo_id === String(m.id) ? 'border-primary bg-primary/5' : 'hover:bg-muted/50')}>
+                                <input type="radio" name="website_logo_id" value={m.id}
                                     checked={data.website_logo_id === String(m.id)}
                                     onChange={() => setData('website_logo_id', String(m.id))}
-                                    className="accent-primary"
-                                />
-                                <img
-                                    src={`/storage/${m.filename}`}
-                                    alt={m.alt_text ?? m.original_name}
-                                    className="h-8 w-8 rounded object-contain bg-muted p-0.5"
-                                />
+                                    className="accent-primary" />
+                                <img src={`/storage/${m.filename}`} alt={m.alt_text ?? m.original_name}
+                                    className="h-8 w-8 rounded object-contain bg-muted p-0.5" />
                                 <span className="min-w-0 truncate text-xs">{m.original_name}</span>
                             </label>
                         ))}
@@ -850,10 +800,8 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
                         {tags.map(tag => (
                             <label key={tag.id}
                                 className="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 hover:bg-muted/50">
-                                <Checkbox
-                                    checked={data.tag_ids.includes(tag.id)}
-                                    onCheckedChange={() => toggleId('tag_ids', tag.id)}
-                                />
+                                <Checkbox checked={data.tag_ids.includes(tag.id)}
+                                    onCheckedChange={() => toggleId('tag_ids', tag.id)} />
                                 <span className="text-sm">{tag.name}</span>
                             </label>
                         ))}
@@ -869,21 +817,14 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
                                 const isImage  = m.mime_type.startsWith('image/');
                                 const selected = data.media_ids.includes(m.id);
                                 return (
-                                    <label key={m.id}
-                                        className={cn(
-                                            'flex cursor-pointer items-center gap-2 rounded-lg border p-2 transition-colors',
-                                            selected ? 'border-primary bg-primary/5' : 'hover:bg-muted/50',
-                                        )}>
-                                        <Checkbox
-                                            checked={selected}
-                                            onCheckedChange={() => toggleId('media_ids', m.id)}
-                                        />
+                                    <label key={m.id} className={cn(
+                                        'flex cursor-pointer items-center gap-2 rounded-lg border p-2 transition-colors',
+                                        selected ? 'border-primary bg-primary/5' : 'hover:bg-muted/50')}>
+                                        <Checkbox checked={selected}
+                                            onCheckedChange={() => toggleId('media_ids', m.id)} />
                                         {isImage && (
-                                            <img
-                                                src={`/storage/${m.filename}`}
-                                                alt={m.alt_text ?? m.original_name}
-                                                className="h-8 w-8 rounded object-cover"
-                                            />
+                                            <img src={`/storage/${m.filename}`} alt={m.alt_text ?? m.original_name}
+                                                className="h-8 w-8 rounded object-cover" />
                                         )}
                                         <span className="min-w-0 truncate text-xs">{m.original_name}</span>
                                     </label>

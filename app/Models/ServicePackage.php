@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,34 +15,33 @@ class ServicePackage extends Model
         'slug',
         'short_description',
         'description',
+        'website_url',          // ← new
         'features',
         'order_number',
         'status',
+        'published_on_site',    // ← new
     ];
 
     protected $casts = [
-        'features' => 'array',
+        'features'          => 'array',
+        'published_on_site' => 'boolean',
     ];
-
-    // ── Relationships ──────────────────────────────────────────────────────────
 
     public function service()
     {
         return $this->belongsTo(Service::class);
     }
 
-    /** Published sub-packages only (for public API) */
     public function subPackages()
     {
-        return $this->hasMany(ServiceSubPackage::class)
-                    ->where('status', 'published')
-                    ->orderBy('order_number');
+        return $this->hasMany(ServiceSubPackage::class, 'service_package_id')
+            ->where('status', 'published')
+            ->orderBy('order_number');
     }
 
-    /** All sub-packages (for admin) */
     public function allSubPackages()
     {
-        return $this->hasMany(ServiceSubPackage::class)
-                    ->orderBy('order_number');
+        return $this->hasMany(ServiceSubPackage::class, 'service_package_id')
+            ->orderBy('order_number');
     }
 }
