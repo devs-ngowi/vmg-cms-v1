@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,13 +15,16 @@ class ServiceSubPackage extends Model
         'slug',
         'short_description',
         'description',
+        'website_url',          // ← new
         'features',
         'order_number',
         'status',
+        'published_on_site',    // ← new
     ];
 
     protected $casts = [
-        'features' => 'array',
+        'features'          => 'array',
+        'published_on_site' => 'boolean',
     ];
 
     public function package()

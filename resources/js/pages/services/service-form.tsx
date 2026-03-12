@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
 import {
     Loader2, Save, X, Plus, Trash2, AlertCircle,
     ExternalLink, ChevronDown, ChevronRight, Layers,
@@ -27,7 +28,9 @@ type ServiceSubPackageFormData = {
     title:             string;
     short_description: string;
     description:       string;
+    website_url:       string;        // ← new
     features:          string[];
+    published_on_site: boolean;       // ← new
 };
 
 type ServicePackageFormData = {
@@ -36,7 +39,7 @@ type ServicePackageFormData = {
     short_description: string;
     description:       string;
     features:          string[];
-    sub_packages:      ServiceSubPackageFormData[];   // ✅ optional array
+    sub_packages:      ServiceSubPackageFormData[];
 };
 
 type ServiceFormData = {
@@ -118,7 +121,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
     );
 }
 
-// ── Sub-Package Row ───────────────────────────────────────────────────────────
+// ── Sub-Package Card ──────────────────────────────────────────────────────────
 
 function SubPackageCard({
     sub,
@@ -151,9 +154,28 @@ function SubPackageCard({
                 <Input
                     value={sub.title}
                     onChange={e => onUpdate(pkgIdx, subIdx, 'title', e.target.value)}
-                    placeholder={`Sub-package title (e.g. Starter, Professional)`}
+                    placeholder="Sub-package title (e.g. Starter, Professional)"
                     className="flex-1 h-8 text-sm"
                 />
+
+                {/* Published on site toggle — visible in header for quick access */}
+                <div className="flex items-center gap-1.5 shrink-0">
+                    <Switch
+                        checked={sub.published_on_site}
+                        onCheckedChange={val => onUpdate(pkgIdx, subIdx, 'published_on_site', val)}
+                        id={`pub-${pkgIdx}-${subIdx}`}
+                    />
+                    <Label
+                        htmlFor={`pub-${pkgIdx}-${subIdx}`}
+                        className={cn(
+                            'text-xs font-medium cursor-pointer',
+                            sub.published_on_site ? 'text-green-600' : 'text-muted-foreground',
+                        )}
+                    >
+                        {sub.published_on_site ? 'Live' : 'Hidden'}
+                    </Label>
+                </div>
+
                 <Button
                     type="button" variant="ghost" size="sm"
                     onClick={() => onRemove(pkgIdx, subIdx)}
@@ -188,6 +210,50 @@ function SubPackageCard({
                         />
                     </div>
 
+                    {/* ── Website URL ── */}
+                    <div>
+                        <Label className="text-xs font-semibold mb-1.5 block">
+                            Sub-Package Website Link
+                            <span className="ml-1.5 font-normal text-muted-foreground">(optional)</span>
+                        </Label>
+                        <div className="relative">
+                            <ExternalLink className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+                            <Input
+                                value={sub.website_url}
+                                onChange={e => onUpdate(pkgIdx, subIdx, 'website_url', e.target.value)}
+                                placeholder="https://example.com"
+                                type="url"
+                                className="pl-9 text-sm"
+                            />
+                        </div>
+                        {sub.website_url && (
+                            <a
+                                href={sub.website_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="mt-1 text-xs text-primary underline-offset-4 hover:underline inline-flex items-center gap-1"
+                            >
+                                <ExternalLink className="h-3 w-3" />
+                                Preview link
+                            </a>
+                        )}
+                    </div>
+
+                    {/* ── Published on site (also here for clarity) ── */}
+                    <div className="flex items-center justify-between rounded-md border bg-background px-3 py-2">
+                        <div>
+                            <p className="text-xs font-semibold">Published on Site</p>
+                            <p className="text-xs text-muted-foreground">
+                                When off, this sub-package is hidden from the public website.
+                            </p>
+                        </div>
+                        <Switch
+                            checked={sub.published_on_site}
+                            onCheckedChange={val => onUpdate(pkgIdx, subIdx, 'published_on_site', val)}
+                        />
+                    </div>
+
+                    {/* ── Features ── */}
                     <div>
                         <Label className="text-xs font-semibold mb-1.5 block">Features</Label>
                         <div className="space-y-1.5">
@@ -235,8 +301,19 @@ function SubPackageCard({
 
 export default function ServiceForm({ mode, categories, tags, media, defaultValues = {} }: Props) {
 
+    const normaliseSubPackages = (subs?: any[]): ServiceSubPackageFormData[] =>
+        (subs ?? []).map(s => ({
+            ...s,
+            website_url:       s.website_url       ?? '',
+            published_on_site: s.published_on_site ?? true,
+            features:          s.features          ?? [],
+        }));
+
     const normalisePackages = (pkgs?: ServicePackageFormData[]): ServicePackageFormData[] =>
-        (pkgs ?? []).map(p => ({ ...p, sub_packages: p.sub_packages ?? [] }));
+        (pkgs ?? []).map(p => ({
+            ...p,
+            sub_packages: normaliseSubPackages(p.sub_packages),
+        }));
 
     const { data, setData, post, patch, processing, errors } = useForm<ServiceFormData>({
         title:             defaultValues.title             ?? '',
@@ -298,9 +375,7 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
         ]);
     };
 
-    const removePackage = (idx: number) => {
-        updatePackages(data.packages.filter((_, i) => i !== idx));
-    };
+    const removePackage = (idx: number) => updatePackages(data.packages.filter((_, i) => i !== idx));
 
     const updatePackage = (idx: number, field: keyof ServicePackageFormData, value: any) => {
         const next = [...data.packages];
@@ -308,9 +383,8 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
         updatePackages(next);
     };
 
-    const addFeature = (pkgIdx: number) => {
+    const addFeature = (pkgIdx: number) =>
         updatePackage(pkgIdx, 'features', [...(data.packages[pkgIdx].features ?? []), '']);
-    };
 
     const updateFeature = (pkgIdx: number, fi: number, value: string) => {
         const features = [...(data.packages[pkgIdx].features ?? [])];
@@ -318,10 +392,9 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
         updatePackage(pkgIdx, 'features', features);
     };
 
-    const removeFeature = (pkgIdx: number, fi: number) => {
+    const removeFeature = (pkgIdx: number, fi: number) =>
         updatePackage(pkgIdx, 'features',
             (data.packages[pkgIdx].features ?? []).filter((_, i) => i !== fi));
-    };
 
     // ── Sub-package helpers ───────────────────────────────────────────────────
 
@@ -331,7 +404,10 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
             ...next[pkgIdx],
             sub_packages: [
                 ...(next[pkgIdx].sub_packages ?? []),
-                { title: '', short_description: '', description: '', features: [] },
+                {
+                    title: '', short_description: '', description: '',
+                    website_url: '', features: [], published_on_site: true,
+                },
             ],
         };
         updatePackages(next);
@@ -488,7 +564,6 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
                                         </Button>
                                     </div>
 
-                                    {/* Card Description */}
                                     <div>
                                         <Label className="text-xs font-semibold mb-2 block">Card Description</Label>
                                         <Textarea
@@ -499,7 +574,6 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
                                         />
                                     </div>
 
-                                    {/* Full Description */}
                                     <div>
                                         <Label className="text-xs font-semibold mb-2 block">
                                             Full Description
@@ -511,7 +585,6 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
                                         />
                                     </div>
 
-                                    {/* Features */}
                                     <div>
                                         <Label className="text-xs font-semibold mb-2 block">Features</Label>
                                         <div className="space-y-2">
@@ -537,14 +610,12 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
                                         </div>
                                     </div>
 
-                                    {/* ── Sub-packages (optional) ───────────────────── */}
+                                    {/* ── Sub-packages ─────────────────────── */}
                                     <div className="border-t pt-4">
                                         <div className="flex items-center justify-between mb-3">
                                             <div className="flex items-center gap-2">
                                                 <Layers className="h-3.5 w-3.5 text-muted-foreground" />
-                                                <span className="text-xs font-semibold">
-                                                    Sub-Packages
-                                                </span>
+                                                <span className="text-xs font-semibold">Sub-Packages</span>
                                                 <span className="text-xs text-muted-foreground">(optional)</span>
                                                 {(pkg.sub_packages?.length ?? 0) > 0 && (
                                                     <Badge variant="secondary" className="text-xs h-5 px-1.5">
@@ -597,7 +668,6 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
             {/* ── Right: sidebar ────────────────────────────────────────── */}
             <div className="space-y-6">
 
-                {/* Publish */}
                 <Section title="Publish">
                     <div className="grid gap-4">
                         <Field label="Status" required error={getFirstError('status')}>
@@ -634,10 +704,11 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
                                 />
                             </div>
                             {data.website_url && (
-                              <a href={data.website_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-xs text-primary underline-offset-4 hover:underline inline-flex items-center gap-1"
+                                <a
+                                    href={data.website_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-xs text-primary underline-offset-4 hover:underline inline-flex items-center gap-1"
                                 >
                                     <ExternalLink className="h-3 w-3" />
                                     Preview link
