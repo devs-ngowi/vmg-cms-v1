@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\Media;
 use App\Models\Service;
 use App\Models\ServicePackage;
+use App\Models\ServiceSubPackage;
 use App\Models\Tag;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -32,6 +33,20 @@ class ServiceController extends Controller
         ];
     }
 
+    private function formatSubPackage(ServiceSubPackage $sp): array
+    {
+        return [
+            'id'                => $sp->id,
+            'title'             => $sp->title,
+            'slug'              => $sp->slug,
+            'short_description' => $sp->short_description,
+            'description'       => $sp->description,
+            'features'          => $sp->features ?? [],
+            'order_number'      => $sp->order_number,
+            'status'            => $sp->status,
+        ];
+    }
+
     private function formatPackage(ServicePackage $package): array
     {
         return [
@@ -43,6 +58,9 @@ class ServiceController extends Controller
             'features'          => $package->features ?? [],
             'order_number'      => $package->order_number,
             'status'            => $package->status,
+            'sub_packages'      => $package->subPackages
+                ->map(fn (ServiceSubPackage $sp) => $this->formatSubPackage($sp))
+                ->values(),
         ];
     }
 
@@ -56,7 +74,7 @@ class ServiceController extends Controller
             'description'       => $service->description,
             'icon'              => $service->icon,
             'website_url'       => $service->website_url,
-            'website_logo'      => $service->websiteLogo   // ✅ NEW
+            'website_logo'      => $service->websiteLogo
                 ? [
                     'id'       => $service->websiteLogo->id,
                     'url'      => url(Storage::url($service->websiteLogo->filename)),
@@ -73,7 +91,9 @@ class ServiceController extends Controller
                     'alt_text' => $service->image->alt_text,
                 ]
                 : null,
-            'packages'          => $service->packages->map(fn (ServicePackage $p) => $this->formatPackage($p)),
+            'packages'          => $service->packages
+                ->map(fn (ServicePackage $p) => $this->formatPackage($p))
+                ->values(),
             'categories'        => $service->categories->pluck('name'),
             'tags'              => $service->tags->pluck('name'),
             'workflow_step'     => $service->latestWorkflowStep(),
@@ -85,7 +105,13 @@ class ServiceController extends Controller
 
     public function index(Request $request)
     {
-        $services = Service::with(['image', 'websiteLogo', 'packages', 'categories', 'tags'])
+        $services = Service::with([
+            'image',
+            'websiteLogo',
+            'packages.subPackages',
+            'categories',
+            'tags',
+        ])
             ->orderBy('order_number')
             ->get()
             ->map(fn (Service $s) => $this->formatService($s));
@@ -99,11 +125,17 @@ class ServiceController extends Controller
 
     // ── Show ──────────────────────────────────────────────────────────────────
 
-    public function show(Request $request, $slug)
+    public function show(Request $request, string $slug)
     {
         $service = Service::where('slug', $slug)
             ->where('status', 'published')
-            ->with(['image', 'websiteLogo', 'packages', 'categories', 'tags'])
+            ->with([
+                'image',
+                'websiteLogo',
+                'packages.subPackages',
+                'categories',
+                'tags',
+            ])
             ->firstOrFail();
 
         $formatted = $this->formatService($service);
@@ -127,28 +159,36 @@ class ServiceController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'title'                        => ['required', 'string', 'max:191'],
-            'slug'                         => ['nullable', 'string', 'max:191', 'unique:services,slug'],
-            'short_description'            => ['nullable', 'string', 'max:500'],
-            'description'                  => ['nullable', 'string'],
-            'icon'                         => ['nullable', 'string', 'max:100'],
-            'website_url'                  => ['nullable', 'url', 'max:500'],   // ✅ NEW
-            'website_logo_id'              => ['nullable', 'exists:media,id'],  // ✅ NEW
-            'image_id'                     => ['nullable', 'exists:media,id'],
-            'order_number'                 => ['nullable', 'integer', 'min:0'],
-            'status'                       => ['required', Rule::in(['draft', 'review', 'published', 'archived'])],
-            'category_ids'                 => ['array'],
-            'category_ids.*'               => ['exists:categories,id'],
-            'tag_ids'                      => ['array'],
-            'tag_ids.*'                    => ['exists:tags,id'],
-            'media_ids'                    => ['array'],
-            'media_ids.*'                  => ['exists:media,id'],
-            'packages'                     => ['array'],
-            'packages.*.title'             => ['required_with:packages', 'string', 'max:255'],
-            'packages.*.short_description' => ['required_with:packages', 'string'],
-            'packages.*.description'       => ['nullable', 'string'],
-            'packages.*.features'          => ['nullable', 'array'],
-            'packages.*.order_number'      => ['nullable', 'integer'],
+            'title'                                           => ['required', 'string', 'max:191'],
+            'slug'                                            => ['nullable', 'string', 'max:191', 'unique:services,slug'],
+            'short_description'                               => ['nullable', 'string', 'max:500'],
+            'description'                                     => ['nullable', 'string'],
+            'icon'                                            => ['nullable', 'string', 'max:100'],
+            'website_url'                                     => ['nullable', 'url', 'max:500'],
+            'website_logo_id'                                 => ['nullable', 'exists:media,id'],
+            'image_id'                                        => ['nullable', 'exists:media,id'],
+            'order_number'                                    => ['nullable', 'integer', 'min:0'],
+            'status'                                          => ['required', Rule::in(['draft', 'review', 'published', 'archived'])],
+            'category_ids'                                    => ['array'],
+            'category_ids.*'                                  => ['exists:categories,id'],
+            'tag_ids'                                         => ['array'],
+            'tag_ids.*'                                       => ['exists:tags,id'],
+            'media_ids'                                       => ['array'],
+            'media_ids.*'                                     => ['exists:media,id'],
+            // Packages
+            'packages'                                        => ['array'],
+            'packages.*.title'                                => ['required_with:packages', 'string', 'max:255'],
+            'packages.*.short_description'                    => ['nullable', 'string'],
+            'packages.*.description'                          => ['nullable', 'string'],
+            'packages.*.features'                             => ['nullable', 'array'],
+            'packages.*.order_number'                         => ['nullable', 'integer'],
+            // Sub-packages
+            'packages.*.sub_packages'                         => ['nullable', 'array'],
+            'packages.*.sub_packages.*.title'                 => ['required_with:packages.*.sub_packages', 'string', 'max:255'],
+            'packages.*.sub_packages.*.short_description'     => ['nullable', 'string'],
+            'packages.*.sub_packages.*.description'           => ['nullable', 'string'],
+            'packages.*.sub_packages.*.features'              => ['nullable', 'array'],
+            'packages.*.sub_packages.*.order_number'          => ['nullable', 'integer'],
         ]);
 
         $service = Service::create([
@@ -158,23 +198,34 @@ class ServiceController extends Controller
             'description'       => $data['description']       ?? null,
             'icon'              => $data['icon']              ?? null,
             'website_url'       => $data['website_url']       ?? null,
-            'website_logo_id'   => $data['website_logo_id']   ?? null,         // ✅ NEW
+            'website_logo_id'   => $data['website_logo_id']   ?? null,
             'image_id'          => $data['image_id']          ?? null,
             'order_number'      => $data['order_number']      ?? 0,
             'status'            => $data['status'],
         ]);
 
-        if (!empty($data['packages'])) {
-            foreach ($data['packages'] as $i => $pkg) {
-                ServicePackage::create([
-                    'service_id'        => $service->id,
-                    'title'             => $pkg['title'],
-                    'slug'              => Str::slug($pkg['title']),
-                    'short_description' => $pkg['short_description'],
-                    'description'       => $pkg['description']  ?? null,
-                    'features'          => $pkg['features']     ?? [],
-                    'order_number'      => $pkg['order_number'] ?? $i,
-                    'status'            => 'published',
+        foreach ($data['packages'] ?? [] as $i => $pkg) {
+            $newPackage = ServicePackage::create([
+                'service_id'        => $service->id,
+                'title'             => $pkg['title'],
+                'slug'              => Str::slug($pkg['title']),
+                'short_description' => $pkg['short_description'] ?? null,
+                'description'       => $pkg['description']       ?? null,
+                'features'          => $pkg['features']          ?? [],
+                'order_number'      => $pkg['order_number']      ?? $i,
+                'status'            => 'published',
+            ]);
+
+            foreach ($pkg['sub_packages'] ?? [] as $j => $sub) {
+                ServiceSubPackage::create([
+                    'service_package_id' => $newPackage->id,
+                    'title'              => $sub['title'],
+                    'slug'               => Str::slug($sub['title']),
+                    'short_description'  => $sub['short_description'] ?? null,
+                    'description'        => $sub['description']       ?? null,
+                    'features'           => $sub['features']          ?? [],
+                    'order_number'       => $sub['order_number']      ?? $j,
+                    'status'             => 'published',
                 ]);
             }
         }
@@ -203,7 +254,14 @@ class ServiceController extends Controller
 
     public function edit(Service $service): Response
     {
-        $service->load(['image', 'websiteLogo', 'packages', 'categories', 'tags', 'media']);
+        $service->load([
+            'image',
+            'websiteLogo',
+            'categories',
+            'tags',
+            'media',
+            'allPackages.allSubPackages',
+        ]);
 
         return Inertia::render('services/edit', array_merge($this->sharedData(), [
             'service' => [
@@ -214,7 +272,7 @@ class ServiceController extends Controller
                 'description'       => $service->description,
                 'icon'              => $service->icon,
                 'website_url'       => $service->website_url,
-                'website_logo_id'   => $service->website_logo_id,  // ✅ NEW
+                'website_logo_id'   => $service->website_logo_id,
                 'image_id'          => $service->image_id,
                 'order_number'      => $service->order_number,
                 'status'            => $service->status,
@@ -228,6 +286,14 @@ class ServiceController extends Controller
                     'description'       => $p->description,
                     'features'          => $p->features ?? [],
                     'order_number'      => $p->order_number,
+                    'sub_packages'      => $p->allSubPackages->map(fn (ServiceSubPackage $sp) => [
+                        'id'                => $sp->id,
+                        'title'             => $sp->title,
+                        'short_description' => $sp->short_description,
+                        'description'       => $sp->description,
+                        'features'          => $sp->features ?? [],
+                        'order_number'      => $sp->order_number,
+                    ])->values(),
                 ])->values(),
                 'workflow_step'     => $service->latestWorkflowStep(),
             ],
@@ -239,30 +305,39 @@ class ServiceController extends Controller
     public function update(Request $request, Service $service): RedirectResponse
     {
         $data = $request->validate([
-            'title'                        => ['required', 'string', 'max:191'],
-            'slug'                         => ['nullable', 'string', 'max:191', Rule::unique('services', 'slug')->ignore($service->id)],
-            'short_description'            => ['nullable', 'string', 'max:500'],
-            'description'                  => ['nullable', 'string'],
-            'icon'                         => ['nullable', 'string', 'max:100'],
-            'website_url'                  => ['nullable', 'url', 'max:500'],
-            'website_logo_id'              => ['nullable', 'exists:media,id'],  // ✅ NEW
-            'image_id'                     => ['nullable', 'exists:media,id'],
-            'order_number'                 => ['nullable', 'integer', 'min:0'],
-            'status'                       => ['required', Rule::in(['draft', 'review', 'published', 'archived'])],
-            'category_ids'                 => ['array'],
-            'category_ids.*'               => ['exists:categories,id'],
-            'tag_ids'                      => ['array'],
-            'tag_ids.*'                    => ['exists:tags,id'],
-            'media_ids'                    => ['array'],
-            'media_ids.*'                  => ['exists:media,id'],
-            'workflow_notes'               => ['nullable', 'string', 'max:1000'],
-            'packages'                     => ['array'],
-            'packages.*.id'                => ['nullable', 'exists:service_packages,id'],
-            'packages.*.title'             => ['required_with:packages', 'string', 'max:255'],
-            'packages.*.short_description' => ['required_with:packages', 'string'],
-            'packages.*.description'       => ['nullable', 'string'],
-            'packages.*.features'          => ['nullable', 'array'],
-            'packages.*.order_number'      => ['nullable', 'integer'],
+            'title'                                           => ['required', 'string', 'max:191'],
+            'slug'                                            => ['nullable', 'string', 'max:191', Rule::unique('services', 'slug')->ignore($service->id)],
+            'short_description'                               => ['nullable', 'string', 'max:500'],
+            'description'                                     => ['nullable', 'string'],
+            'icon'                                            => ['nullable', 'string', 'max:100'],
+            'website_url'                                     => ['nullable', 'url', 'max:500'],
+            'website_logo_id'                                 => ['nullable', 'exists:media,id'],
+            'image_id'                                        => ['nullable', 'exists:media,id'],
+            'order_number'                                    => ['nullable', 'integer', 'min:0'],
+            'status'                                          => ['required', Rule::in(['draft', 'review', 'published', 'archived'])],
+            'category_ids'                                    => ['array'],
+            'category_ids.*'                                  => ['exists:categories,id'],
+            'tag_ids'                                         => ['array'],
+            'tag_ids.*'                                       => ['exists:tags,id'],
+            'media_ids'                                       => ['array'],
+            'media_ids.*'                                     => ['exists:media,id'],
+            'workflow_notes'                                  => ['nullable', 'string', 'max:1000'],
+            // Packages
+            'packages'                                        => ['array'],
+            'packages.*.id'                                   => ['nullable', 'exists:service_packages,id'],
+            'packages.*.title'                                => ['required_with:packages', 'string', 'max:255'],
+            'packages.*.short_description'                    => ['nullable', 'string'],
+            'packages.*.description'                          => ['nullable', 'string'],
+            'packages.*.features'                             => ['nullable', 'array'],
+            'packages.*.order_number'                         => ['nullable', 'integer'],
+            // Sub-packages
+            'packages.*.sub_packages'                         => ['nullable', 'array'],
+            'packages.*.sub_packages.*.id'                    => ['nullable', 'exists:service_sub_packages,id'],
+            'packages.*.sub_packages.*.title'                 => ['required_with:packages.*.sub_packages', 'string', 'max:255'],
+            'packages.*.sub_packages.*.short_description'     => ['nullable', 'string'],
+            'packages.*.sub_packages.*.description'           => ['nullable', 'string'],
+            'packages.*.sub_packages.*.features'              => ['nullable', 'array'],
+            'packages.*.sub_packages.*.order_number'          => ['nullable', 'integer'],
         ]);
 
         $oldStatus = $service->status;
@@ -274,7 +349,7 @@ class ServiceController extends Controller
             'description'       => $data['description']       ?? null,
             'icon'              => $data['icon']              ?? null,
             'website_url'       => $data['website_url']       ?? null,
-            'website_logo_id'   => $data['website_logo_id']   ?? null,         // ✅ NEW
+            'website_logo_id'   => $data['website_logo_id']   ?? null,
             'image_id'          => $data['image_id']          ?? null,
             'order_number'      => $data['order_number']      ?? 0,
             'status'            => $data['status'],
@@ -284,36 +359,74 @@ class ServiceController extends Controller
             $existingPackageIds = [];
 
             foreach ($data['packages'] as $i => $pkg) {
+                // Upsert package
                 if (!empty($pkg['id'])) {
                     $package = ServicePackage::findOrFail($pkg['id']);
                     $package->update([
                         'title'             => $pkg['title'],
                         'slug'              => Str::slug($pkg['title']),
-                        'short_description' => $pkg['short_description'],
-                        'description'       => $pkg['description']  ?? null,
-                        'features'          => $pkg['features']     ?? [],
-                        'order_number'      => $pkg['order_number'] ?? $i,
+                        'short_description' => $pkg['short_description'] ?? null,
+                        'description'       => $pkg['description']       ?? null,
+                        'features'          => $pkg['features']          ?? [],
+                        'order_number'      => $pkg['order_number']      ?? $i,
                     ]);
-                    $existingPackageIds[] = $package->id;
                 } else {
-                    $newPackage = ServicePackage::create([
+                    $package = ServicePackage::create([
                         'service_id'        => $service->id,
                         'title'             => $pkg['title'],
                         'slug'              => Str::slug($pkg['title']),
-                        'short_description' => $pkg['short_description'],
-                        'description'       => $pkg['description']  ?? null,
-                        'features'          => $pkg['features']     ?? [],
-                        'order_number'      => $pkg['order_number'] ?? $i,
+                        'short_description' => $pkg['short_description'] ?? null,
+                        'description'       => $pkg['description']       ?? null,
+                        'features'          => $pkg['features']          ?? [],
+                        'order_number'      => $pkg['order_number']      ?? $i,
                         'status'            => 'published',
                     ]);
-                    $existingPackageIds[] = $newPackage->id;
                 }
+
+                $existingPackageIds[] = $package->id;
+
+                // Upsert sub-packages
+                $existingSubIds = [];
+
+                foreach ($pkg['sub_packages'] ?? [] as $j => $sub) {
+                    if (!empty($sub['id'])) {
+                        $subPackage = ServiceSubPackage::findOrFail($sub['id']);
+                        $subPackage->update([
+                            'title'              => $sub['title'],
+                            'slug'               => Str::slug($sub['title']),
+                            'short_description'  => $sub['short_description'] ?? null,
+                            'description'        => $sub['description']       ?? null,
+                            'features'           => $sub['features']          ?? [],
+                            'order_number'       => $sub['order_number']      ?? $j,
+                        ]);
+                    } else {
+                        $subPackage = ServiceSubPackage::create([
+                            'service_package_id' => $package->id,
+                            'title'              => $sub['title'],
+                            'slug'               => Str::slug($sub['title']),
+                            'short_description'  => $sub['short_description'] ?? null,
+                            'description'        => $sub['description']       ?? null,
+                            'features'           => $sub['features']          ?? [],
+                            'order_number'       => $sub['order_number']      ?? $j,
+                            'status'             => 'published',
+                        ]);
+                    }
+
+                    $existingSubIds[] = $subPackage->id;
+                }
+
+                // Remove deleted sub-packages
+                $package->allSubPackages()
+                    ->whereNotIn('id', $existingSubIds)
+                    ->delete();
             }
 
+            // Remove deleted packages (DB cascade removes their sub-packages too)
             $service->allPackages()
                 ->whereNotIn('id', $existingPackageIds)
                 ->delete();
         } else {
+            // No packages submitted — delete all (cascade handles sub-packages)
             $service->allPackages()->delete();
         }
 
@@ -346,6 +459,7 @@ class ServiceController extends Controller
 
     public function destroy(Request $request, Service $service): RedirectResponse
     {
+        // allPackages()->delete() triggers DB cascade → sub-packages deleted too
         $service->allPackages()->delete();
         $service->categories()->detach();
         $service->tags()->detach();

@@ -7,6 +7,23 @@ type Category  = { id: number; name: string; children?: Category[] };
 type Tag       = { id: number; name: string; slug: string };
 type MediaItem = { id: number; filename: string; original_name: string; alt_text: string | null; mime_type: string };
 
+type ServiceSubPackageData = {
+    id?:               number;
+    title:             string;
+    short_description: string;
+    description:       string;
+    features:          string[];
+};
+
+type ServicePackageData = {
+    id?:               number;
+    title:             string;
+    short_description: string;
+    description:       string;
+    features:          string[];
+    sub_packages:      ServiceSubPackageData[];   // ✅ always present, may be empty
+};
+
 type ServiceData = {
     id:                number;
     title:             string;
@@ -14,7 +31,8 @@ type ServiceData = {
     short_description: string;
     description:       string;
     icon:              string | null;
-    website_url:       string | null;   // ✅ NEW
+    website_url:       string | null;
+    website_logo_id:   number | null;
     image_id:          number | null;
     order_number:      number;
     status:            string;
@@ -22,6 +40,7 @@ type ServiceData = {
     tag_ids:           number[];
     media_ids:         number[];
     workflow_step:     string;
+    packages:          ServicePackageData[];
 };
 
 type Props = {
@@ -54,9 +73,8 @@ export default function EditService({ service, categories, tags, media }: Props)
                         </p>
                     </div>
                     <div className="flex items-center gap-3">
-                        {/* ✅ NEW: Show external website link if set */}
                         {service.website_url && (
-                            <a
+
                                 href={service.website_url}
                                 target="_blank"
                                 rel="noopener noreferrer"
@@ -65,7 +83,7 @@ export default function EditService({ service, categories, tags, media }: Props)
                                 Service Website ↗
                             </a>
                         )}
-                        <a
+
                             href={`/main-services/${service.slug}`}
                             target="_blank"
                             rel="noopener noreferrer"

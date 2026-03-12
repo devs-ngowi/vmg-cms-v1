@@ -8,9 +8,9 @@ type Tag       = { id: number; name: string; slug: string };
 type MediaItem = { id: number; filename: string; original_name: string; alt_text: string | null; mime_type: string };
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Services',  href: '/services' },
-    { title: 'Add Service', href: '/services/create' },
+    { title: 'Dashboard',    href: '/dashboard' },
+    { title: 'Services',     href: '/services' },
+    { title: 'Add Service',  href: '/services/create' },
 ];
 
 export default function CreateService({
