@@ -44,31 +44,29 @@ export type FormValues = {
 };
 
 export type Props = {
-    mode:       'create' | 'edit';
-    form?:      FormValues | null;
-    fieldTypes: FieldType[];
+    mode:        'create' | 'edit';
+    form?:       FormValues | null;
+    fieldTypes?: FieldType[];
 };
 
-// ── Field type meta ───────────────────────────────────────────────────────────
+// ── Field type meta — defined as a function to avoid module-level JSX ─────────
+// This prevents crashes during server-side hydration in Inertia apps.
 
-const fieldMeta: Record<FieldType, {
-    label: string;
-    icon: React.ReactNode;
-    hasOptions: boolean;
-    hasPlaceholder: boolean;
-}> = {
-    text:     { label: 'Short Text',  icon: <Text        className="h-3.5 w-3.5" />, hasOptions: false, hasPlaceholder: true  },
-    email:    { label: 'Email',       icon: <Mail        className="h-3.5 w-3.5" />, hasOptions: false, hasPlaceholder: true  },
-    tel:      { label: 'Phone',       icon: <Phone       className="h-3.5 w-3.5" />, hasOptions: false, hasPlaceholder: true  },
-    number:   { label: 'Number',      icon: <Hash        className="h-3.5 w-3.5" />, hasOptions: false, hasPlaceholder: true  },
-    url:      { label: 'URL',         icon: <Link2       className="h-3.5 w-3.5" />, hasOptions: false, hasPlaceholder: true  },
-    textarea: { label: 'Long Text',   icon: <AlignLeft   className="h-3.5 w-3.5" />, hasOptions: false, hasPlaceholder: true  },
-    select:   { label: 'Dropdown',    icon: <ChevronDown className="h-3.5 w-3.5" />, hasOptions: true,  hasPlaceholder: true  },
-    radio:    { label: 'Radio',       icon: <Circle      className="h-3.5 w-3.5" />, hasOptions: true,  hasPlaceholder: false },
-    checkbox: { label: 'Checkbox',    icon: <CheckSquare className="h-3.5 w-3.5" />, hasOptions: true,  hasPlaceholder: false },
-    date:     { label: 'Date',        icon: <CalendarDays className="h-3.5 w-3.5"/>, hasOptions: false, hasPlaceholder: false },
-    file:     { label: 'File Upload', icon: <ToggleLeft  className="h-3.5 w-3.5" />, hasOptions: false, hasPlaceholder: false },
-};
+function getFieldMeta() {
+    return {
+        text:     { label: 'Short Text',  icon: <Text         className="h-3.5 w-3.5" />, hasOptions: false, hasPlaceholder: true  },
+        email:    { label: 'Email',       icon: <Mail         className="h-3.5 w-3.5" />, hasOptions: false, hasPlaceholder: true  },
+        tel:      { label: 'Phone',       icon: <Phone        className="h-3.5 w-3.5" />, hasOptions: false, hasPlaceholder: true  },
+        number:   { label: 'Number',      icon: <Hash         className="h-3.5 w-3.5" />, hasOptions: false, hasPlaceholder: true  },
+        url:      { label: 'URL',         icon: <Link2        className="h-3.5 w-3.5" />, hasOptions: false, hasPlaceholder: true  },
+        textarea: { label: 'Long Text',   icon: <AlignLeft    className="h-3.5 w-3.5" />, hasOptions: false, hasPlaceholder: true  },
+        select:   { label: 'Dropdown',    icon: <ChevronDown  className="h-3.5 w-3.5" />, hasOptions: true,  hasPlaceholder: true  },
+        radio:    { label: 'Radio',       icon: <Circle       className="h-3.5 w-3.5" />, hasOptions: true,  hasPlaceholder: false },
+        checkbox: { label: 'Checkbox',    icon: <CheckSquare  className="h-3.5 w-3.5" />, hasOptions: true,  hasPlaceholder: false },
+        date:     { label: 'Date',        icon: <CalendarDays className="h-3.5 w-3.5" />, hasOptions: false, hasPlaceholder: false },
+        file:     { label: 'File Upload', icon: <ToggleLeft   className="h-3.5 w-3.5" />, hasOptions: false, hasPlaceholder: false },
+    } as Record<FieldType, { label: string; icon: React.ReactNode; hasOptions: boolean; hasPlaceholder: boolean }>;
+}
 
 function newField(type: FieldType = 'text'): BuilderField {
     return {
@@ -85,7 +83,7 @@ function newField(type: FieldType = 'text'): BuilderField {
 
 function FieldPreview({ field }: { field: BuilderField }) {
     const ph   = field.placeholder || field.label || '…';
-    const opts = field.options.split(',').map(o => o.trim()).filter(Boolean);
+    const opts = (field.options ?? '').split(',').map(o => o.trim()).filter(Boolean);
 
     switch (field.field_type) {
         case 'textarea':
@@ -157,7 +155,8 @@ function FieldCard({
     onMove:   (dir: 'up' | 'down') => void;
 }) {
     const [expanded, setExpanded] = useState(!field.label);
-    const meta = fieldMeta[field.field_type];
+    const fieldMeta = getFieldMeta();
+    const meta = fieldMeta[field.field_type] ?? fieldMeta['text'];
 
     return (
         <div className={cn(
@@ -321,9 +320,10 @@ function FieldCard({
 // ── Exported builder component ────────────────────────────────────────────────
 
 export default function FormBuilder({ mode, form, fieldTypes }: Props) {
-    const isEdit = mode === 'edit' && !!form;
+    const isEdit    = mode === 'edit' && !!form;
+    const fieldMeta = getFieldMeta();
 
-    // ── Local state for all form values (including fields) ─────────────────
+    // ── Local state ───────────────────────────────────────────────────────────
     const [name,        setName]        = useState(form?.name        ?? '');
     const [formType,    setFormType]    = useState(form?.form_type   ?? '');
     const [description, setDescription] = useState(form?.description ?? '');
@@ -332,15 +332,17 @@ export default function FormBuilder({ mode, form, fieldTypes }: Props) {
     const [errors,      setErrors]      = useState<Record<string, string>>({});
 
     const [fields, setFields] = useState<BuilderField[]>(
-        form?.fields?.map(f => ({
+        (form?.fields ?? []).map(f => ({
             ...f,
-            _key: Math.random().toString(36).slice(2),
-        })) ?? [],
+            _key:        Math.random().toString(36).slice(2),
+            options:     f.options     ?? '',
+            placeholder: f.placeholder ?? '',
+        })),
     );
 
     const [addType, setAddType] = useState<FieldType>('text');
 
-    const addField   = () => setFields(prev => [...prev, newField(addType)]);
+    const addField    = () => setFields(prev => [...prev, newField(addType)]);
     const updateField = (i: number, updated: BuilderField) =>
         setFields(prev => prev.map((f, idx) => idx === i ? updated : f));
     const removeField = (i: number) =>
@@ -349,16 +351,16 @@ export default function FormBuilder({ mode, form, fieldTypes }: Props) {
         setFields(prev => {
             const next = [...prev];
             const swap = dir === 'up' ? i - 1 : i + 1;
+            if (swap < 0 || swap >= next.length) return prev;
             [next[i], next[swap]] = [next[swap], next[i]];
             return next;
         });
     };
 
-    // ── Submit — use router directly so ALL state is included ─────────────
+    // ── Submit ────────────────────────────────────────────────────────────────
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Basic validation
         const newErrors: Record<string, string> = {};
         if (!name.trim())     newErrors.name      = 'Form name is required.';
         if (!formType.trim()) newErrors.form_type = 'Form type is required.';
@@ -367,13 +369,12 @@ export default function FormBuilder({ mode, form, fieldTypes }: Props) {
         setProcessing(true);
         setErrors({});
 
-        // Build the complete payload — fields included ✅
         const payload = {
             name,
             form_type:   formType,
             description,
             is_active:   isActive,
-            fields: fields.map(({ _key, ...rest }) => rest), // strip _key, keep id if editing
+            fields:      fields.map(({ _key, ...rest }) => rest),
         };
 
         const options = {
@@ -382,10 +383,8 @@ export default function FormBuilder({ mode, form, fieldTypes }: Props) {
         };
 
         if (isEdit) {
-            // ✅ router.patch sends the payload correctly
             router.patch(`/forms/${form!.id}`, payload, options);
         } else {
-            // ✅ router.post sends the payload correctly
             router.post('/forms', payload, options);
         }
     };
@@ -393,7 +392,7 @@ export default function FormBuilder({ mode, form, fieldTypes }: Props) {
     return (
         <form onSubmit={submit} className="grid gap-6 lg:grid-cols-3">
 
-            {/* ── Left column: fields ──────────────────────────────────────── */}
+            {/* ── Left: field builder ──────────────────────────────────────── */}
             <div className="space-y-4 lg:col-span-2">
 
                 {fields.length === 0 ? (
@@ -443,14 +442,13 @@ export default function FormBuilder({ mode, form, fieldTypes }: Props) {
                 </div>
             </div>
 
-            {/* ── Right column: settings ───────────────────────────────────── */}
+            {/* ── Right: settings ──────────────────────────────────────────── */}
             <div className="space-y-4">
                 <div className="rounded-xl border bg-card p-6 shadow-sm space-y-4">
                     <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                         Form Settings
                     </h2>
 
-                    {/* Name */}
                     <div className="flex flex-col gap-1.5">
                         <Label className={cn('text-sm font-medium', errors.name && 'text-destructive')}>
                             Form Name <span className="text-destructive">*</span>
@@ -459,11 +457,11 @@ export default function FormBuilder({ mode, form, fieldTypes }: Props) {
                             value={name}
                             onChange={e => setName(e.target.value)}
                             placeholder="e.g. Contact Us"
+                            className={cn(errors.name && 'border-destructive')}
                         />
                         {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
                     </div>
 
-                    {/* Type */}
                     <div className="flex flex-col gap-1.5">
                         <Label className={cn('text-sm font-medium', errors.form_type && 'text-destructive')}>
                             Form Type <span className="text-destructive">*</span>
@@ -483,7 +481,6 @@ export default function FormBuilder({ mode, form, fieldTypes }: Props) {
                         {errors.form_type && <p className="text-xs text-destructive">{errors.form_type}</p>}
                     </div>
 
-                    {/* Description */}
                     <div className="flex flex-col gap-1.5">
                         <Label className="text-sm font-medium">Description</Label>
                         <Textarea
@@ -494,7 +491,6 @@ export default function FormBuilder({ mode, form, fieldTypes }: Props) {
                         />
                     </div>
 
-                    {/* Active toggle */}
                     <div className="flex items-center justify-between rounded-lg border bg-muted/20 px-4 py-3">
                         <div>
                             <p className="text-sm font-medium">Accept submissions</p>
@@ -517,7 +513,6 @@ export default function FormBuilder({ mode, form, fieldTypes }: Props) {
                         </button>
                     </div>
 
-                    {/* Actions */}
                     <div className="flex gap-2 pt-1">
                         <Button
                             type="button" variant="outline" className="flex-1"
@@ -535,7 +530,7 @@ export default function FormBuilder({ mode, form, fieldTypes }: Props) {
                     </div>
                 </div>
 
-                {/* Summary card */}
+                {/* Summary */}
                 <div className="rounded-xl border bg-card p-4 shadow-sm space-y-3">
                     <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                         Summary

@@ -9,7 +9,13 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'New Form',  href: '/forms/create' },
 ];
 
-export default function CreateForm({ fieldTypes }: { fieldTypes: FieldType[] }) {
+// ── Fallback in case the server doesn't send fieldTypes ───────────────────────
+const DEFAULT_FIELD_TYPES: FieldType[] = [
+    'text', 'email', 'tel', 'number', 'url',
+    'textarea', 'select', 'radio', 'checkbox', 'date', 'file',
+];
+
+export default function CreateForm({ fieldTypes }: { fieldTypes?: FieldType[] }) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="New Form" />
@@ -20,7 +26,10 @@ export default function CreateForm({ fieldTypes }: { fieldTypes: FieldType[] }) 
                         Build a form by adding fields and configuring settings.
                     </p>
                 </div>
-                <FormBuilder mode="create" fieldTypes={fieldTypes} />
+                <FormBuilder
+                    mode="create"
+                    fieldTypes={fieldTypes ?? DEFAULT_FIELD_TYPES}
+                />
             </div>
         </AppLayout>
     );
