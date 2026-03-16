@@ -14,7 +14,8 @@ class Service extends Model
 
     protected $fillable = [
         'title', 'slug', 'short_description', 'description',
-        'icon', 'website_url', 'website_logo_id',          // ✅ NEW
+        'icon', 'website_url', 'website_logo_id',
+        'button_type',          // ← NEW: 'read_more' | 'explore_more'
         'image_id', 'order_number', 'seo_id', 'status',
     ];
 
@@ -25,7 +26,6 @@ class Service extends Model
         return $this->belongsTo(Media::class, 'image_id', 'id');
     }
 
-    /** ✅ Logo for the external website CTA */
     public function websiteLogo()
     {
         return $this->belongsTo(Media::class, 'website_logo_id', 'id');

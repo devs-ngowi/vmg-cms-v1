@@ -12,6 +12,7 @@ import { Switch } from '@/components/ui/switch';
 import {
     Loader2, Save, X, Plus, Trash2, AlertCircle,
     ExternalLink, ChevronDown, ChevronRight, Layers,
+    ArrowRight, Globe,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import RichTextEditor from '@/components/rich-text-editor';
@@ -44,12 +45,15 @@ type ServicePackageFormData = {
     sub_packages:      ServiceSubPackageFormData[];
 };
 
+type ButtonType = 'read_more' | 'explore_more';
+
 type ServiceFormData = {
     title:             string;
     slug:              string;
     short_description: string;
     description:       string;
     icon:              string;
+    button_type:       ButtonType;   // ← NEW
     website_url:       string;
     website_logo_id:   string;
     image_id:          string;
@@ -69,6 +73,7 @@ type DefaultValues = Partial<{
     short_description: string;
     description:       string;
     icon:              string;
+    button_type:       ButtonType;   // ← NEW
     website_url:       string;
     website_logo_id:   number;
     image_id:          number;
@@ -144,65 +149,72 @@ function PublishRow({ id, checked, onChange }: {
     );
 }
 
-// ── Sub-Package Card — accordion state managed by parent PackageCard ──────────
+// ── Button Type Preview ───────────────────────────────────────────────────────
+
+function ButtonTypePreview({ buttonType }: { buttonType: ButtonType }) {
+    if (buttonType === 'explore_more') {
+        return (
+            <div className="flex items-center gap-2 rounded-md border border-blue-200 bg-blue-50 px-3 py-2">
+                <Globe className="h-3.5 w-3.5 text-blue-600 shrink-0" />
+                <div>
+                    <p className="text-xs font-semibold text-blue-800">Explore More</p>
+                    <p className="text-xs text-blue-600">Opens the external website URL in a new tab.</p>
+                </div>
+            </div>
+        );
+    }
+    return (
+        <div className="flex items-center gap-2 rounded-md border border-green-200 bg-green-50 px-3 py-2">
+            <ArrowRight className="h-3.5 w-3.5 text-green-600 shrink-0" />
+            <div>
+                <p className="text-xs font-semibold text-green-800">Read More</p>
+                <p className="text-xs text-green-600">Opens the internal service detail page (/main-services/slug).</p>
+            </div>
+        </div>
+    );
+}
+
+// ── Sub-Package Card ──────────────────────────────────────────────────────────
 
 function SubPackageCard({ sub, subIdx, pkgIdx, expanded, onToggle, onUpdate, onRemove }: {
     sub:      ServiceSubPackageFormData;
     subIdx:   number;
     pkgIdx:   number;
-    expanded: boolean;                  // ← controlled by parent
-    onToggle: (subIdx: number) => void; // ← accordion callback
+    expanded: boolean;
+    onToggle: (subIdx: number) => void;
     onUpdate: (pkgIdx: number, subIdx: number, field: keyof ServiceSubPackageFormData, value: any) => void;
     onRemove: (pkgIdx: number, subIdx: number) => void;
 }) {
     return (
         <div className="rounded-lg border border-dashed bg-muted/30">
-
-            {/* ── Header row ── */}
             <div className="flex items-center gap-2 p-3">
-                <button
-                    type="button"
-                    onClick={() => onToggle(subIdx)}
-                    className="text-muted-foreground hover:text-foreground transition-colors shrink-0"
-                >
-                    {expanded
-                        ? <ChevronDown className="h-4 w-4" />
-                        : <ChevronRight className="h-4 w-4" />}
+                <button type="button" onClick={() => onToggle(subIdx)}
+                    className="text-muted-foreground hover:text-foreground transition-colors shrink-0">
+                    {expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                 </button>
-
                 <Input
                     value={sub.title}
                     onChange={e => onUpdate(pkgIdx, subIdx, 'title', e.target.value)}
                     placeholder="Sub-package title (e.g. Starter, Professional)"
                     className="flex-1 h-8 text-sm"
                 />
-
-                {/* Always-visible: published toggle */}
                 <div className="flex items-center gap-1.5 shrink-0">
                     <Switch
                         checked={sub.published_on_site}
                         onCheckedChange={val => onUpdate(pkgIdx, subIdx, 'published_on_site', val)}
                         id={`sub-pub-${pkgIdx}-${subIdx}`}
                     />
-                    <Label
-                        htmlFor={`sub-pub-${pkgIdx}-${subIdx}`}
+                    <Label htmlFor={`sub-pub-${pkgIdx}-${subIdx}`}
                         className={cn('text-xs font-semibold cursor-pointer w-10',
-                            sub.published_on_site ? 'text-green-600' : 'text-muted-foreground')}
-                    >
+                            sub.published_on_site ? 'text-green-600' : 'text-muted-foreground')}>
                         {sub.published_on_site ? 'Live' : 'Hidden'}
                     </Label>
                 </div>
-
-                <Button
-                    type="button" variant="ghost" size="sm"
-                    onClick={() => onRemove(pkgIdx, subIdx)}
-                    className="text-destructive hover:text-destructive h-8 w-8 p-0 shrink-0"
-                >
+                <Button type="button" variant="ghost" size="sm" onClick={() => onRemove(pkgIdx, subIdx)}
+                    className="text-destructive hover:text-destructive h-8 w-8 p-0 shrink-0">
                     <Trash2 className="h-3.5 w-3.5" />
                 </Button>
             </div>
-
-            {/* Always-visible: website URL strip */}
             <div className="px-3 pb-2.5 flex items-center gap-2">
                 <div className="relative flex-1">
                     <ExternalLink className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground pointer-events-none" />
@@ -215,18 +227,12 @@ function SubPackageCard({ sub, subIdx, pkgIdx, expanded, onToggle, onUpdate, onR
                     />
                 </div>
                 {sub.website_url && (
-
-                       <a href={sub.website_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-primary underline-offset-4 hover:underline inline-flex items-center gap-1 shrink-0"
-                    >
+                    <a href={sub.website_url} target="_blank" rel="noopener noreferrer"
+                        className="text-xs text-primary underline-offset-4 hover:underline inline-flex items-center gap-1 shrink-0">
                         <ExternalLink className="h-3 w-3" /> Open
                     </a>
                 )}
             </div>
-
-            {/* ── Expandable body ── */}
             {expanded && (
                 <div className="border-t px-4 pb-4 pt-3 space-y-3">
                     <div>
@@ -235,53 +241,38 @@ function SubPackageCard({ sub, subIdx, pkgIdx, expanded, onToggle, onUpdate, onR
                             value={sub.short_description}
                             onChange={e => onUpdate(pkgIdx, subIdx, 'short_description', e.target.value)}
                             placeholder="Brief description shown on the card..."
-                            rows={2}
-                            className="text-sm"
+                            rows={2} className="text-sm"
                         />
                     </div>
-
                     <div>
                         <Label className="text-xs font-semibold mb-1.5 block">
-                            Full Description
-                            <span className="ml-1.5 font-normal text-muted-foreground">(optional)</span>
+                            Full Description <span className="ml-1.5 font-normal text-muted-foreground">(optional)</span>
                         </Label>
-                        <RichTextEditor
-                            value={sub.description}
-                            onChange={v => onUpdate(pkgIdx, subIdx, 'description', v)}
-                        />
+                        <RichTextEditor value={sub.description} onChange={v => onUpdate(pkgIdx, subIdx, 'description', v)} />
                     </div>
-
-                    {/* Features */}
                     <div>
                         <Label className="text-xs font-semibold mb-1.5 block">Features</Label>
                         <div className="space-y-1.5">
                             {sub.features.map((f, fi) => (
                                 <div key={fi} className="flex gap-2">
-                                    <Input
-                                        value={f}
+                                    <Input value={f}
                                         onChange={e => {
                                             const features = [...sub.features];
                                             features[fi] = e.target.value;
                                             onUpdate(pkgIdx, subIdx, 'features', features);
                                         }}
-                                        placeholder="Feature"
-                                        className="h-8 text-sm"
+                                        placeholder="Feature" className="h-8 text-sm"
                                     />
-                                    <Button
-                                        type="button" variant="ghost" size="sm"
-                                        onClick={() => onUpdate(pkgIdx, subIdx, 'features',
-                                            sub.features.filter((_, i) => i !== fi))}
-                                        className="h-8 w-8 p-0"
-                                    >
+                                    <Button type="button" variant="ghost" size="sm"
+                                        onClick={() => onUpdate(pkgIdx, subIdx, 'features', sub.features.filter((_, i) => i !== fi))}
+                                        className="h-8 w-8 p-0">
                                         <X className="h-3.5 w-3.5" />
                                     </Button>
                                 </div>
                             ))}
-                            <Button
-                                type="button" variant="outline" size="sm"
+                            <Button type="button" variant="outline" size="sm"
                                 onClick={() => onUpdate(pkgIdx, subIdx, 'features', [...sub.features, ''])}
-                                className="gap-1.5 w-full h-8 text-xs"
-                            >
+                                className="gap-1.5 w-full h-8 text-xs">
                                 <Plus className="h-3 w-3" /> Add Feature
                             </Button>
                         </div>
@@ -292,24 +283,21 @@ function SubPackageCard({ sub, subIdx, pkgIdx, expanded, onToggle, onUpdate, onR
     );
 }
 
-// ── Package Card — expanded state controlled by parent ServiceForm ─────────────
+// ── Package Card ──────────────────────────────────────────────────────────────
 
 function PackageCard({ pkg, pkgIdx, expanded, onToggle, onUpdate, onRemove, onAddSub, onUpdateSub, onRemoveSub }: {
     pkg:         ServicePackageFormData;
     pkgIdx:      number;
-    expanded:    boolean;               // ← controlled by parent
-    onToggle:    (idx: number) => void; // ← accordion callback
+    expanded:    boolean;
+    onToggle:    (idx: number) => void;
     onUpdate:    (idx: number, field: keyof ServicePackageFormData, value: any) => void;
     onRemove:    (idx: number) => void;
     onAddSub:    (pkgIdx: number) => void;
     onUpdateSub: (pkgIdx: number, subIdx: number, field: keyof ServiceSubPackageFormData, value: any) => void;
     onRemoveSub: (pkgIdx: number, subIdx: number) => void;
 }) {
-    // Sub-package accordion: track which sub is open (-1 = none)
     const [openSubIdx, setOpenSubIdx] = useState<number | null>(null);
-
-    const toggleSub = (subIdx: number) =>
-        setOpenSubIdx(prev => (prev === subIdx ? null : subIdx));
+    const toggleSub = (subIdx: number) => setOpenSubIdx(prev => (prev === subIdx ? null : subIdx));
 
     const addFeature    = () => onUpdate(pkgIdx, 'features', [...(pkg.features ?? []), '']);
     const updateFeature = (fi: number, value: string) => {
@@ -322,19 +310,11 @@ function PackageCard({ pkg, pkgIdx, expanded, onToggle, onUpdate, onRemove, onAd
 
     return (
         <div className="rounded-lg border bg-card shadow-sm">
-
-            {/* ── Header row ── */}
             <div className="flex items-center gap-3 px-4 py-3">
-                <button
-                    type="button"
-                    onClick={() => onToggle(pkgIdx)}
-                    className="text-muted-foreground hover:text-foreground transition-colors shrink-0"
-                >
-                    {expanded
-                        ? <ChevronDown className="h-4 w-4" />
-                        : <ChevronRight className="h-4 w-4" />}
+                <button type="button" onClick={() => onToggle(pkgIdx)}
+                    className="text-muted-foreground hover:text-foreground transition-colors shrink-0">
+                    {expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                 </button>
-
                 <Input
                     value={pkg.title}
                     onChange={e => onUpdate(pkgIdx, 'title', e.target.value)}
@@ -342,107 +322,66 @@ function PackageCard({ pkg, pkgIdx, expanded, onToggle, onUpdate, onRemove, onAd
                     className="flex-1 font-semibold h-9"
                     onClick={e => e.stopPropagation()}
                 />
-
                 {(pkg.sub_packages?.length ?? 0) > 0 && (
                     <Badge variant="secondary" className="text-xs h-5 px-1.5 shrink-0">
                         <Layers className="h-3 w-3 mr-1" />
                         {pkg.sub_packages!.length}
                     </Badge>
                 )}
-
-                {/* Always-visible: published toggle */}
                 <div className="flex items-center gap-1.5 shrink-0">
-                    <Switch
-                        checked={pkg.published_on_site}
+                    <Switch checked={pkg.published_on_site}
                         onCheckedChange={val => onUpdate(pkgIdx, 'published_on_site', val)}
-                        id={`pkg-pub-${pkgIdx}`}
-                    />
-                    <Label
-                        htmlFor={`pkg-pub-${pkgIdx}`}
+                        id={`pkg-pub-${pkgIdx}`} />
+                    <Label htmlFor={`pkg-pub-${pkgIdx}`}
                         className={cn('text-xs font-semibold cursor-pointer w-10',
-                            pkg.published_on_site ? 'text-green-600' : 'text-muted-foreground')}
-                    >
+                            pkg.published_on_site ? 'text-green-600' : 'text-muted-foreground')}>
                         {pkg.published_on_site ? 'Live' : 'Hidden'}
                     </Label>
                 </div>
-
-                <Button
-                    type="button" variant="ghost" size="sm"
-                    onClick={() => onRemove(pkgIdx)}
-                    className="text-destructive hover:text-destructive h-9 w-9 p-0 shrink-0"
-                >
+                <Button type="button" variant="ghost" size="sm" onClick={() => onRemove(pkgIdx)}
+                    className="text-destructive hover:text-destructive h-9 w-9 p-0 shrink-0">
                     <Trash2 className="h-4 w-4" />
                 </Button>
             </div>
-
-            {/* Always-visible: website URL strip */}
             <div className="px-4 pb-3 flex items-center gap-2">
                 <div className="relative flex-1">
                     <ExternalLink className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
-                    <Input
-                        value={pkg.website_url}
+                    <Input value={pkg.website_url}
                         onChange={e => onUpdate(pkgIdx, 'website_url', e.target.value)}
                         placeholder="Package website link (optional)"
-                        type="url"
-                        className="pl-8 h-8 text-sm"
+                        type="url" className="pl-8 h-8 text-sm"
                     />
                 </div>
                 {pkg.website_url && (
-
-                       <a href={pkg.website_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-primary underline-offset-4 hover:underline inline-flex items-center gap-1 shrink-0"
-                    >
+                    <a href={pkg.website_url} target="_blank" rel="noopener noreferrer"
+                        className="text-xs text-primary underline-offset-4 hover:underline inline-flex items-center gap-1 shrink-0">
                         <ExternalLink className="h-3 w-3" /> Open
                     </a>
                 )}
             </div>
-
-            {/* ── Expandable body ── */}
             {expanded && (
                 <div className="border-t px-4 pb-4 pt-4 space-y-4">
-
                     <div>
                         <Label className="text-xs font-semibold mb-2 block">Card Description</Label>
-                        <Textarea
-                            value={pkg.short_description}
+                        <Textarea value={pkg.short_description}
                             onChange={e => onUpdate(pkgIdx, 'short_description', e.target.value)}
-                            placeholder="Brief description that appears in the card..."
-                            rows={2}
-                        />
+                            placeholder="Brief description that appears in the card..." rows={2} />
                     </div>
-
                     <div>
                         <Label className="text-xs font-semibold mb-2 block">
-                            Full Description
-                            <span className="ml-1.5 font-normal text-muted-foreground">(optional)</span>
+                            Full Description <span className="ml-1.5 font-normal text-muted-foreground">(optional)</span>
                         </Label>
-                        <RichTextEditor
-                            value={pkg.description}
-                            onChange={v => onUpdate(pkgIdx, 'description', v)}
-                        />
+                        <RichTextEditor value={pkg.description} onChange={v => onUpdate(pkgIdx, 'description', v)} />
                     </div>
-
-                    {/* Published on Site detailed row (mirrors the always-visible toggle) */}
-                    <PublishRow
-                        id={`pkg-pub-detail-${pkgIdx}`}
-                        checked={pkg.published_on_site}
-                        onChange={val => onUpdate(pkgIdx, 'published_on_site', val)}
-                    />
-
-                    {/* Features */}
+                    <PublishRow id={`pkg-pub-detail-${pkgIdx}`} checked={pkg.published_on_site}
+                        onChange={val => onUpdate(pkgIdx, 'published_on_site', val)} />
                     <div>
                         <Label className="text-xs font-semibold mb-2 block">Features</Label>
                         <div className="space-y-2">
                             {pkg.features?.map((feature, fi) => (
                                 <div key={fi} className="flex gap-2">
-                                    <Input
-                                        value={feature}
-                                        onChange={e => updateFeature(fi, e.target.value)}
-                                        placeholder="Feature name"
-                                        className="text-sm"
-                                    />
+                                    <Input value={feature} onChange={e => updateFeature(fi, e.target.value)}
+                                        placeholder="Feature name" className="text-sm" />
                                     <Button type="button" variant="ghost" size="sm" onClick={() => removeFeature(fi)}>
                                         <X className="h-4 w-4" />
                                     </Button>
@@ -453,8 +392,6 @@ function PackageCard({ pkg, pkgIdx, expanded, onToggle, onUpdate, onRemove, onAd
                             </Button>
                         </div>
                     </div>
-
-                    {/* ── Sub-packages (accordion) ── */}
                     <div className="border-t pt-4">
                         <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center gap-2">
@@ -467,15 +404,11 @@ function PackageCard({ pkg, pkgIdx, expanded, onToggle, onUpdate, onRemove, onAd
                                     </Badge>
                                 )}
                             </div>
-                            <Button
-                                type="button" variant="outline" size="sm"
-                                onClick={() => onAddSub(pkgIdx)}
-                                className="gap-1.5 h-7 text-xs"
-                            >
+                            <Button type="button" variant="outline" size="sm" onClick={() => onAddSub(pkgIdx)}
+                                className="gap-1.5 h-7 text-xs">
                                 <Plus className="h-3 w-3" /> Add Sub-Package
                             </Button>
                         </div>
-
                         {(pkg.sub_packages?.length ?? 0) === 0 ? (
                             <p className="text-xs text-muted-foreground text-center py-2">
                                 No sub-packages. Click "Add Sub-Package" to break this package into tiers.
@@ -483,16 +416,9 @@ function PackageCard({ pkg, pkgIdx, expanded, onToggle, onUpdate, onRemove, onAd
                         ) : (
                             <div className="space-y-2">
                                 {pkg.sub_packages!.map((sub, subIdx) => (
-                                    <SubPackageCard
-                                        key={subIdx}
-                                        sub={sub}
-                                        subIdx={subIdx}
-                                        pkgIdx={pkgIdx}
-                                        expanded={openSubIdx === subIdx}  // ← accordion
-                                        onToggle={toggleSub}              // ← accordion
-                                        onUpdate={onUpdateSub}
-                                        onRemove={onRemoveSub}
-                                    />
+                                    <SubPackageCard key={subIdx} sub={sub} subIdx={subIdx} pkgIdx={pkgIdx}
+                                        expanded={openSubIdx === subIdx} onToggle={toggleSub}
+                                        onUpdate={onUpdateSub} onRemove={onRemoveSub} />
                                 ))}
                             </div>
                         )}
@@ -507,11 +433,8 @@ function PackageCard({ pkg, pkgIdx, expanded, onToggle, onUpdate, onRemove, onAd
 
 export default function ServiceForm({ mode, categories, tags, media, defaultValues = {} }: Props) {
 
-    // Package accordion: track which package is open (null = none)
     const [openPkgIdx, setOpenPkgIdx] = useState<number | null>(null);
-
-    const togglePkg = (idx: number) =>
-        setOpenPkgIdx(prev => (prev === idx ? null : idx));
+    const togglePkg = (idx: number) => setOpenPkgIdx(prev => (prev === idx ? null : idx));
 
     const normaliseSubPackages = (subs?: any[]): ServiceSubPackageFormData[] =>
         (subs ?? []).map(s => ({
@@ -536,6 +459,7 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
         short_description: defaultValues.short_description ?? '',
         description:       defaultValues.description       ?? '',
         icon:              defaultValues.icon              ?? '',
+        button_type:       defaultValues.button_type       ?? 'read_more',  // ← NEW
         website_url:       defaultValues.website_url       ?? '',
         website_logo_id:   defaultValues.website_logo_id   ? String(defaultValues.website_logo_id) : '',
         image_id:          defaultValues.image_id          ? String(defaultValues.image_id) : '',
@@ -564,10 +488,8 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
         cats.map(cat => (
             <div key={cat.id}>
                 <label className="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 hover:bg-muted/50">
-                    <Checkbox
-                        checked={data.category_ids.includes(cat.id)}
-                        onCheckedChange={() => toggleId('category_ids', cat.id)}
-                    />
+                    <Checkbox checked={data.category_ids.includes(cat.id)}
+                        onCheckedChange={() => toggleId('category_ids', cat.id)} />
                     <span className="text-sm" style={{ paddingLeft: depth * 12 }}>{cat.name}</span>
                 </label>
                 {cat.children && renderCategories(cat.children, depth + 1)}
@@ -587,13 +509,11 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
             ...data.packages,
             { title: '', short_description: '', description: '', website_url: '', features: [], published_on_site: true, sub_packages: [] },
         ]);
-        // Auto-open the newly added package
         setOpenPkgIdx(newIdx);
     };
 
     const removePackage = (idx: number) => {
         updatePackages(data.packages.filter((_, i) => i !== idx));
-        // Close if the removed package was open
         setOpenPkgIdx(prev => (prev === idx ? null : prev !== null && prev > idx ? prev - 1 : prev));
     };
 
@@ -602,8 +522,6 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
         next[idx] = { ...next[idx], [field]: value };
         updatePackages(next);
     };
-
-    // ── Sub-package helpers ───────────────────────────────────────────────────
 
     const addSubPackage = (pkgIdx: number) => {
         const next = [...data.packages];
@@ -648,6 +566,8 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
         return undefined;
     };
 
+    const isExploreMore = data.button_type === 'explore_more';
+
     // ── Render ────────────────────────────────────────────────────────────────
 
     return (
@@ -681,35 +601,23 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
                                 </div>
                             </Field>
                             <Field label="Order Number" error={getFirstError('order_number')} hint="Display order on listing page">
-                                <Input
-                                    type="number"
-                                    value={data.order_number}
-                                    onChange={e => setData('order_number', e.target.value)}
-                                    min="0"
-                                />
+                                <Input type="number" value={data.order_number}
+                                    onChange={e => setData('order_number', e.target.value)} min="0" />
                             </Field>
                         </div>
 
-                        <Field
-                            label="Short Description" required
-                            error={getFirstError('short_description')}
-                            hint="Brief summary (shows in listings) - max 500 characters"
-                        >
-                            <Textarea
-                                value={data.short_description}
+                        <Field label="Short Description" required error={getFirstError('short_description')}
+                            hint="Brief summary (shows in listings) - max 500 characters">
+                            <Textarea value={data.short_description}
                                 onChange={e => setData('short_description', e.target.value)}
                                 placeholder="A short, compelling description..."
                                 rows={2} maxLength={500}
-                                className={cn(errors.short_description && 'border-destructive')}
-                            />
+                                className={cn(errors.short_description && 'border-destructive')} />
                             <p className="text-xs text-muted-foreground">{data.short_description.length}/500 characters</p>
                         </Field>
 
-                        <Field
-                            label="Service Description" required
-                            error={getFirstError('description')}
-                            hint="Overview/introduction of the service (HTML supported)."
-                        >
+                        <Field label="Service Description" required error={getFirstError('description')}
+                            hint="Overview/introduction of the service (HTML supported).">
                             <RichTextEditor value={data.description} onChange={v => setData('description', v)} />
                             {!data.description && (
                                 <p className="text-xs text-destructive flex items-center gap-1">
@@ -725,7 +633,6 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
                     <p className="mb-4 text-sm text-muted-foreground">
                         Each package can optionally have sub-packages. Click the arrow to expand and edit details.
                     </p>
-
                     {data.packages.length === 0 ? (
                         <div className="rounded-lg border border-dashed p-6 text-center">
                             <p className="text-sm text-muted-foreground mb-3">No packages yet.</p>
@@ -736,20 +643,12 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
                     ) : (
                         <div className="space-y-2">
                             {data.packages.map((pkg, pkgIdx) => (
-                                <PackageCard
-                                    key={pkgIdx}
-                                    pkg={pkg}
-                                    pkgIdx={pkgIdx}
-                                    expanded={openPkgIdx === pkgIdx}  // ← accordion
-                                    onToggle={togglePkg}              // ← accordion
-                                    onUpdate={updatePackage}
-                                    onRemove={removePackage}
-                                    onAddSub={addSubPackage}
-                                    onUpdateSub={updateSubPackage}
-                                    onRemoveSub={removeSubPackage}
-                                />
+                                <PackageCard key={pkgIdx} pkg={pkg} pkgIdx={pkgIdx}
+                                    expanded={openPkgIdx === pkgIdx} onToggle={togglePkg}
+                                    onUpdate={updatePackage} onRemove={removePackage}
+                                    onAddSub={addSubPackage} onUpdateSub={updateSubPackage}
+                                    onRemoveSub={removeSubPackage} />
                             ))}
-
                             <Button type="button" variant="outline" onClick={addPackage} className="w-full gap-1.5 mt-2">
                                 <Plus className="h-4 w-4" /> Add Another Package
                             </Button>
@@ -781,7 +680,50 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
                             <Input value={data.icon} onChange={e => setData('icon', e.target.value)} placeholder="🏢" />
                         </Field>
 
-                        <Field label="Service Website URL" error={getFirstError('website_url')} hint="External website (optional)">
+                        {/* ── NEW: Button Type ── */}
+                        <Field
+                            label="Card Button Type"
+                            required
+                            error={getFirstError('button_type')}
+                            hint="Choose what the action button does on the service card."
+                        >
+                            <Select
+                                value={data.button_type}
+                                onValueChange={v => setData('button_type', v as ButtonType)}
+                            >
+                                <SelectTrigger className={cn(errors.button_type && 'border-destructive')}>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="read_more">
+                                        <div className="flex items-center gap-2">
+                                            <ArrowRight className="h-3.5 w-3.5 text-green-600" />
+                                            Read More — internal page
+                                        </div>
+                                    </SelectItem>
+                                    <SelectItem value="explore_more">
+                                        <div className="flex items-center gap-2">
+                                            <Globe className="h-3.5 w-3.5 text-blue-600" />
+                                            Explore More — external website
+                                        </div>
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+                            {/* Live preview of what was selected */}
+                            <ButtonTypePreview buttonType={data.button_type} />
+                        </Field>
+
+                        {/* ── Service Website URL — required when Explore More ── */}
+                        <Field
+                            label="Service Website URL"
+                            required={isExploreMore}
+                            error={getFirstError('website_url')}
+                            hint={
+                                isExploreMore
+                                    ? 'Required — the "Explore More" button will open this URL.'
+                                    : 'Optional — external website for this service.'
+                            }
+                        >
                             <div className="relative">
                                 <ExternalLink className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
                                 <Input
@@ -789,9 +731,20 @@ export default function ServiceForm({ mode, categories, tags, media, defaultValu
                                     onChange={e => setData('website_url', e.target.value)}
                                     placeholder="https://example.com"
                                     type="url"
-                                    className={cn('pl-9', errors.website_url && 'border-destructive')}
+                                    className={cn(
+                                        'pl-9',
+                                        errors.website_url && 'border-destructive',
+                                        isExploreMore && !data.website_url && 'border-orange-400 focus:ring-orange-300',
+                                    )}
                                 />
                             </div>
+                            {/* Inline warning when Explore More but no URL yet */}
+                            {isExploreMore && !data.website_url && !errors.website_url && (
+                                <div className="flex items-center gap-1.5 text-xs text-orange-600">
+                                    <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                                    A website URL is required for the "Explore More" button.
+                                </div>
+                            )}
                             {data.website_url && (
                                 <a href={data.website_url} target="_blank" rel="noopener noreferrer"
                                     className="text-xs text-primary underline-offset-4 hover:underline inline-flex items-center gap-1">
