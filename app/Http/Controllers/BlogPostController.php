@@ -340,6 +340,33 @@ class BlogPostController extends Controller
         return back()->with('success', 'Category created.');
     }
 
+    public function updateCategory(Request $request, Category $category)
+{
+    $data = $request->validate([
+        'name'        => ['required', 'string', 'max:191', Rule::unique('categories', 'name')->ignore($category->id)],
+        'slug'        => ['nullable', 'string', 'max:191', Rule::unique('categories', 'slug')->ignore($category->id)],
+        'description' => ['nullable', 'string', 'max:500'],
+        'parent_id'   => ['nullable', 'exists:categories,id'],
+    ]);
+
+    $category->update([
+        'name'        => $data['name'],
+        'slug'        => $data['slug'] ?? Str::slug($data['name']),
+        'description' => $data['description'] ?? null,
+        'parent_id'   => ($data['parent_id'] === 'none' || empty($data['parent_id'])) ? null : $data['parent_id'],
+    ]);
+
+    if ($this->isApi($request)) {
+        return response()->json([
+            'success' => true,
+            'message' => 'Category updated.',
+            'data'    => $category,
+        ]);
+    }
+
+    return back()->with('success', 'Category updated.');
+}
+
     public function destroyCategory(Request $request, Category $category)
     {
         if ($category->children()->exists()) {

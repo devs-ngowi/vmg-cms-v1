@@ -13,9 +13,7 @@ import {
 import { DataTable, type ColumnDef }         from '@/components/ui/data-table';
 import type { BreadcrumbItem }               from '@/types';
 import {
-    ArrowLeft, Calendar, CheckCircle2, ClipboardList,
-    Eye, Mail, MessageSquare, MoreHorizontal,
-    Phone, Trash2, User,
+    ArrowLeft, Eye, Mail, MoreHorizontal, Trash2,
 } from 'lucide-react';
 import {
     DropdownMenu, DropdownMenuContent, DropdownMenuItem,
@@ -45,10 +43,10 @@ type Form = {
 // ── Status config ─────────────────────────────────────────────────────────────
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; dot: string }> = {
-    new:      { label: 'New',      color: 'border-blue-200 bg-blue-50 text-blue-700',   dot: 'bg-blue-500'   },
-    read:     { label: 'Read',     color: 'border-slate-200 bg-slate-50 text-slate-600', dot: 'bg-slate-400'  },
-    replied:  { label: 'Replied',  color: 'border-green-200 bg-green-50 text-green-700', dot: 'bg-green-500'  },
-    archived: { label: 'Archived', color: 'border-amber-200 bg-amber-50 text-amber-700', dot: 'bg-amber-400'  },
+    new:      { label: 'New',      color: 'border-blue-200 bg-blue-50 text-blue-700',    dot: 'bg-blue-500'  },
+    read:     { label: 'Read',     color: 'border-slate-200 bg-slate-50 text-slate-600', dot: 'bg-slate-400' },
+    replied:  { label: 'Replied',  color: 'border-green-200 bg-green-50 text-green-700', dot: 'bg-green-500' },
+    archived: { label: 'Archived', color: 'border-amber-200 bg-amber-50 text-amber-700', dot: 'bg-amber-400' },
 };
 
 function StatusBadge({ status }: { status: string }) {
@@ -75,41 +73,31 @@ export default function SubmissionsIndex({
     submissions?: Submission[];
     forms?:       Form[];
 }) {
-    const [deleteTarget,  setDeleteTarget]  = useState<Submission | null>(null);
-    const [statusFilter,  setStatusFilter]  = useState<string>('all');
-    const [formFilter,    setFormFilter]    = useState<string>('all');
-    const [updatingId,    setUpdatingId]    = useState<number | null>(null);
+    // ── ALL hooks must be called unconditionally at the top ───────────────────
+    const [deleteTarget, setDeleteTarget] = useState<Submission | null>(null);
+    const [statusFilter, setStatusFilter] = useState<string>('all');
+    const [formFilter,   setFormFilter]   = useState<string>('all');
+    const [updatingId,   setUpdatingId]   = useState<number | null>(null);
 
-    // ── Guard ─────────────────────────────────────────────────────────────────
-    if (!submissions) {
-        return (
-            <AppLayout breadcrumbs={breadcrumbs}>
-                <Head title="Submissions" />
-                <div className="flex items-center justify-center py-32 text-sm text-muted-foreground">
-                    Loading submissions…
-                </div>
-            </AppLayout>
-        );
-    }
+    // Safe list — always an array even if prop is undefined
+    const allSubmissions = submissions ?? [];
+    const allForms       = forms       ?? [];
 
-    const allForms = forms ?? [];
-
-    // ── Derived stats ─────────────────────────────────────────────────────────
+    // ── useMemo MUST be above any early return ────────────────────────────────
     const stats = useMemo(() => ({
-        total:    submissions.length,
-        new:      submissions.filter(s => s.status === 'new').length,
-        replied:  submissions.filter(s => s.status === 'replied').length,
-        archived: submissions.filter(s => s.status === 'archived').length,
-    }), [submissions]);
+        total:    allSubmissions.length,
+        new:      allSubmissions.filter(s => s.status === 'new').length,
+        replied:  allSubmissions.filter(s => s.status === 'replied').length,
+        archived: allSubmissions.filter(s => s.status === 'archived').length,
+    }), [allSubmissions]);
 
-    // ── Filtered data ─────────────────────────────────────────────────────────
     const filtered = useMemo(() => {
-        return submissions.filter(s => {
+        return allSubmissions.filter(s => {
             const statusOk = statusFilter === 'all' || s.status === statusFilter;
             const formOk   = formFilter   === 'all' || String(s.form_id) === formFilter;
             return statusOk && formOk;
         });
-    }, [submissions, statusFilter, formFilter]);
+    }, [allSubmissions, statusFilter, formFilter]);
 
     // ── Actions ───────────────────────────────────────────────────────────────
     const confirmDelete = () => {
@@ -124,12 +112,21 @@ export default function SubmissionsIndex({
         router.patch(
             `/submissions/${submission.id}`,
             { status },
-            {
-                preserveScroll: true,
-                onFinish: () => setUpdatingId(null),
-            },
+            { preserveScroll: true, onFinish: () => setUpdatingId(null) },
         );
     };
+
+    // ── Loading guard — AFTER all hooks ──────────────────────────────────────
+    if (!submissions) {
+        return (
+            <AppLayout breadcrumbs={breadcrumbs}>
+                <Head title="Submissions" />
+                <div className="flex items-center justify-center py-32 text-sm text-muted-foreground">
+                    Loading submissions…
+                </div>
+            </AppLayout>
+        );
+    }
 
     // ── Columns ───────────────────────────────────────────────────────────────
     const columns: ColumnDef<Submission>[] = [
@@ -139,7 +136,6 @@ export default function SubmissionsIndex({
             sortable: true,
             cell: (row) => (
                 <div className="flex items-center gap-3">
-                    {/* Avatar circle */}
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary uppercase">
                         {(row.sender_name ?? row.sender_email ?? '?')[0]}
                     </div>
@@ -200,8 +196,6 @@ export default function SubmissionsIndex({
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-52">
-
-                        {/* View detail */}
                         <DropdownMenuItem asChild>
                             <Link href={`/submissions/${row.id}`} className="flex items-center gap-2">
                                 <Eye className="h-3.5 w-3.5" />
@@ -209,7 +203,6 @@ export default function SubmissionsIndex({
                             </Link>
                         </DropdownMenuItem>
 
-                        {/* Reply via email */}
                         {row.sender_email && (
                             <DropdownMenuItem asChild>
                                 <a
@@ -224,7 +217,6 @@ export default function SubmissionsIndex({
 
                         <DropdownMenuSeparator />
 
-                        {/* Quick status updates */}
                         {(['new', 'read', 'replied', 'archived'] as const)
                             .filter(s => s !== row.status)
                             .map(s => {
@@ -262,7 +254,7 @@ export default function SubmissionsIndex({
             <Head title="Submissions" />
             <div className="px-4 py-6 sm:px-6 lg:px-8">
 
-                {/* ── Header ── */}
+                {/* Header */}
                 <div className="mb-6 flex items-start justify-between gap-4 flex-wrap">
                     <div>
                         <h1 className="text-2xl font-semibold tracking-tight">Submissions</h1>
@@ -278,7 +270,7 @@ export default function SubmissionsIndex({
                     </Button>
                 </div>
 
-                {/* ── Stats cards ── */}
+                {/* Stats cards */}
                 <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
                     {[
                         { label: 'Total',    value: stats.total,    color: 'text-foreground', dot: '' },
@@ -292,8 +284,7 @@ export default function SubmissionsIndex({
                             onClick={() => setStatusFilter(label === 'Total' ? 'all' : label.toLowerCase())}
                             className={`rounded-xl border bg-card px-5 py-4 text-left transition-shadow hover:shadow-md ${
                                 (label === 'Total' ? statusFilter === 'all' : statusFilter === label.toLowerCase())
-                                    ? 'ring-2 ring-primary/30'
-                                    : ''
+                                    ? 'ring-2 ring-primary/30' : ''
                             }`}
                         >
                             <div className="flex items-center gap-2 mb-1">
@@ -307,9 +298,8 @@ export default function SubmissionsIndex({
                     ))}
                 </div>
 
-                {/* ── Filters ── */}
+                {/* Filters */}
                 <div className="mb-4 flex flex-wrap gap-3">
-                    {/* Status filter */}
                     <Select value={statusFilter} onValueChange={setStatusFilter}>
                         <SelectTrigger className="w-40">
                             <SelectValue placeholder="All statuses" />
@@ -323,7 +313,6 @@ export default function SubmissionsIndex({
                         </SelectContent>
                     </Select>
 
-                    {/* Form filter */}
                     {allForms.length > 0 && (
                         <Select value={formFilter} onValueChange={setFormFilter}>
                             <SelectTrigger className="w-48">
@@ -340,27 +329,23 @@ export default function SubmissionsIndex({
                         </Select>
                     )}
 
-                    {/* Clear filters */}
                     {(statusFilter !== 'all' || formFilter !== 'all') && (
                         <Button
-                            size="sm"
-                            variant="ghost"
-                            className="text-muted-foreground"
+                            size="sm" variant="ghost" className="text-muted-foreground"
                             onClick={() => { setStatusFilter('all'); setFormFilter('all'); }}
                         >
                             Clear filters
                         </Button>
                     )}
 
-                    {/* Filtered count */}
                     {(statusFilter !== 'all' || formFilter !== 'all') && (
                         <span className="ml-auto self-center text-xs text-muted-foreground">
-                            Showing {filtered.length} of {submissions.length}
+                            Showing {filtered.length} of {allSubmissions.length}
                         </span>
                     )}
                 </div>
 
-                {/* ── Table ── */}
+                {/* Table */}
                 <DataTable<Submission>
                     data={filtered}
                     columns={columns}
@@ -375,7 +360,7 @@ export default function SubmissionsIndex({
                 />
             </div>
 
-            {/* ── Delete confirmation ── */}
+            {/* Delete dialog */}
             <AlertDialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>

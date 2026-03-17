@@ -119,6 +119,7 @@ Route::middleware('auth')->group(function () {
     // Categories & Tags management
     Route::get('/blog/categories',                      [BlogPostController::class, 'categories'])->name('blog.categories');
     Route::post('/blog/categories',                     [BlogPostController::class, 'storeCategory'])->name('blog.categories.store');
+    Route::patch('/blog/categories/{category}',         [BlogPostController::class, 'updateCategory'])->name('blog.categories.update');
     Route::delete('/blog/categories/{category}',        [BlogPostController::class, 'destroyCategory'])->name('blog.categories.destroy');
     Route::get('/blog/tags',                            [BlogPostController::class, 'tags'])->name('blog.tags');
     Route::post('/blog/tags',                           [BlogPostController::class, 'storeTag'])->name('blog.tags.store');
@@ -135,21 +136,20 @@ Route::middleware('auth')->group(function () {
     Route::patch('/media/{media}', [MediaController::class, 'update'])->name('media.update');
     Route::delete('/media/{media}', [MediaController::class, 'destroy'])->name('media.destroy');
 
-    // ── Forms & Inquiries ─────────────────────────────
-    Route::get('/forms',               [FormController::class, 'index'])->name('forms.index');
-    Route::get('/forms/create',        [FormController::class, 'create'])->name('forms.create');
-    Route::post('/forms',              [FormController::class, 'store'])->name('forms.store');
-    Route::get('/forms/{form}/edit',   [FormController::class, 'edit'])->name('forms.edit');
-    Route::patch('/forms/{form}',      [FormController::class, 'update'])->name('forms.update');
-    Route::patch('/forms/{form}/toggle', [FormController::class, 'toggle'])->name('forms.toggle');
-    Route::delete('/forms/{form}',     [FormController::class, 'destroy'])->name('forms.destroy');
+    // Forms
+    Route::get('/forms',                [FormController::class, 'index'])->name('forms.index');
+    Route::get('/forms/create',         [FormController::class, 'create'])->name('forms.create');
+    Route::post('/forms',               [FormController::class, 'store'])->name('forms.store');
+    Route::get('/forms/{form}/edit',    [FormController::class, 'edit'])->name('forms.edit');
+    Route::patch('/forms/{form}',       [FormController::class, 'update'])->name('forms.update');
+    Route::patch('/forms/{form}/toggle',[FormController::class, 'toggle'])->name('forms.toggle');
+    Route::delete('/forms/{form}',      [FormController::class, 'destroy'])->name('forms.destroy');
 
-    // ── Submissions ────────────────────────────────────
-    Route::get('/submissions',                          [FormController::class, 'submissions'])->name('submissions.index');
-    Route::get('/submissions/{submission}',             [FormController::class, 'showSubmission'])->name('submissions.show');
-    Route::patch('/submissions/{submission}',           [FormController::class, 'updateSubmission'])->name('submissions.update');
-    Route::delete('/submissions/{submission}',          [FormController::class, 'destroySubmission'])->name('submissions.destroy');
-
+    // Submissions
+    Route::get('/submissions',              [FormController::class, 'submissions'])->name('submissions.index');
+    Route::get('/submissions/{submission}', [FormController::class, 'showSubmission'])->name('submissions.show');
+    Route::patch('/submissions/{submission}',[FormController::class, 'updateSubmission'])->name('submissions.update');
+    Route::delete('/submissions/{submission}',[FormController::class, 'destroySubmission'])->name('submissions.destroy');
     // ── Publishing ────────────────────────────────────
     Route::get('/workflow',                                    [WorkflowController::class, 'index'])->name('workflow.index');
     Route::patch('/workflow/{workflow}/move',                  [WorkflowController::class, 'move'])->name('workflow.move');

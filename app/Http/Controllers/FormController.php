@@ -34,7 +34,7 @@ class FormController extends Controller
             'is_active'         => (bool) $form->is_active,
             'fields_count'      => $form->fields_count ?? $form->fields->count(),
             'submissions_count' => $form->submissions_count ?? $form->submissions()->count(),
-            'fields'            => $form->fields->map(fn (FormField $f) => [  // ← added
+            'fields'            => $form->fields->map(fn (FormField $f) => [
                 'id'          => $f->id,
                 'label'       => $f->label,
                 'field_type'  => $f->field_type,
@@ -61,7 +61,7 @@ class FormController extends Controller
                 'field_type'  => $f->field_type,
                 'is_required' => (bool) $f->is_required,
                 'sort_order'  => $f->sort_order,
-                'options'     => $f->options ?? '',
+                'options'     => $f->options     ?? '',
                 'placeholder' => $f->placeholder ?? '',
             ])->values(),
         ];
@@ -77,7 +77,7 @@ class FormController extends Controller
             'sender_name'  => $s->sender_name,
             'sender_email' => $s->sender_email,
             'phone'        => $s->phone,
-            'status'       => $s->status,
+            'status'       => $s->status ?? 'new',
             'submitted_at' => $s->submitted_at?->format('Y-m-d H:i'),
             'responses'    => $s->relationLoaded('responses')
                 ? $s->responses->map(fn ($r) => [
@@ -102,110 +102,35 @@ class FormController extends Controller
             'fields.*.is_required' => ['boolean'],
             'fields.*.options'     => ['nullable', 'string'],
             'fields.*.placeholder' => ['nullable', 'string', 'max:191'],
-            // id only needed on update
             ...($isUpdate ? ['fields.*.id' => ['nullable', 'integer']] : []),
         ];
     }
 
-    public function submit(Request $request, Form $form)
-    {
-        // Only accept submissions for active forms
-        if (! $form->is_active) {
-            return response()->json([
-                'success' => false,
-                'message' => 'This form is not currently accepting submissions.',
-            ], 403);
-        }
-
-        $data = $request->validate([
-            'responses'             => ['required', 'array'],
-            'responses.*.field_id'  => ['required', 'exists:form_fields,id'],
-            'responses.*.value'     => ['nullable', 'string', 'max:5000'],
-            'sender_name'           => ['nullable', 'string', 'max:191'],
-            'sender_email'          => ['nullable', 'email', 'max:191'],
-            'phone'                 => ['nullable', 'string', 'max:50'],
-        ]);
-
-        // Load the form's fields for auto-detection
-        $form->load('fields');
-        $fieldMap = $form->fields->keyBy('id');
-
-        // Auto-detect sender_name / sender_email / phone from responses
-        // if not explicitly provided
-        $senderName  = $data['sender_name']  ?? null;
-        $senderEmail = $data['sender_email'] ?? null;
-        $phone       = $data['phone']        ?? null;
-
-        foreach ($data['responses'] as $response) {
-            $field = $fieldMap->get($response['field_id']);
-            if (! $field) continue;
-
-            $value     = trim($response['value'] ?? '');
-            $fieldType = $field->field_type;
-            $label     = strtolower($field->label);
-
-            // Auto-detect by field type / label keywords
-            if (! $senderEmail && $fieldType === 'email') {
-                $senderEmail = $value;
-            }
-            if (! $phone && $fieldType === 'tel') {
-                $phone = $value;
-            }
-            if (! $senderName && $fieldType === 'text' &&
-                (str_contains($label, 'name') || str_contains($label, 'full'))
-            ) {
-                $senderName = $value;
-            }
-        }
-
-        // Create the submission record
-        $submission = FormSubmission::create([
-            'form_id'      => $form->id,
-            'sender_name'  => $senderName,
-            'sender_email' => $senderEmail,
-            'phone'        => $phone,
-            'status'       => 'new',
-            'submitted_at' => now(),
-        ]);
-
-        // Save each field response
-        foreach ($data['responses'] as $responseData) {
-            FormResponse::create([
-                'submission_id' => $submission->id,
-                'field_id'      => $responseData['field_id'],
-                'value'         => $responseData['value'] ?? '',
-            ]);
-        }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Your submission has been received. We will be in touch shortly.',
-            'data'    => [
-                'submission_id' => $submission->id,
-            ],
-        ], 201);
-    }
-
     // ── Forms Index ───────────────────────────────────────────────────────────
-
     public function index(Request $request)
-    {
-        $forms = Form::withCount(['fields', 'submissions'])
-            ->with('fields')          // ← eager-load fields
-            ->latest()
-            ->get()
-            ->map(fn (Form $form) => $this->formatForm($form));
+{
+    $submissions = FormSubmission::with('form')
+        ->latest()
+        ->get()
+        ->map(fn (FormSubmission $s) => [
+            'id'           => $s->id,
+            'form_id'      => $s->form_id,
+            'form_name'    => $s->form?->name,
+            'form_type'    => $s->form?->form_type,
+            'sender_name'  => $s->sender_name,
+            'sender_email' => $s->sender_email,
+            'phone'        => $s->phone,
+            'status'       => $s->status ?? 'new',
+            'submitted_at' => $s->created_at?->diffForHumans(),
+        ]);
 
-        if ($this->isApi($request)) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Forms retrieved successfully.',
-                'data'    => $forms,
-            ]);
-        }
+    $forms = Form::select('id', 'name')->orderBy('name')->get();
 
-        return Inertia::render('forms/index', compact('forms'));
-    }
+    return Inertia::render('submissions/index', [
+        'submissions' => $submissions,
+        'forms'       => $forms,
+    ]);
+}
 
     // ── Create ────────────────────────────────────────────────────────────────
 
@@ -314,7 +239,7 @@ class FormController extends Controller
         return back()->with('success', 'Form status updated.');
     }
 
-    // ── Destroy ───────────────────────────────────────────────────────────────
+    // ── Destroy Form ──────────────────────────────────────────────────────────
 
     public function destroy(Request $request, Form $form)
     {
@@ -334,17 +259,82 @@ class FormController extends Controller
             ->with('success', 'Form deleted.');
     }
 
+    // ── Public Form Submit ────────────────────────────────────────────────────
+
+    public function submit(Request $request, Form $form)
+    {
+        if (!$form->is_active) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This form is not currently accepting submissions.',
+            ], 403);
+        }
+
+        $data = $request->validate([
+            'responses'             => ['required', 'array'],
+            'responses.*.field_id'  => ['required', 'exists:form_fields,id'],
+            'responses.*.value'     => ['nullable', 'string', 'max:5000'],
+            'sender_name'           => ['nullable', 'string', 'max:191'],
+            'sender_email'          => ['nullable', 'email', 'max:191'],
+            'phone'                 => ['nullable', 'string', 'max:50'],
+        ]);
+
+        $form->load('fields');
+        $fieldMap = $form->fields->keyBy('id');
+
+        $senderName  = $data['sender_name']  ?? null;
+        $senderEmail = $data['sender_email'] ?? null;
+        $phone       = $data['phone']        ?? null;
+
+        foreach ($data['responses'] as $response) {
+            $field = $fieldMap->get($response['field_id']);
+            if (!$field) continue;
+
+            $value     = trim($response['value'] ?? '');
+            $fieldType = $field->field_type;
+            $label     = strtolower($field->label);
+
+            if (!$senderEmail && $fieldType === 'email')                                          $senderEmail = $value;
+            if (!$phone       && $fieldType === 'tel')                                            $phone       = $value;
+            if (!$senderName  && $fieldType === 'text' && (str_contains($label, 'name') || str_contains($label, 'full')))
+                $senderName = $value;
+        }
+
+        $submission = FormSubmission::create([
+            'form_id'      => $form->id,
+            'sender_name'  => $senderName,
+            'sender_email' => $senderEmail,
+            'phone'        => $phone,
+            'status'       => 'new',
+            'submitted_at' => now(),
+        ]);
+
+        foreach ($data['responses'] as $responseData) {
+            FormResponse::create([
+                'submission_id' => $submission->id,
+                'field_id'      => $responseData['field_id'],
+                'value'         => $responseData['value'] ?? '',
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Your submission has been received. We will be in touch shortly.',
+            'data'    => ['submission_id' => $submission->id],
+        ], 201);
+    }
+
     // ── All Submissions ───────────────────────────────────────────────────────
 
     public function submissions(Request $request)
-{
-    $submissions = FormSubmission::with([
-            'form:id,name,form_type',
-            'responses.field',
-        ])
-        ->latest('submitted_at')
-        ->get()
-        ->map(fn (FormSubmission $s) => $this->formatSubmission($s));
+    {
+        $submissions = FormSubmission::with([
+                'form:id,name,form_type',
+                'responses.field',
+            ])
+            ->latest('submitted_at')
+            ->get()
+            ->map(fn (FormSubmission $s) => $this->formatSubmission($s));
 
         if ($this->isApi($request)) {
             return response()->json([
@@ -359,20 +349,13 @@ class FormController extends Controller
         return Inertia::render('submissions/index', compact('submissions', 'forms'));
     }
 
-    // ── Single Submission Detail ──────────────────────────────────────────────
+    // ── Single Submission ─────────────────────────────────────────────────────
 
     public function showSubmission(Request $request, FormSubmission $submission)
     {
         $submission->load(['form', 'responses.field']);
 
-        $detail = [
-            ...$this->formatSubmission($submission),
-            'responses' => $submission->responses->map(fn ($r) => [
-                'label'      => $r->field?->label ?? 'Unknown Field',
-                'field_type' => $r->field?->field_type,
-                'value'      => $r->value,
-            ])->values(),
-        ];
+        $detail = $this->formatSubmission($submission);
 
         if ($this->isApi($request)) {
             return response()->json([
