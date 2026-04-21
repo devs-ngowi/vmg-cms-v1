@@ -9,6 +9,8 @@ class ServiceSubPackage extends Model
 {
     use HasFactory;
 
+    protected $connection = 'tenant';
+
     protected $fillable = [
         'service_package_id',
         'title',

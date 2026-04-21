@@ -1,27 +1,25 @@
 <?php
+
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use App\Models\Role;
-use App\Models\Author;
 use Laravel\Sanctum\HasApiTokens;
+
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
+
+    protected $connection = 'tenant';   // ← tenant DB
+
     protected $fillable = [
-        'username',
-        'full_name',
-        'email',
-        'password',
-        'role_id',
-        'status',
-        'last_login',
+        'username', 'full_name', 'email',
+        'password', 'role_id', 'status', 'last_login',
     ];
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
+
+    protected $hidden = ['password', 'remember_token'];
+
     protected function casts(): array
     {
         return [
@@ -30,33 +28,29 @@ class User extends Authenticatable
             'password'          => 'hashed',
         ];
     }
+
     public function role()
     {
         return $this->belongsTo(Role::class);
     }
+
     public function author()
     {
         return $this->hasOne(Author::class);
     }
+
     public function getDisplayNameAttribute(): string
     {
         return $this->full_name ?? $this->username ?? $this->email;
     }
+
     public function hasPermission(string $module, string $action): bool
     {
-        if ($this->isAdmin()) {
-            return true;
-        }
-
-        if (! $this->role) {
-            return false;
-        }
+        if ($this->isAdmin()) return true;
+        if (! $this->role) return false;
 
         $perm = $this->role->permissions()->where('module', $module)->first();
-
-        if (! $perm) {
-            return false;
-        }
+        if (! $perm) return false;
 
         return match ($action) {
             'view'    => (bool) $perm->can_view,
@@ -67,6 +61,7 @@ class User extends Authenticatable
             default   => false,
         };
     }
+
     public function isAdmin(): bool
     {
         return $this->role?->name === 'admin';

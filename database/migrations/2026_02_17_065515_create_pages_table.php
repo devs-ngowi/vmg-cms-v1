@@ -6,9 +6,10 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    protected $connection = 'tenant';
     public function up(): void
     {
-        Schema::create('pages', function (Blueprint $table) {
+         Schema::connection('tenant')->create('pages', function (Blueprint $table) {
             $table->id();
             $table->string('title', 255);
             $table->string('slug', 255)->unique()->index();

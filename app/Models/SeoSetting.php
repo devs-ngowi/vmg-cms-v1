@@ -9,6 +9,7 @@ class SeoSetting extends Model
 {
     use HasFactory;
 
+    protected $connection = 'tenant';
     protected $primaryKey = 'id';
 
     protected $fillable = [

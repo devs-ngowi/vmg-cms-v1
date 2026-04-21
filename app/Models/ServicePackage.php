@@ -9,6 +9,8 @@ class ServicePackage extends Model
 {
     use HasFactory;
 
+    protected $connection = 'tenant';
+
     protected $fillable = [
         'service_id',
         'title',

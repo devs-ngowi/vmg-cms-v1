@@ -5,6 +5,8 @@ use Illuminate\Database\Eloquent\Model;
 class Permission extends Model
 {
     use HasFactory;
+
+    protected $connection = 'tenant';
     protected $primaryKey = 'id';
     protected $fillable = [
         'role_id',

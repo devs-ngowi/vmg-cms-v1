@@ -9,6 +9,8 @@ class Tag extends Model
 {
     use HasFactory;
 
+    protected $connection = 'tenant';
+
     protected $fillable = ['name', 'slug'];
 
     public function blogPosts()
@@ -26,7 +28,7 @@ class Tag extends Model
         return $this->morphedByMany(Service::class, 'taggable', 'taggables');
     }
 
-   
+
     public function getTotalUsageAttribute()
     {
         return $this->blog_posts_count

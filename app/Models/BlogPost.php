@@ -11,6 +11,7 @@ class BlogPost extends Model
 {
     use HasFactory, Trackable;
 
+    protected $connection = 'tenant';
 
     protected $primaryKey = 'id';
 

@@ -28,9 +28,12 @@ Route::prefix('v1')->group(function () {
     // ════════════════════════════════════════════════════════════════════════
     // 🟢 PUBLIC AUTH ROUTES
     // ════════════════════════════════════════════════════════════════════════
-    Route::prefix('auth')->group(function () {
-        Route::post('login',    [AuthController::class, 'login']);
-        Route::post('register', [AuthController::class, 'register']);
+   Route::prefix('auth')->group(function () {
+        Route::post('login',    [AuthController::class, 'login']);    // → JSON response
+        Route::post('register', [AuthController::class, 'register']); // → JSON response
+    });
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('auth/logout', [AuthController::class, 'logout']);
     });
 
     // ════════════════════════════════════════════════════════════════════════

@@ -9,9 +9,10 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
+    protected $connection = 'tenant';
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::connection('tenant')->create('users', function (Blueprint $table) {
             $table->id();
             $table->string('username', 80)->unique()->index()->nullable();
             $table->string('full_name', 120)->nullable();

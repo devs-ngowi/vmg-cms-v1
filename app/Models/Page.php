@@ -12,6 +12,8 @@ class Page extends Model
     use HasFactory, ConcernsTrackable;
 
 
+    protected $connection = 'tenant';
+
     protected $primaryKey = 'id';
 
     protected $fillable = [

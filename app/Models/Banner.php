@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Banner extends Model
 {
+    protected $connection = 'tenant';
     protected $fillable = [
         'sub_title', 'title', 'description',
         'btn_one_text', 'btn_one_url',

@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthorController;
 use App\Http\Controllers\BannerController;
 use App\Http\Controllers\BlogPostController;
 use App\Http\Controllers\ClientLogoController;
+use App\Http\Controllers\CompanyRegistrationController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FormController;
 use App\Http\Controllers\HeroSlideController;
@@ -37,7 +38,17 @@ Route::middleware('guest')->group(function () {
     Route::get('/forgot-password', fn () => Inertia::render('auth/forgot-password', [
         'status' => session('status'),
     ]))->name('password.request');
+
+    //tenant company registration
+    Route::get('/register-company', [CompanyRegistrationController::class, 'create'])
+        ->name('company.register');
+
+    Route::post('/register-company', [CompanyRegistrationController::class, 'store'])
+        ->name('company.register.store');
 });
+
+
+
 
 Route::get('/settings/two-factor', [TwoFactorQrCodeController::class, 'show'])
     ->name('two-factor.show');
@@ -190,6 +201,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('/testimonials/{testimonial}',         [TestimonialController::class, 'destroy'])->name('testimonials.destroy');
 
     Route::get('/settings',  [SiteSettingController::class, 'index'])->name('settings.index');
+    Route::post('/settings/seed-defaults', [SiteSettingController::class, 'seedDefaults'])
+    ->name('settings.seed-defaults');
     Route::post('/settings', [SiteSettingController::class, 'update'])->name('settings.update');
 
     // ── SEO & Navigation ──────────────────────────────

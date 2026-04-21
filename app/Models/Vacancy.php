@@ -11,6 +11,8 @@ class Vacancy extends Model
 
     protected $primaryKey = 'id';
 
+    protected $connection = 'tenant';
+
     protected $fillable = [
         'title', 'department', 'location', 'type',
         'description', 'deadline', 'author_id', 'status',

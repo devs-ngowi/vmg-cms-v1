@@ -7,10 +7,11 @@ export default function AuthSimpleLayout({
     children,
     title,
     description,
+    wide = false,
 }: AuthLayoutProps) {
     return (
         <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
-            <div className="w-full max-w-sm">
+            <div className={`w-full ${wide ? 'max-w-2xl' : 'max-w-sm'}`}>
                 <div className="flex flex-col gap-6">
                     <div className="flex flex-col items-center gap-4">
                         <Link
@@ -22,7 +23,6 @@ export default function AuthSimpleLayout({
                             </div>
                             <span className="sr-only">{title}</span>
                         </Link>
-
                         <div className="space-y-2 text-center">
                             <h1 className="text-xl font-medium">{title}</h1>
                             <p className="text-center text-sm text-muted-foreground">
@@ -30,7 +30,6 @@ export default function AuthSimpleLayout({
                             </p>
                         </div>
                     </div>
-
                     <div className="rounded-xl border bg-background p-6 shadow-sm">
                         {children}
                     </div>

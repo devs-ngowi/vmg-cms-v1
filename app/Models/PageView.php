@@ -9,9 +9,11 @@ class PageView extends Model
 {
     use HasFactory;
 
+    protected $connection = 'tenant';
+
     protected $primaryKey = 'id';
 
-    public $timestamps = false; 
+    public $timestamps = false;
 
     protected $fillable = [
         'content_id',

@@ -10,3 +10,11 @@ export type SharedData = {
     sidebarOpen: boolean;
     [key: string]: unknown;
 };
+
+
+export interface AuthLayoutProps {
+    children: React.ReactNode;
+    title: string;
+    description: string;
+    wide?: boolean;
+}

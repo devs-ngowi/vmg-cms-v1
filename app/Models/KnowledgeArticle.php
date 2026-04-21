@@ -9,6 +9,8 @@ class KnowledgeArticle extends Model
 {
     use HasFactory;
 
+    protected $connection = 'tenant';
+
     protected $fillable = [
         'category_id', 'title', 'slug', 'excerpt', 'content',
         'media_id', 'sort_order', 'is_active', 'is_featured',

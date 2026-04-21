@@ -11,6 +11,8 @@ class AuditLog extends Model
 
     protected $primaryKey = 'id';
 
+    protected $connection = 'tenant';
+
     public $timestamps = false;
 
     protected $fillable = [

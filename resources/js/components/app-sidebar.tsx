@@ -1,215 +1,186 @@
-import { Link, usePage } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
 import {
-    BarChart2,
-    BookOpen,
-    Briefcase,
-    ClipboardList,
-    Factory,
-    FileText,
-    FolderOpen,
-    GalleryHorizontal,
-    GitPullRequest,
-    Image,
-    LayoutGrid,
-    LibraryBig,
-    Mail,
-    Navigation,
-    NotebookTabs,
-    PanelTop,
-    PenLine,
-    Search,
-    Settings,
-    ShieldCheck,
-    Star,
-    Tag,
-    Users,
-    Wrench,
+    BarChart2, BookOpen, ClipboardList, Factory,
+    FileText, FolderOpen, GalleryHorizontal, GitPullRequest,
+    Image, LayoutGrid, LibraryBig, Mail, Navigation,
+    NotebookTabs, PanelTop, PenLine, Search, Settings,
+    ShieldCheck, Star, Tag, Users, Wrench,
 } from 'lucide-react';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import {
-    Sidebar,
-    SidebarContent,
-    SidebarFooter,
-    SidebarHeader,
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarMenuItem,
-    SidebarSeparator,
+    Sidebar, SidebarContent, SidebarFooter,
+    SidebarHeader, SidebarMenu, SidebarMenuButton,
+    SidebarMenuItem, SidebarSeparator,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import type { NavItem } from '@/types';
 import AppLogo from './app-logo';
+import { useSidebarConfig } from '@/hooks/use-company-storage';
 
-// ── Permission hook ───────────────────────────────────────────────────────────
+type NavItemWithMeta = NavItem & {
+    module?: string;
+    sidebarKey: string;
+};
 
-function useCanView() {
-    const { auth } = usePage<any>().props;
-    const isAdmin: boolean     = auth?.is_admin    ?? false;
-    const permissions: any[]   = auth?.permissions ?? [];
-
-    return (module: string): boolean => {
-        if (isAdmin) return true;
-        if (!permissions.length) return false;
-        const perm = permissions.find(
-            (p: any) => p.module.toLowerCase() === module.toLowerCase(),
-        );
-        return perm?.can_view === true;
-    };
-}
-
-// ── Types ─────────────────────────────────────────────────────────────────────
-
-type NavItemWithModule = NavItem & { module?: string };
-
-// ── Helper ────────────────────────────────────────────────────────────────────
-
-function filterItems(
-    items: NavItemWithModule[],
-    canView: (m: string) => boolean,
-): NavItem[] {
-    return items.filter(item => canView(item.module ?? item.title));
-}
-
-// ── Overview ──────────────────────────────────────────────────────────────────
-
-const overviewItems: NavItemWithModule[] = [
-    { title: 'Dashboard', href: dashboard(), icon: LayoutGrid, module: 'Dashboard' },
+const overviewItems: NavItemWithMeta[] = [
+    { title: 'Dashboard', href: dashboard(), icon: LayoutGrid, module: 'Dashboard', sidebarKey: 'dashboard' },
 ];
 
-// ── Auth & Users ──────────────────────────────────────────────────────────────
-
-const authItems: NavItemWithModule[] = [
-    { title: 'Users',               href: '/users',   icon: Users,       module: 'Users' },
-    { title: 'Roles & Permissions', href: '/roles',   icon: ShieldCheck, module: 'Roles' },
-    { title: 'Authors',             href: '/authors', icon: PenLine,     module: 'Users' },
+const authItems: NavItemWithMeta[] = [
+    { title: 'Users', href: '/users', icon: Users, module: 'Users', sidebarKey: 'users' },
+    { title: 'Roles & Permissions', href: '/roles', icon: ShieldCheck, module: 'Roles', sidebarKey: 'roles' },
+    { title: 'Authors', href: '/authors', icon: PenLine, module: 'Authors', sidebarKey: 'authors' },
 ];
 
-// ── Content Management ────────────────────────────────────────────────────────
-
-const contentItems: NavItemWithModule[] = [
+const contentItems: NavItemWithMeta[] = [
     {
-        title: 'Pages', href: '/pages', icon: FileText, module: 'Pages',
+        title: 'Pages',
+        href: '/pages',
+        icon: FileText,
+        module: 'Pages',
+        sidebarKey: 'pages',
         items: [
-            { title: 'All Pages',    href: '/pages',        icon: FileText },
+            { title: 'All Pages', href: '/pages', icon: FileText },
             { title: 'Add New Page', href: '/pages/create', icon: FileText },
-            { title: 'Drafts',       href: '/pages/drafts', icon: FileText },
+            { title: 'Drafts', href: '/pages/drafts', icon: FileText },
         ],
     },
-    { title: 'Services',   href: '/services',   icon: Wrench,    module: 'Services'   },
-    { title: 'Industries', href: '/industries', icon: Factory,   module: 'Industries' },
+    { title: 'Services', href: '/services', icon: Wrench, module: 'Services', sidebarKey: 'services' },
+    { title: 'Industries', href: '/industries', icon: Factory, module: 'Industries', sidebarKey: 'industries' },
     {
-        title: 'Projects', href: '/projects', icon: FolderOpen, module: 'Projects',
+        title: 'Projects',
+        href: '/projects',
+        icon: FolderOpen,
+        module: 'Projects',
+        sidebarKey: 'projects',
         items: [
-            { title: 'All Projects',    href: '/projects',          icon: FolderOpen },
-            { title: 'Add New Project', href: '/projects/create',   icon: FolderOpen },
-            { title: 'Featured',        href: '/projects/featured', icon: FolderOpen },
+            { title: 'All Projects', href: '/projects', icon: FolderOpen },
+            { title: 'Add New Project', href: '/projects/create', icon: FolderOpen },
+            { title: 'Featured', href: '/projects/featured', icon: FolderOpen },
         ],
     },
     {
-        title: 'Knowledge', href: '/knowledge', icon: LibraryBig, module: 'Blog',
+        title: 'Knowledge',
+        href: '/knowledge',
+        icon: LibraryBig,
+        module: 'Blog',
+        sidebarKey: 'knowledge',
         items: [
-            { title: 'Categories',   href: '/knowledge/categories',        icon: NotebookTabs },
+            { title: 'Categories', href: '/knowledge/categories', icon: NotebookTabs },
             { title: 'Add Category', href: '/knowledge/categories/create', icon: NotebookTabs },
-            { title: 'Articles',     href: '/knowledge/articles',          icon: BookOpen },
-            { title: 'Add Article',  href: '/knowledge/articles/create',   icon: BookOpen },
+            { title: 'Articles', href: '/knowledge/articles', icon: BookOpen },
+            { title: 'Add Article', href: '/knowledge/articles/create', icon: BookOpen },
         ],
     },
     {
-        title: 'Blog / Insights', href: '/blog', icon: BookOpen, module: 'Blog',
+        title: 'Blog / Insights',
+        href: '/blog',
+        icon: BookOpen,
+        module: 'Blog',
+        sidebarKey: 'blog',
         items: [
-            { title: 'All Posts',    href: '/blog',            icon: BookOpen },
-            { title: 'Add New Post', href: '/blog/create',     icon: BookOpen },
-            { title: 'Categories',   href: '/blog/categories', icon: BookOpen },
-            { title: 'Tags',         href: '/blog/tags',       icon: BookOpen },
+            { title: 'All Posts', href: '/blog', icon: BookOpen },
+            { title: 'Add New Post', href: '/blog/create', icon: BookOpen },
+            { title: 'Categories', href: '/blog/categories', icon: BookOpen },
+            { title: 'Tags', href: '/blog/tags', icon: BookOpen },
         ],
     },
-    // {
-    //     title: 'Vacancies', href: '/vacancies', icon: Briefcase, module: 'Vacancies',
-    //     items: [
-    //         { title: 'All Vacancies',   href: '/vacancies',        icon: Briefcase },
-    //         { title: 'Add New Vacancy', href: '/vacancies/create', icon: Briefcase },
-    //     ],
-    // },
 ];
 
-// ── Assets ────────────────────────────────────────────────────────────────────
-
-const assetItems: NavItemWithModule[] = [
-    { title: 'Media Library', href: '/media', icon: Image, module: 'Media' },
+const assetItems: NavItemWithMeta[] = [
+    { title: 'Media Library', href: '/media', icon: Image, module: 'Media', sidebarKey: 'media' },
 ];
 
-// ── Forms & Inquiries ─────────────────────────────────────────────────────────
-
-const formItems: NavItemWithModule[] = [
+const formItems: NavItemWithMeta[] = [
     {
-        title: 'Forms', href: '/forms', icon: ClipboardList, module: 'Forms',
+        title: 'Forms',
+        href: '/forms',
+        icon: ClipboardList,
+        module: 'Forms',
+        sidebarKey: 'forms',
         items: [
-            { title: 'All Forms', href: '/forms',        icon: ClipboardList },
-            { title: 'New Form',  href: '/forms/create', icon: ClipboardList },
+            { title: 'All Forms', href: '/forms', icon: ClipboardList },
+            { title: 'New Form', href: '/forms/create', icon: ClipboardList },
         ],
     },
-    { title: 'Submissions', href: '/submissions', icon: Mail, module: 'Submissions' },
+    { title: 'Submissions', href: '/submissions', icon: Mail, module: 'Submissions', sidebarKey: 'submissions' },
 ];
 
-// ── Publishing ────────────────────────────────────────────────────────────────
-
-const publishingItems: NavItemWithModule[] = [
-    { title: 'Workflow', href: '/workflow', icon: GitPullRequest, module: 'Workflow' },
+const publishingItems: NavItemWithMeta[] = [
+    { title: 'Workflow', href: '/workflow', icon: GitPullRequest, module: 'Workflow', sidebarKey: 'workflow' },
 ];
 
-// ── Site Configuration ────────────────────────────────────────────────────────
-
-const siteConfigItems: NavItemWithModule[] = [
-    { title: 'Home-Banners',  href: '/banners',      icon: PanelTop,          module: 'Hero Slides'  },
-    { title: 'Hero Slides',   href: '/hero-slides',  icon: GalleryHorizontal, module: 'Hero Slides'  },
-    { title: 'Client Logos',  href: '/client-logos', icon: Tag,               module: 'Client Logos' },
-    { title: 'Testimonials',  href: '/testimonials', icon: Star,              module: 'Testimonials' },
-    { title: 'Site Settings', href: '/settings',     icon: Settings,          module: 'Settings'     },
+const siteConfigItems: NavItemWithMeta[] = [
+    { title: 'Home-Banners', href: '/banners', icon: PanelTop, module: 'Hero Slides', sidebarKey: 'home_banners' },
+    { title: 'Hero Slides', href: '/hero-slides', icon: GalleryHorizontal, module: 'Hero Slides', sidebarKey: 'hero_slides' },
+    { title: 'Client Logos', href: '/client-logos', icon: Tag, module: 'Client Logos', sidebarKey: 'client_logos' },
+    { title: 'Testimonials', href: '/testimonials', icon: Star, module: 'Testimonials', sidebarKey: 'testimonials' },
+    { title: 'Site Settings', href: '/settings', icon: Settings, module: 'Settings', sidebarKey: 'site_settings' },
 ];
 
-// ── SEO & Navigation ──────────────────────────────────────────────────────────
-
-const seoNavItems: NavItemWithModule[] = [
-    { title: 'SEO Manager', href: '/seo', icon: Search, module: 'SEO' },
+const seoNavItems: NavItemWithMeta[] = [
+    { title: 'SEO Manager', href: '/seo', icon: Search, module: 'SEO', sidebarKey: 'seo' },
     {
-        title: 'Menu Manager', href: '/menus/primary', icon: Navigation, module: 'Menus',
+        title: 'Menu Manager',
+        href: '/menus/primary',
+        icon: Navigation,
+        module: 'Menus',
+        sidebarKey: 'menus',
         items: [
             { title: 'Primary Navigation', href: '/menus/primary', icon: Navigation },
-            { title: 'Footer Links',       href: '/menus/footer',  icon: Navigation },
+            { title: 'Footer Links', href: '/menus/footer', icon: Navigation },
         ],
     },
 ];
 
-// ── Analytics ─────────────────────────────────────────────────────────────────
-
-const analyticsItems: NavItemWithModule[] = [
-    { title: 'Analytics', href: '/analytics', icon: BarChart2, module: 'Analytics' },
+const analyticsItems: NavItemWithMeta[] = [
+    { title: 'Analytics', href: '/analytics', icon: BarChart2, module: 'Analytics', sidebarKey: 'analytics' },
 ];
 
-// ── Sidebar ───────────────────────────────────────────────────────────────────
+const ALL_GROUPS: { label: string; items: NavItemWithMeta[] }[] = [
+    { label: 'Overview', items: overviewItems },
+    { label: 'Auth & Users', items: authItems },
+    { label: 'Content Management', items: contentItems },
+    { label: 'Assets', items: assetItems },
+    { label: 'Forms & Inquiries', items: formItems },
+    { label: 'Publishing', items: publishingItems },
+    { label: 'Site Configuration', items: siteConfigItems },
+    { label: 'SEO & Navigation', items: seoNavItems },
+    { label: 'Analytics', items: analyticsItems },
+];
 
 export function AppSidebar() {
-    const canView = useCanView();
+    const sidebarConfig = useSidebarConfig();
 
-    const groups: { label: string; items: NavItemWithModule[] }[] = [
-        { label: 'Overview',           items: overviewItems    },
-        { label: 'Auth & Users',       items: authItems        },
-        { label: 'Content Management', items: contentItems     },
-        { label: 'Assets',             items: assetItems       },
-        { label: 'Forms & Inquiries',  items: formItems        },
-        { label: 'Publishing',         items: publishingItems  },
-        { label: 'Site Configuration', items: siteConfigItems  },
-        { label: 'SEO & Navigation',   items: seoNavItems      },
-        { label: 'Analytics',          items: analyticsItems   },
-    ];
+    const REQUIRED_ITEM = 'site_settings';
 
-    const visibleGroups = groups
-        .map(g => ({ ...g, items: filterItems(g.items, canView) }))
-        .filter(g => g.items.length > 0);
+    const enabledSidebarKeys: string[] = Array.from(
+        new Set([...(sidebarConfig?.enabled_modules ?? []), REQUIRED_ITEM]),
+    );
+
+    const showLabels = sidebarConfig?.show_group_labels ?? true;
+    const brandColor = sidebarConfig?.brand_color;
+
+    function isVisible(sidebarKey: string): boolean {
+        if (sidebarKey === REQUIRED_ITEM) return true;
+        if (enabledSidebarKeys.length === 0) return true;
+        return enabledSidebarKeys.includes(sidebarKey);
+    }
+
+    const visibleGroups = ALL_GROUPS
+        .map(group => ({
+            ...group,
+            items: group.items.filter(item => isVisible(item.sidebarKey)),
+        }))
+        .filter(group => group.items.length > 0);
 
     return (
-        <Sidebar collapsible="icon" variant="inset">
+        <Sidebar
+            collapsible="icon"
+            variant="inset"
+            style={brandColor ? { '--sidebar-brand': brandColor } as React.CSSProperties : undefined}
+        >
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>
@@ -226,7 +197,10 @@ export function AppSidebar() {
                 {visibleGroups.map((group, index) => (
                     <div key={group.label}>
                         {index > 0 && <SidebarSeparator />}
-                        <NavMain items={group.items} groupLabel={group.label} />
+                        <NavMain
+                            items={group.items}
+                            groupLabel={showLabels ? group.label : undefined}
+                        />
                     </div>
                 ))}
             </SidebarContent>

@@ -9,6 +9,8 @@ class KnowledgeCategory extends Model
 {
     use HasFactory;
 
+    protected $connection = 'tenant';
+
     protected $fillable = [
         'name', 'slug', 'description', 'parent_id', 'media_id', 'sort_order', 'is_active',
     ];
