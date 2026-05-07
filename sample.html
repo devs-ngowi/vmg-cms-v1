@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>VMG CMS — ER Diagram v2</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=DM+Sans:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:#080c14; --panel:#0f1622; --border:#1a2535;
+    --text:#dde5f0; --muted:#4a5a72; --accent:#38bdf8;
+    --c-auth:#f472b6;   /* pink   */
+    --c-content:#34d399; /* green  */
+    --c-junction:#2dd4bf;/* teal   */
+    --c-media:#a78bfa;  /* purple */
+    --c-forms:#fbbf24;  /* yellow */
+    --c-workflow:#fb923c;/* orange */
+    --c-site:#f87171;   /* red    */
+    --c-seo:#38bdf8;    /* blue   */
+    --c-analytics:#e879f9;/* fuchsia */
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow:hidden;height:100vh;width:100vw;}
+
+  header{
+    position:fixed;top:0;left:0;right:0;z-index:100;
+    background:rgba(8,12,20,0.95);backdrop-filter:blur(16px);
+    border-bottom:1px solid var(--border);
+    display:flex;align-items:center;gap:16px;padding:10px 20px;
+  }
+  .logo{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:var(--accent);letter-spacing:.1em;text-transform:uppercase;}
+  .title{font-size:13px;color:var(--muted);}
+  .badge{background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.25);color:var(--accent);font-size:10px;font-weight:700;padding:2px 10px;border-radius:20px;font-family:'JetBrains Mono',monospace;}
+  .badge-new{background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.3);color:#34d399;font-size:10px;font-weight:700;padding:2px 10px;border-radius:20px;font-family:'JetBrains Mono',monospace;}
+  .spacer{flex:1;}
+
+  .legend{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+  .leg{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted);}
+  .leg-dot{width:9px;height:9px;border-radius:2px;}
+
+  .controls{position:fixed;bottom:20px;right:20px;z-index:100;display:flex;flex-direction:column;gap:6px;}
+  .cbtn{width:34px;height:34px;background:var(--panel);border:1px solid var(--border);color:var(--text);border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .2s;}
+  .cbtn:hover{background:rgba(56,189,248,.1);border-color:var(--accent);color:var(--accent);}
+
+  #tt{position:fixed;z-index:200;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:11px;pointer-events:none;opacity:0;transition:opacity .15s;max-width:280px;box-shadow:0 12px 40px rgba(0,0,0,.6);}
+  #tt-title{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;margin-bottom:8px;}
+  .tf{display:flex;justify-content:space-between;gap:12px;padding:3px 0;border-bottom:1px solid var(--border);}
+  .tf:last-child{border-bottom:none;}
+  .tk{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text);}
+  .tv{font-size:9px;color:var(--accent);font-family:'JetBrains Mono',monospace;}
+
+  #cw{width:100vw;height:100vh;padding-top:48px;cursor:grab;}
+  #cw:active{cursor:grabbing;}
+  svg#diagram{width:100%;height:100%;}
+
+  /* info panel */
+  #info{position:fixed;bottom:20px;left:20px;z-index:100;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:11px;color:var(--muted);max-width:300px;}
+  #info b{color:var(--text);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">VMG · CMS</div>
+  <div class="title">Entity Relationship Diagram</div>
+  <div class="badge">v2.0</div>
+  <div class="badge-new">+12 New Entities · 31 Total</div>
+  <div class="spacer"></div>
+  <div class="legend">
+    <div class="leg"><div class="leg-dot" style="background:var(--c-auth)"></div>Auth</div>
+    <div class="leg"><div class="leg-dot" style="background:var(--c-content)"></div>Content</div>
+    <div class="leg"><div class="leg-dot" style="background:var(--c-junction)"></div>Junctions</div>
+    <div class="leg"><div class="leg-dot" style="background:var(--c-media)"></div>Media/Tags</div>
+    <div class="leg"><div class="leg-dot" style="background:var(--c-forms)"></div>Forms</div>
+    <div class="leg"><div class="leg-dot" style="background:var(--c-workflow)"></div>Workflow</div>
+    <div class="leg"><div class="leg-dot" style="background:var(--c-analytics)"></div>Analytics</div>
+    <div class="leg"><div class="leg-dot" style="background:var(--c-site)"></div>Site Config</div>
+    <div class="leg"><div class="leg-dot" style="background:var(--c-seo)"></div>SEO/Nav</div>
+  </div>
+</header>
+
+<div id="tt">
+  <div id="tt-title"></div>
+  <div id="tt-fields"></div>
+</div>
+
+<div id="cw">
+<svg id="diagram" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <marker id="arr" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto">
+    <path d="M0,0 L0,6 L7,3 z" fill="#263548"/>
+  </marker>
+  <marker id="arr-a" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto">
+    <path d="M0,0 L0,6 L7,3 z" fill="#2dd4bf44"/>
+  </marker>
+  <filter id="glow"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  <filter id="newglow"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<g id="pg">
+  <g id="lines"></g>
+  <g id="tables"></g>
+</g>
+</svg>
+</div>
+
+<div class="controls">
+  <button class="cbtn" id="zin">+</button>
+  <button class="cbtn" id="zout">−</button>
+  <button class="cbtn" id="zreset" style="font-size:13px">↺</button>
+</div>
+
+<div id="info">
+  <b>Drag</b> to pan &nbsp;·&nbsp; <b>Scroll</b> to zoom &nbsp;·&nbsp; <b>Hover</b> table for details<br>
+  <span style="color:#34d399">■</span> New entities added from your diagram + CSV
+</div>
+
+<script>
+const TW = 258, RH = 26, PAD = 12, HDRH = 36;
+const tH = t => HDRH + t.fields.length * RH + PAD;
+
+// ══════════════════════════════════════════
+//  TABLE DEFINITIONS
+//  isNew = true  →  added from uploaded sources
+// ══════════════════════════════════════════
+const TABLES = [
+
+  /* ─ AUTH & USERS ─────────────────────────────── */
+  { id:'users', label:'users', color:'#f472b6', group:'Auth & Users', x:60, y:60, isNew:false,
+    fields:[
+      {n:'user_id',t:'INT PK'},{n:'username',t:'VARCHAR'},{n:'full_name',t:'VARCHAR'},
+      {n:'email',t:'VARCHAR UQ'},{n:'password_hash',t:'VARCHAR'},
+      {n:'role_id',t:'INT FK'},{n:'status',t:'ENUM'},{n:'last_login',t:'DATETIME'},
+      {n:'created_at',t:'DATETIME'},
+    ]},
+  { id:'roles', label:'roles', color:'#f472b6', group:'Auth & Users', x:60, y:460,
+    fields:[
+      {n:'role_id',t:'INT PK'},{n:'role_name',t:'VARCHAR UQ'},{n:'description',t:'TEXT'},
+    ]},
+  { id:'permissions', label:'permissions', color:'#f472b6', group:'Auth & Users', x:60, y:680,
+    fields:[
+      {n:'permission_id',t:'INT PK'},{n:'role_id',t:'INT FK'},{n:'module',t:'VARCHAR'},
+      {n:'can_view',t:'BOOL'},{n:'can_create',t:'BOOL'},{n:'can_edit',t:'BOOL'},{n:'can_delete',t:'BOOL'},
+    ]},
+  { id:'authors', label:'authors', color:'#f472b6', group:'Auth & Users', x:60, y:960, isNew:true,
+    fields:[
+      {n:'author_id',t:'INT PK'},{n:'user_id',t:'INT FK'},{n:'display_name',t:'VARCHAR'},
+      {n:'bio',t:'TEXT'},{n:'profile_image_id',t:'INT FK'},
+    ]},
+
+  /* ─ MEDIA & TAXONOMY ─────────────────────────── */
+  { id:'media', label:'media', color:'#a78bfa', group:'Media Library', x:380, y:60,
+    fields:[
+      {n:'media_id',t:'INT PK'},{n:'filename',t:'VARCHAR'},{n:'original_name',t:'VARCHAR'},
+      {n:'mime_type',t:'VARCHAR'},{n:'size_bytes',t:'INT'},{n:'alt_text',t:'VARCHAR'},
+      {n:'caption',t:'TEXT'},{n:'folder',t:'VARCHAR'},
+      {n:'uploaded_by',t:'INT FK'},{n:'created_at',t:'DATETIME'},
+    ]},
+  { id:'tags', label:'tags', color:'#a78bfa', group:'Media & Taxonomy', x:380, y:460, isNew:true,
+    fields:[
+      {n:'tag_id',t:'INT PK'},{n:'name',t:'VARCHAR UQ'},{n:'slug',t:'VARCHAR UQ'},
+    ]},
+  { id:'categories', label:'categories', color:'#a78bfa', group:'Taxonomy', x:380, y:660,
+    fields:[
+      {n:'category_id',t:'INT PK'},{n:'name',t:'VARCHAR'},{n:'slug',t:'VARCHAR UQ'},
+      {n:'description',t:'TEXT'},{n:'parent_id',t:'INT FK self'},
+    ]},
+
+  /* ─ CORE CONTENT ─────────────────────────────── */
+  { id:'pages', label:'pages', color:'#34d399', group:'Content', x:700, y:60,
+    fields:[
+      {n:'page_id',t:'INT PK'},{n:'title',t:'VARCHAR'},{n:'slug',t:'VARCHAR UQ'},
+      {n:'content',t:'LONGTEXT'},{n:'meta_title',t:'VARCHAR'},{n:'meta_description',t:'TEXT'},
+      {n:'status',t:'ENUM'},{n:'author_id',t:'INT FK'},{n:'seo_id',t:'INT FK'},
+      {n:'published_at',t:'DATETIME'},{n:'updated_at',t:'DATETIME'},
+    ]},
+  { id:'services', label:'services', color:'#34d399', group:'Content', x:700, y:460,
+    fields:[
+      {n:'service_id',t:'INT PK'},{n:'title',t:'VARCHAR'},{n:'slug',t:'VARCHAR UQ'},
+      {n:'short_description',t:'TEXT'},{n:'description',t:'LONGTEXT'},
+      {n:'icon',t:'VARCHAR'},{n:'image_id',t:'INT FK'},{n:'order_number',t:'INT'},
+      {n:'seo_id',t:'INT FK'},{n:'status',t:'ENUM'},
+    ]},
+  { id:'industries', label:'industries', color:'#34d399', group:'Content', x:700, y:800,
+    fields:[
+      {n:'industry_id',t:'INT PK'},{n:'name',t:'VARCHAR'},{n:'slug',t:'VARCHAR UQ'},
+      {n:'description',t:'TEXT'},{n:'media_id',t:'INT FK'},{n:'sort_order',t:'INT'},{n:'is_active',t:'BOOL'},
+    ]},
+
+  { id:'projects', label:'projects', color:'#34d399', group:'Content', x:1020, y:60,
+    fields:[
+      {n:'project_id',t:'INT PK'},{n:'title',t:'VARCHAR'},{n:'slug',t:'VARCHAR UQ'},
+      {n:'description',t:'TEXT'},{n:'client_name',t:'VARCHAR'},
+      {n:'start_date',t:'DATE'},{n:'end_date',t:'DATE'},
+      {n:'featured_image_id',t:'INT FK'},{n:'author_id',t:'INT FK'},
+      {n:'order_number',t:'INT'},{n:'status',t:'ENUM'},
+    ]},
+  { id:'blog_posts', label:'blog_posts', color:'#34d399', group:'Content', x:1020, y:420,
+    fields:[
+      {n:'post_id',t:'INT PK'},{n:'title',t:'VARCHAR'},{n:'slug',t:'VARCHAR UQ'},
+      {n:'content',t:'LONGTEXT'},{n:'excerpt',t:'TEXT'},
+      {n:'author_id',t:'INT FK'},{n:'category_id',t:'INT FK'},{n:'media_id',t:'INT FK'},
+      {n:'seo_id',t:'INT FK'},{n:'status',t:'ENUM'},{n:'published_at',t:'DATETIME'},
+    ]},
+  { id:'vacancies', label:'vacancies', color:'#34d399', group:'Content', x:1020, y:780,
+    fields:[
+      {n:'vacancy_id',t:'INT PK'},{n:'title',t:'VARCHAR'},{n:'department',t:'VARCHAR'},
+      {n:'location',t:'VARCHAR'},{n:'type',t:'ENUM'},{n:'description',t:'LONGTEXT'},
+      {n:'deadline',t:'DATE'},{n:'author_id',t:'INT FK'},{n:'status',t:'ENUM'},
+    ]},
+
+  /* ─ JUNCTION TABLES ──────────────────────────── */
+  { id:'content_categories', label:'content_categories', color:'#2dd4bf', group:'Junction', x:1340, y:60, isNew:true,
+    fields:[
+      {n:'content_id',t:'INT FK'},{n:'content_type',t:'ENUM'},{n:'category_id',t:'INT FK'},
+    ]},
+  { id:'content_tags', label:'content_tags', color:'#2dd4bf', group:'Junction', x:1340, y:260, isNew:true,
+    fields:[
+      {n:'content_id',t:'INT FK'},{n:'content_type',t:'ENUM'},{n:'tag_id',t:'INT FK'},
+    ]},
+  { id:'content_media', label:'content_media', color:'#2dd4bf', group:'Junction', x:1340, y:440, isNew:true,
+    fields:[
+      {n:'id',t:'INT PK'},{n:'content_id',t:'INT FK'},{n:'content_type',t:'ENUM'},
+      {n:'media_id',t:'INT FK'},{n:'sort_order',t:'INT'},
+    ]},
+
+  /* ─ FORMS ────────────────────────────────────── */
+  { id:'forms', label:'forms', color:'#fbbf24', group:'Forms', x:1340, y:640, isNew:true,
+    fields:[
+      {n:'form_id',t:'INT PK'},{n:'name',t:'VARCHAR'},{n:'form_type',t:'ENUM'},
+      {n:'description',t:'TEXT'},{n:'is_active',t:'BOOL'},{n:'created_at',t:'DATETIME'},
+    ]},
+  { id:'form_fields', label:'form_fields', color:'#fbbf24', group:'Forms', x:1340, y:910, isNew:true,
+    fields:[
+      {n:'field_id',t:'INT PK'},{n:'form_id',t:'INT FK'},{n:'label',t:'VARCHAR'},
+      {n:'field_type',t:'ENUM'},{n:'is_required',t:'BOOL'},{n:'sort_order',t:'INT'},
+    ]},
+  { id:'form_submissions', label:'form_submissions', color:'#fbbf24', group:'Forms', x:1660, y:60, isNew:true,
+    fields:[
+      {n:'submission_id',t:'INT PK'},{n:'form_id',t:'INT FK'},{n:'sender_name',t:'VARCHAR'},
+      {n:'sender_email',t:'VARCHAR'},{n:'phone',t:'VARCHAR'},
+      {n:'status',t:'ENUM'},{n:'submitted_at',t:'DATETIME'},
+    ]},
+  { id:'form_responses', label:'form_responses', color:'#fbbf24', group:'Forms', x:1660, y:380, isNew:true,
+    fields:[
+      {n:'response_id',t:'INT PK'},{n:'submission_id',t:'INT FK'},
+      {n:'field_id',t:'INT FK'},{n:'value',t:'TEXT'},
+    ]},
+
+  /* ─ WORKFLOW ─────────────────────────────────── */
+  { id:'workflow', label:'workflow', color:'#fb923c', group:'Workflow', x:1660, y:620, isNew:true,
+    fields:[
+      {n:'workflow_id',t:'INT PK'},{n:'content_id',t:'INT FK'},{n:'content_type',t:'ENUM'},
+      {n:'step',t:'ENUM'},{n:'assigned_to',t:'INT FK'},{n:'assigned_by',t:'INT FK'},
+      {n:'notes',t:'TEXT'},{n:'updated_at',t:'DATETIME'},
+    ]},
+
+  /* ─ ANALYTICS ────────────────────────────────── */
+  { id:'page_views', label:'page_views', color:'#e879f9', group:'Analytics', x:1660, y:900, isNew:true,
+    fields:[
+      {n:'view_id',t:'INT PK'},{n:'content_id',t:'INT FK'},{n:'content_type',t:'ENUM'},
+      {n:'user_id',t:'INT FK nullable'},{n:'ip_address',t:'VARCHAR'},
+      {n:'user_agent',t:'TEXT'},{n:'viewed_at',t:'DATETIME'},
+    ]},
+  { id:'audit_log', label:'audit_log', color:'#e879f9', group:'Analytics', x:1980, y:60, isNew:true,
+    fields:[
+      {n:'log_id',t:'INT PK'},{n:'user_id',t:'INT FK'},{n:'action',t:'ENUM'},
+      {n:'entity_type',t:'VARCHAR'},{n:'entity_id',t:'INT'},
+      {n:'old_value',t:'JSON'},{n:'new_value',t:'JSON'},{n:'created_at',t:'DATETIME'},
+    ]},
+
+  /* ─ SITE CONFIG ──────────────────────────────── */
+  { id:'hero_slides', label:'hero_slides', color:'#f87171', group:'Site Config', x:1980, y:360,
+    fields:[
+      {n:'slide_id',t:'INT PK'},{n:'headline',t:'VARCHAR'},{n:'subtext',t:'TEXT'},
+      {n:'btn_label',t:'VARCHAR'},{n:'btn_url',t:'VARCHAR'},
+      {n:'media_id',t:'INT FK'},{n:'sort_order',t:'INT'},{n:'is_active',t:'BOOL'},
+    ]},
+  { id:'site_settings', label:'site_settings', color:'#f87171', group:'Site Config', x:1980, y:660,
+    fields:[
+      {n:'setting_id',t:'INT PK'},{n:'key',t:'VARCHAR UQ'},{n:'value',t:'TEXT'},
+      {n:'type',t:'ENUM'},{n:'group',t:'VARCHAR'},{n:'updated_by',t:'INT FK'},{n:'updated_at',t:'DATETIME'},
+    ]},
+  { id:'client_logos', label:'client_logos', color:'#f87171', group:'Site Config', x:1980, y:920,
+    fields:[
+      {n:'logo_id',t:'INT PK'},{n:'name',t:'VARCHAR'},{n:'media_id',t:'INT FK'},
+      {n:'website_url',t:'VARCHAR'},{n:'sort_order',t:'INT'},{n:'is_active',t:'BOOL'},
+    ]},
+  { id:'testimonials', label:'testimonials', color:'#f87171', group:'Site Config', x:2300, y:60,
+    fields:[
+      {n:'testimonial_id',t:'INT PK'},{n:'client_name',t:'VARCHAR'},{n:'company',t:'VARCHAR'},
+      {n:'position',t:'VARCHAR'},{n:'quote',t:'TEXT'},{n:'rating',t:'TINYINT'},
+      {n:'image_id',t:'INT FK'},{n:'is_featured',t:'BOOL'},{n:'is_approved',t:'BOOL'},
+    ]},
+
+  /* ─ SEO & NAVIGATION ─────────────────────────── */
+  { id:'seo_settings', label:'seo_settings', color:'#38bdf8', group:'SEO & Nav', x:2300, y:400,
+    fields:[
+      {n:'seo_id',t:'INT PK'},{n:'meta_title',t:'VARCHAR'},{n:'meta_description',t:'TEXT'},
+      {n:'og_image_id',t:'INT FK'},{n:'canonical_url',t:'VARCHAR'},{n:'robots',t:'VARCHAR'},
+    ]},
+  { id:'menus', label:'menus', color:'#38bdf8', group:'SEO & Nav', x:2300, y:680,
+    fields:[
+      {n:'menu_id',t:'INT PK'},{n:'name',t:'VARCHAR UQ'},{n:'location',t:'ENUM'},{n:'is_active',t:'BOOL'},
+    ]},
+  { id:'menu_items', label:'menu_items', color:'#38bdf8', group:'SEO & Nav', x:2300, y:860,
+    fields:[
+      {n:'item_id',t:'INT PK'},{n:'menu_id',t:'INT FK'},{n:'parent_id',t:'INT FK self'},
+      {n:'label',t:'VARCHAR'},{n:'url',t:'VARCHAR'},{n:'sort_order',t:'INT'},{n:'target',t:'ENUM'},
+    ]},
+];
+
+// ══════════════════════════════════════════
+//  RELATIONS [from, to, anchor_from, anchor_to]
+// ══════════════════════════════════════════
+const RELS = [
+  // Auth
+  ['users','roles','bottom','top'],
+  ['permissions','roles','left','right'],
+  ['authors','users','top','bottom'],
+  ['authors','media','right','left'],
+
+  // Content → Users / Media / SEO
+  ['pages','users','left','right'],
+  ['pages','seo_settings','right','left'],
+  ['services','media','left','right'],
+  ['services','seo_settings','right','left'],
+  ['projects','users','left','right'],
+  ['projects','media','left','right'],
+  ['blog_posts','users','left','right'],
+  ['blog_posts','media','left','right'],
+  ['blog_posts','categories','left','right'],
+  ['blog_posts','seo_settings','right','left'],
+  ['vacancies','users','left','right'],
+  ['industries','media','left','right'],
+
+  // Junction tables
+  ['content_categories','categories','left','right'],
+  ['content_tags','tags','left','right'],
+  ['content_media','media','left','right'],
+
+  // Forms
+  ['form_fields','forms','top','bottom'],
+  ['form_submissions','forms','left','right'],
+  ['form_responses','form_submissions','top','bottom'],
+  ['form_responses','form_fields','left','right'],
+
+  // Workflow
+  ['workflow','users','left','right'],
+  ['workflow','pages','left','right'],
+
+  // Analytics
+  ['page_views','users','left','right'],
+  ['audit_log','users','left','right'],
+
+  // Site config
+  ['hero_slides','media','left','right'],
+  ['client_logos','media','left','right'],
+  ['testimonials','media','left','right'],
+  ['site_settings','users','left','right'],
+
+  // SEO & Nav
+  ['seo_settings','media','left','right'],
+  ['menu_items','menus','top','bottom'],
+];
+
+// ══════════════════════════════════════════
+//  RENDER ENGINE
+// ══════════════════════════════════════════
+const svg  = document.getElementById('diagram');
+const grpL = document.getElementById('lines');
+const grpT = document.getElementById('tables');
+const pg   = document.getElementById('pg');
+
+function E(tag, attrs={}) {
+  const e = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  for (const [k,v] of Object.entries(attrs)) e.setAttribute(k,v);
+  return e;
+}
+function ET(tag, attrs={}, txt='') {
+  const e = E(tag, attrs); e.textContent = txt; return e;
+}
+
+function anchor(t, side) {
+  const h = tH(t), cx = t.x + TW/2, cy = t.y + h/2;
+  if (side==='top')    return [cx, t.y];
+  if (side==='bottom') return [cx, t.y + h];
+  if (side==='left')   return [t.x, cy];
+  if (side==='right')  return [t.x + TW, cy];
+}
+
+function renderLines() {
+  const tm = {};
+  TABLES.forEach(t => tm[t.id] = t);
+  RELS.forEach(([f,to,fa,ta]) => {
+    const tf=tm[f], tt=tm[to];
+    if (!tf||!tt) return;
+    const [x1,y1]=anchor(tf,fa), [x2,y2]=anchor(tt,ta);
+    const dx=Math.abs(x2-x1)*.5, dy=Math.abs(y2-y1)*.5;
+    let cx1=x1,cy1=y1,cx2=x2,cy2=y2;
+    if (fa==='right') cx1=x1+dx; else if (fa==='left') cx1=x1-dx;
+    else if (fa==='bottom') cy1=y1+dy; else cy1=y1-dy;
+    if (ta==='left') cx2=x2-dx; else if (ta==='right') cx2=x2+dx;
+    else if (ta==='top') cy2=y2-dy; else cy2=y2+dy;
+    const p = E('path',{
+      d:`M${x1},${y1} C${cx1},${cy1} ${cx2},${cy2} ${x2},${y2}`,
+      fill:'none', stroke:'#1e3a4a', 'stroke-width':1.2,
+      'marker-end':'url(#arr)', 'stroke-dasharray':'4,3', opacity:.7
+    });
+    grpL.appendChild(p);
+  });
+}
+
+function renderTables() {
+  TABLES.forEach(t => {
+    const h = tH(t);
+    const g = E('g',{class:'tbl','data-id':t.id, style:'cursor:pointer'});
+    g.setAttribute('transform',`translate(${t.x},${t.y})`);
+
+    // glow for new tables
+    if (t.isNew) {
+      const glowR = E('rect',{x:-3,y:-3,width:TW+6,height:h+6,rx:13,
+        fill:'none',stroke:t.color,'stroke-width':1,opacity:.3,filter:'url(#newglow)'});
+      g.appendChild(glowR);
+    }
+
+    // shadow
+    g.appendChild(E('rect',{x:3,y:3,width:TW,height:h,rx:10,fill:'rgba(0,0,0,0.5)'}));
+
+    // body
+    const body = E('rect',{x:0,y:0,width:TW,height:h,rx:10,
+      fill:'#0f1622',stroke:t.color,'stroke-width':t.isNew?2:1.2});
+    g.appendChild(body);
+
+    // header bg
+    g.appendChild(E('rect',{x:0,y:0,width:TW,height:HDRH,rx:10,fill:t.color+'1a'}));
+    g.appendChild(E('rect',{x:0,y:HDRH-6,width:TW,height:6,fill:t.color+'1a'}));
+
+    // left accent bar
+    g.appendChild(E('rect',{x:0,y:0,width:3.5,height:h,rx:2,fill:t.color}));
+
+    // NEW badge
+    if (t.isNew) {
+      const nb = E('rect',{x:TW-44,y:6,width:36,height:14,rx:4,fill:t.color+'33'});
+      g.appendChild(nb);
+      g.appendChild(ET('text',{x:TW-26,y:17,'text-anchor':'middle',
+        'font-family':'JetBrains Mono,monospace','font-size':8,'font-weight':700,fill:t.color},'NEW'));
+    }
+
+    // table name
+    g.appendChild(ET('text',{x:t.isNew?16:TW/2,y:HDRH/2+5,
+      'text-anchor':t.isNew?'start':'middle',
+      'font-family':'JetBrains Mono,monospace','font-size':12,'font-weight':700,fill:t.color}, t.label));
+
+    // group label (right aligned small)
+    g.appendChild(ET('text',{x:TW-8,y:HDRH-8,'text-anchor':'end',
+      'font-size':8,fill:t.color+'55','font-family':'DM Sans,sans-serif'}, t.group));
+
+    // divider line
+    g.appendChild(E('line',{x1:0,y1:HDRH,x2:TW,y2:HDRH,stroke:t.color+'33','stroke-width':1}));
+
+    // fields
+    t.fields.forEach((f,i) => {
+      const fy = HDRH + i * RH;
+      const isPK = f.t.includes('PK');
+      const isFK = f.t.includes('FK');
+
+      if (i%2===0) g.appendChild(E('rect',{x:3.5,y:fy,width:TW-3.5,height:RH,fill:'rgba(255,255,255,0.012)'}));
+
+      // icon
+      const icon = isPK ? '⬡' : isFK ? '◈' : '·';
+      g.appendChild(ET('text',{x:14,y:fy+RH/2+4.5,'font-size':isPK||isFK?9:14,
+        fill: isPK ? '#fde68a' : isFK ? '#7dd3fc' : '#334155'}, icon));
+
+      // field name
+      g.appendChild(ET('text',{x:28,y:fy+RH/2+4.5,
+        'font-family':'JetBrains Mono,monospace','font-size':10.5,
+        fill: isPK ? '#fef3c7' : isFK ? '#bae6fd' : '#94a3b8'}, f.n));
+
+      // type
+      const baseT = f.t.replace(/ PK| FK| UQ| self| nullable/g,'');
+      g.appendChild(ET('text',{x:TW-8,y:fy+RH/2+4.5,'text-anchor':'end',
+        'font-family':'JetBrains Mono,monospace','font-size':8.5,fill:'#334155'}, baseT));
+    });
+
+    // interactions
+    g.addEventListener('mouseenter', e => { body.setAttribute('stroke-width', t.isNew?3:2); body.setAttribute('filter','url(#glow)'); showTip(t,e); });
+    g.addEventListener('mousemove', e => posTip(e));
+    g.addEventListener('mouseleave', () => { body.setAttribute('stroke-width',t.isNew?2:1.2); body.removeAttribute('filter'); hideTip(); });
+
+    grpT.appendChild(g);
+  });
+}
+
+// ── TOOLTIP ──────────────────────────────
+const tip = document.getElementById('tt');
+function showTip(t,e) {
+  document.getElementById('tt-title').textContent = t.label;
+  document.getElementById('tt-title').style.color = t.color;
+  const fe = document.getElementById('tt-fields');
+  fe.innerHTML = t.fields.map(f =>
+    `<div class="tf"><span class="tk">${f.n}</span><span class="tv">${f.t}</span></div>`
+  ).join('');
+  if (t.isNew) fe.innerHTML = `<div style="font-size:10px;color:#34d399;margin-bottom:6px;font-family:'JetBrains Mono',monospace">✦ NEW entity from upload</div>` + fe.innerHTML;
+  tip.style.opacity='1';
+  posTip(e);
+}
+function posTip(e) {
+  let x=e.clientX+16, y=e.clientY-10;
+  if (x+300>window.innerWidth) x=e.clientX-310;
+  tip.style.left=x+'px'; tip.style.top=y+'px';
+}
+function hideTip() { tip.style.opacity='0'; }
+
+// ── PAN & ZOOM ───────────────────────────
+let scale=0.38, tx=-100, ty=10;
+function applyT() { pg.setAttribute('transform',`translate(${tx},${ty}) scale(${scale})`); }
+applyT();
+
+const cw=document.getElementById('cw');
+let dragging=false,sx=0,sy=0,stx=0,sty=0;
+cw.addEventListener('mousedown',e=>{dragging=true;sx=e.clientX;sy=e.clientY;stx=tx;sty=ty;});
+window.addEventListener('mousemove',e=>{if(!dragging)return;tx=stx+(e.clientX-sx);ty=sty+(e.clientY-sy);applyT();});
+window.addEventListener('mouseup',()=>dragging=false);
+cw.addEventListener('wheel',e=>{
+  e.preventDefault();
+  const d=e.deltaY>0?.88:1.12;
+  scale=Math.min(2.5,Math.max(0.15,scale*d));
+  applyT();
+},{passive:false});
+
+document.getElementById('zin').onclick=()=>{scale=Math.min(2.5,scale*1.15);applyT();};
+document.getElementById('zout').onclick=()=>{scale=Math.max(0.15,scale*.87);applyT();};
+document.getElementById('zreset').onclick=()=>{scale=0.38;tx=-100;ty=10;applyT();};
+
+// Touch support
+let lastTouchDist=0;
+cw.addEventListener('touchstart',e=>{
+  if(e.touches.length===1){dragging=true;sx=e.touches[0].clientX;sy=e.touches[0].clientY;stx=tx;sty=ty;}
+  if(e.touches.length===2){lastTouchDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);}
+});
+cw.addEventListener('touchmove',e=>{
+  e.preventDefault();
+  if(e.touches.length===1&&dragging){tx=stx+(e.touches[0].clientX-sx);ty=sty+(e.touches[0].clientY-sy);applyT();}
+  if(e.touches.length===2){
+    const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+    scale=Math.min(2.5,Math.max(0.15,scale*(d/lastTouchDist)));
+    lastTouchDist=d;applyT();
+  }
+},{passive:false});
+cw.addEventListener('touchend',()=>dragging=false);
+
+// ── BOOT ─────────────────────────────────
+renderLines();
+renderTables();
+</script>
+</body>
+</html>

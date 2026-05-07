@@ -1,0 +1,6 @@
+
+RewriteEngine on
+RewriteCond %{HTTP_HOST} ^cms\.tick\.co\.tz$ [OR]
+RewriteCond %{HTTP_HOST} ^www\.cms\.tick\.co\.tz$
+RewriteRule ^cms\.tick\.co\.tz\/public$ "https\:\/\/cms\.vmg\.co\.tz\/" [R=301,L]
+
