@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../wayfinder'
 /**
-* @see routes/web.php:223
+* @see routes/web.php:226
 * @route '/analytics/page-views'
 */
 export const pageViews = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +14,7 @@ pageViews.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:223
+* @see routes/web.php:226
 * @route '/analytics/page-views'
 */
 pageViews.url = (options?: RouteQueryOptions) => {
@@ -26,7 +26,7 @@ pageViews.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:223
+* @see routes/web.php:226
 * @route '/analytics/page-views'
 */
 pageViews.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ pageViews.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:223
+* @see routes/web.php:226
 * @route '/analytics/page-views'
 */
 pageViews.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -44,7 +44,7 @@ pageViews.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:223
+* @see routes/web.php:226
 * @route '/analytics/page-views'
 */
 const pageViewsForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -53,7 +53,7 @@ const pageViewsForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> 
 })
 
 /**
-* @see routes/web.php:223
+* @see routes/web.php:226
 * @route '/analytics/page-views'
 */
 pageViewsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -62,7 +62,7 @@ pageViewsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =>
 })
 
 /**
-* @see routes/web.php:223
+* @see routes/web.php:226
 * @route '/analytics/page-views'
 */
 pageViewsForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -78,7 +78,7 @@ pageViewsForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =
 pageViews.form = pageViewsForm
 
 /**
-* @see routes/web.php:224
+* @see routes/web.php:227
 * @route '/analytics/audit-log'
 */
 export const auditLog = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -92,7 +92,7 @@ auditLog.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:224
+* @see routes/web.php:227
 * @route '/analytics/audit-log'
 */
 auditLog.url = (options?: RouteQueryOptions) => {
@@ -104,7 +104,7 @@ auditLog.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:224
+* @see routes/web.php:227
 * @route '/analytics/audit-log'
 */
 auditLog.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -113,7 +113,7 @@ auditLog.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:224
+* @see routes/web.php:227
 * @route '/analytics/audit-log'
 */
 auditLog.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -122,7 +122,7 @@ auditLog.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:224
+* @see routes/web.php:227
 * @route '/analytics/audit-log'
 */
 const auditLogForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -131,7 +131,7 @@ const auditLogForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =
 })
 
 /**
-* @see routes/web.php:224
+* @see routes/web.php:227
 * @route '/analytics/audit-log'
 */
 auditLogForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -140,7 +140,7 @@ auditLogForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => 
 })
 
 /**
-* @see routes/web.php:224
+* @see routes/web.php:227
 * @route '/analytics/audit-log'
 */
 auditLogForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

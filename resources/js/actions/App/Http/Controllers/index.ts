@@ -16,6 +16,7 @@ import SiteSettingController from './SiteSettingController'
 import KnowledgeController from './KnowledgeController'
 import UserController from './UserController'
 import WorkflowController from './WorkflowController'
+import WelcomeController from './WelcomeController'
 import CompanyRegistrationController from './CompanyRegistrationController'
 import DashboardController from './DashboardController'
 import RoleController from './RoleController'
@@ -41,6 +42,7 @@ const Controllers = {
     KnowledgeController: Object.assign(KnowledgeController, KnowledgeController),
     UserController: Object.assign(UserController, UserController),
     WorkflowController: Object.assign(WorkflowController, WorkflowController),
+    WelcomeController: Object.assign(WelcomeController, WelcomeController),
     CompanyRegistrationController: Object.assign(CompanyRegistrationController, CompanyRegistrationController),
     DashboardController: Object.assign(DashboardController, DashboardController),
     RoleController: Object.assign(RoleController, RoleController),
