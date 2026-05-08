@@ -85,24 +85,32 @@ class CreateTenant
         $dbName   = 'tickads_tenant_' . $safeSlug;
 
         // ── 2. Normalise domain ───────────────────────────────────────────────
-        // storedDomain  = full URL kept in DB,  e.g. "https://winstlaw.cms.tick.co.tz"
-        // bareHost      = no scheme/slash,       e.g. "winstlaw.cms.tick.co.tz"
-        // subdomain     = first label only,      e.g. "winstlaw"
-        // rootDomain    = everything after that, e.g. "cms.tick.co.tz"
-        $storedDomain = $data['domain'];                                    // already normalised by controller
-        $bareHost     = self::stripScheme($storedDomain);                   // winstlaw.cms.tick.co.tz
+        $storedDomain = $data['domain'];
+        $bareHost     = self::stripScheme($storedDomain);
         $rootDomain   = env('APP_ROOT_DOMAIN', 'cms.tick.co.tz');
-        $subdomain    = self::extractSubdomain($bareHost, $rootDomain);     // winstlaw
+        $subdomain    = self::extractSubdomain($bareHost, $rootDomain);
 
-        // ── 3. Provision DB + subdomain via cPanel UAPI ───────────────────────
-        $this->provisionCpanelDatabase($dbName);
-        $this->provisionCpanelSubdomain($subdomain, $rootDomain);
+        // ── 3. Provision database ─────────────────────────────────────────────
+        //
+        // We check for cPanel CREDENTIALS, not APP_ENV.
+        // APP_ENV can be wrong due to a stale config cache (config:cache run
+        // with a different .env). Credentials are always read from the live
+        // .env at runtime via env(), so they cannot be stale.
+        //
+        if ($this->hasCpanelCredentials()) {
+            Log::info("cPanel credentials found — using cPanel provisioning for '{$dbName}'.");
+            $this->provisionCpanelDatabase($dbName);
+            $this->provisionCpanelSubdomain($subdomain, $rootDomain);
+        } else {
+            Log::info("No cPanel credentials — using local MySQL provisioning for '{$dbName}'.");
+            $this->provisionLocalDatabase($dbName);
+        }
 
         // ── 4. Create the Company record in the landlord DB ───────────────────
         $company = Company::create([
             'name'     => $data['name'],
             'slug'     => $slug,
-            'domain'   => $storedDomain,   // full URL — used by tenantUrl() on welcome page
+            'domain'   => $storedDomain,
             'database' => $dbName,
             'status'   => 'active',
             'plan'     => $data['plan'] ?? 'basic',
@@ -111,14 +119,19 @@ class CreateTenant
         ]);
 
         try {
-            // ── 5. Switch to the tenant connection ────────────────────────────
+            // ── 5. Configure + activate the tenant connection ─────────────────
+            //
+            // ORDER MATTERS:
+            //   a) config() first — before makeCurrent(), which may internally
+            //      call DB::purge() and reset the resolved connection.
+            //   b) makeCurrent() second — sets the tenant context.
+            //   c) DB::purge() — clears the resolver so the next DB access
+            //      builds a fresh connection from the config we just wrote.
+            //   d) No DB::reconnect() — it can reuse a stale resolver.
+            //
+            $this->configureTenantConnection($dbName);
             $company->makeCurrent();
-
             DB::purge('tenant');
-            DB::reconnect('tenant');
-
-            // Verify the tenant DB is actually reachable before proceeding
-            DB::connection('tenant')->getPdo();
 
             // ── 6. Run tenant migrations ──────────────────────────────────────
             $exitCode = Artisan::call('migrate', [
@@ -135,6 +148,7 @@ class CreateTenant
 
             // ── 7. Verify all expected tables exist ───────────────────────────
             $missing = [];
+
             foreach (self::REQUIRED_TABLES as $table) {
                 if (! Schema::connection('tenant')->hasTable($table)) {
                     $missing[] = $table;
@@ -190,7 +204,7 @@ class CreateTenant
 
             Log::warning(
                 "Cleanup needed: DB '{$dbName}' and subdomain '{$subdomain}.{$rootDomain}' " .
-                'may need to be removed manually from cPanel if you are not retrying.'
+                'may need to be removed manually if you are not retrying.'
             );
 
             throw $e;
@@ -202,6 +216,119 @@ class CreateTenant
     }
 
     // -------------------------------------------------------------------------
+    // Provisioning switch helper
+    // -------------------------------------------------------------------------
+
+    /**
+     * Returns true only when both CPANEL_USER and CPANEL_API_TOKEN are present
+     * in the live environment. We use this instead of app()->environment() to
+     * avoid false positives caused by a stale config cache.
+     */
+    private function hasCpanelCredentials(): bool
+    {
+        return ! empty(env('CPANEL_USER')) && ! empty(env('CPANEL_API_TOKEN'));
+    }
+
+    // -------------------------------------------------------------------------
+    // Local database provisioning (no cPanel)
+    // -------------------------------------------------------------------------
+
+    /**
+     * Creates the tenant database using a raw PDO connection to MySQL
+     * (no database selected). After creation, immediately verifies access
+     * by switching into the new database — same connection, no caching.
+     *
+     * This is intentionally NOT using DB::statement() or any Laravel facade.
+     * Laravel's connection resolver can cache socket/pipe parameters that
+     * differ from a fresh PDO connection, causing "Unknown database" errors
+     * even when the DB was genuinely created.
+     */
+    private function provisionLocalDatabase(string $dbName): void
+    {
+        $host     = env('DB_HOST', '127.0.0.1');
+        $port     = env('DB_PORT', '3306');
+        $username = env('DB_USERNAME', 'root');
+        $password = env('DB_PASSWORD', '');
+
+        Log::info("provisionLocalDatabase: connecting to {$host}:{$port} as '{$username}'");
+
+        // Step A — connect to MySQL without selecting any database
+        try {
+            $pdo = new \PDO(
+                "mysql:host={$host};port={$port};charset=utf8mb4",
+                $username,
+                $password,
+                [
+                    \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                    \PDO::ATTR_TIMEOUT => 5,
+                ]
+            );
+        } catch (\PDOException $e) {
+            throw new \RuntimeException(
+                "Cannot connect to MySQL server at {$host}:{$port} as '{$username}'. " .
+                "PDO error: " . $e->getMessage() . ". " .
+                "Check DB_HOST, DB_PORT, DB_USERNAME and DB_PASSWORD in your .env."
+            );
+        }
+
+        // Step B — create the database
+        try {
+            $pdo->exec(
+                "CREATE DATABASE IF NOT EXISTS `{$dbName}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
+            );
+        } catch (\PDOException $e) {
+            throw new \RuntimeException(
+                "CREATE DATABASE failed for '{$dbName}'. " .
+                "PDO error: " . $e->getMessage() . ". " .
+                "Check that the MySQL user has the CREATE privilege."
+            );
+        }
+
+        Log::info("provisionLocalDatabase: CREATE DATABASE `{$dbName}` executed.");
+
+        // Step C — verify by switching into the new database on the same connection
+        try {
+            $pdo->exec("USE `{$dbName}`");
+        } catch (\PDOException $e) {
+            throw new \RuntimeException(
+                "Database '{$dbName}' was created but cannot be selected. " .
+                "PDO error: " . $e->getMessage() . ". " .
+                "Check MySQL user privileges: GRANT ALL PRIVILEGES ON `{$dbName}`.* TO '{$username}'@'localhost';"
+            );
+        }
+
+        Log::info("provisionLocalDatabase: `{$dbName}` selected — provisioning verified.");
+    }
+
+    // -------------------------------------------------------------------------
+    // Tenant connection helpers
+    // -------------------------------------------------------------------------
+
+    /**
+     * Write all tenant connection parameters into Laravel's runtime config.
+     * Called BEFORE makeCurrent() so any internal purge inside makeCurrent()
+     * does not overwrite the values we need.
+     */
+    private function configureTenantConnection(string $dbName): void
+    {
+        config([
+            'database.connections.tenant.driver'    => 'mysql',
+            'database.connections.tenant.host'      => env('DB_HOST', '127.0.0.1'),
+            'database.connections.tenant.port'      => env('DB_PORT', '3306'),
+            'database.connections.tenant.database'  => $dbName,
+            'database.connections.tenant.username'  => env('DB_USERNAME', 'root'),
+            'database.connections.tenant.password'  => env('DB_PASSWORD', ''),
+            'database.connections.tenant.charset'   => 'utf8mb4',
+            'database.connections.tenant.collation' => 'utf8mb4_unicode_ci',
+            'database.connections.tenant.prefix'    => '',
+            'database.connections.tenant.strict'    => true,
+            'database.connections.tenant.engine'    => null,
+        ]);
+
+        Log::info("configureTenantConnection: tenant connection set to '{$dbName}'.");
+    }
+
+    // -------------------------------------------------------------------------
     // Domain helpers
     // -------------------------------------------------------------------------
 
@@ -209,7 +336,6 @@ class CreateTenant
      * Strip http:// or https:// and any trailing slash.
      *
      *   "https://winstlaw.cms.tick.co.tz/"  →  "winstlaw.cms.tick.co.tz"
-     *   "winstlaw.cms.tick.co.tz"           →  "winstlaw.cms.tick.co.tz"
      */
     private static function stripScheme(string $domain): string
     {
@@ -217,24 +343,20 @@ class CreateTenant
     }
 
     /**
-     * Extract the subdomain label (first segment) from a bare host.
+     * Extract the subdomain label from a bare host.
      *
      *   bareHost   = "winstlaw.cms.tick.co.tz"
      *   rootDomain = "cms.tick.co.tz"
      *   →            "winstlaw"
-     *
-     * Falls back to the first dot-segment if the rootDomain suffix is not found.
      */
     private static function extractSubdomain(string $bareHost, string $rootDomain): string
     {
-        // Remove the root domain suffix (and the separating dot) if present
         $suffix = '.' . ltrim($rootDomain, '.');
 
         if (str_ends_with($bareHost, $suffix)) {
             return substr($bareHost, 0, strlen($bareHost) - strlen($suffix));
         }
 
-        // Fallback: take the first label before the first dot
         return explode('.', $bareHost)[0];
     }
 
@@ -248,11 +370,6 @@ class CreateTenant
         $cpanelToken = env('CPANEL_API_TOKEN');
         $cpanelHost  = env('CPANEL_HOST', 'localhost');
         $dbUser      = env('DB_USERNAME', 'developer');
-
-        if (empty($cpanelUser) || empty($cpanelToken)) {
-            Log::info("CPANEL credentials not set — skipping DB provisioning for '{$dbName}'.");
-            return;
-        }
 
         $base    = "https://{$cpanelHost}:2083/execute";
         $headers = [
@@ -287,37 +404,20 @@ class CreateTenant
     // cPanel UAPI — subdomain provisioning
     // -------------------------------------------------------------------------
 
-    /**
-     * Create a subdomain in cPanel pointing to the same document root as the
-     * main app so all tenant subdomains are served by the same Laravel install.
-     *
-     * cPanel's SubDomain/addsubdomain API expects:
-     *   domain     = the subdomain label ONLY  (e.g. "winstlaw")
-     *   rootdomain = the parent domain         (e.g. "cms.tick.co.tz")
-     *
-     * It must NEVER receive a scheme (http/https) in the domain parameter.
-     */
     private function provisionCpanelSubdomain(string $subdomain, string $rootDomain): void
     {
         $cpanelUser  = env('CPANEL_USER');
         $cpanelToken = env('CPANEL_API_TOKEN');
         $cpanelHost  = env('CPANEL_HOST', 'localhost');
 
-        if (empty($cpanelUser) || empty($cpanelToken)) {
-            Log::info("CPANEL credentials not set — skipping subdomain provisioning for '{$subdomain}'.");
-            return;
-        }
-
         if (empty($subdomain) || $subdomain === $rootDomain) {
             Log::warning("Subdomain provisioning skipped — could not derive subdomain from domain.");
             return;
         }
 
-        // Guard: ensure no scheme slipped through (belt-and-suspenders)
         if (str_contains($subdomain, '://')) {
             throw new \InvalidArgumentException(
-                "provisionCpanelSubdomain() received a URL instead of a bare subdomain label: '{$subdomain}'. " .
-                "Strip the scheme before calling this method."
+                "provisionCpanelSubdomain() received a URL instead of a bare subdomain label: '{$subdomain}'."
             );
         }
 
@@ -332,8 +432,8 @@ class CreateTenant
         $this->cpanelUapiCall(
             "{$base}/SubDomain/addsubdomain",
             [
-                'domain'     => $subdomain,   // ✅ bare label only: "winstlaw"
-                'rootdomain' => $rootDomain,  // e.g. "cms.tick.co.tz"
+                'domain'     => $subdomain,
+                'rootdomain' => $rootDomain,
                 'dir'        => $docRoot,
             ],
             $headers,
@@ -399,11 +499,11 @@ class CreateTenant
     private function seedTenantSettings(array $data): void
     {
         $rows = [
-            ['key' => 'site_name',      'value' => $data['name'],                                  'group' => 'general'],
-            ['key' => 'contact_email',  'value' => $data['admin']['email'] ?? 'info@example.com',  'group' => 'contact'],
-            ['key' => 'company_name',   'value' => $data['name'],                                  'group' => 'company'],
-            ['key' => 'company_domain', 'value' => $data['domain'],                                'group' => 'company'],
-            ['key' => 'company_plan',   'value' => $data['plan'] ?? 'basic',                       'group' => 'company'],
+            ['key' => 'site_name',      'value' => $data['name'],                                 'group' => 'general'],
+            ['key' => 'contact_email',  'value' => $data['admin']['email'] ?? 'info@example.com', 'group' => 'contact'],
+            ['key' => 'company_name',   'value' => $data['name'],                                 'group' => 'company'],
+            ['key' => 'company_domain', 'value' => $data['domain'],                               'group' => 'company'],
+            ['key' => 'company_plan',   'value' => $data['plan'] ?? 'basic',                      'group' => 'company'],
         ];
 
         foreach ($rows as $row) {

@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../wayfinder'
 import confirmD7e05f from './confirm'
 /**
-* @see routes/web.php:41
+* @see routes/web.php:43
 * @route '/forgot-password'
 */
 export const request = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -15,7 +15,7 @@ request.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:41
+* @see routes/web.php:43
 * @route '/forgot-password'
 */
 request.url = (options?: RouteQueryOptions) => {
@@ -27,7 +27,7 @@ request.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:41
+* @see routes/web.php:43
 * @route '/forgot-password'
 */
 request.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -36,7 +36,7 @@ request.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:41
+* @see routes/web.php:43
 * @route '/forgot-password'
 */
 request.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ request.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:41
+* @see routes/web.php:43
 * @route '/forgot-password'
 */
 const requestForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -54,7 +54,7 @@ const requestForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =>
 })
 
 /**
-* @see routes/web.php:41
+* @see routes/web.php:43
 * @route '/forgot-password'
 */
 requestForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -63,7 +63,7 @@ requestForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 })
 
 /**
-* @see routes/web.php:41
+* @see routes/web.php:43
 * @route '/forgot-password'
 */
 requestForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

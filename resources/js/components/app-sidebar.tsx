@@ -2,7 +2,7 @@ import { Link } from '@inertiajs/react';
 import {
     BarChart2, BookOpen, ClipboardList, Factory,
     FileText, FolderOpen, GalleryHorizontal, GitPullRequest,
-    Image, LayoutGrid, LibraryBig, Mail, Navigation,
+    HelpCircle, Image, LayoutGrid, LibraryBig, Mail, MessageSquare, Navigation,
     NotebookTabs, PanelTop, PenLine, Search, Settings,
     ShieldCheck, Star, Tag, Users, Wrench,
 } from 'lucide-react';
@@ -138,6 +138,11 @@ const analyticsItems: NavItemWithMeta[] = [
     { title: 'Analytics', href: '/analytics', icon: BarChart2, module: 'Analytics', sidebarKey: 'analytics' },
 ];
 
+const supportItems: NavItemWithMeta[] = [
+    { title: 'Feedback', href: '/feedback', icon: MessageSquare, module: 'Feedback', sidebarKey: 'feedback' },
+    { title: 'Help & Support', href: '/help', icon: HelpCircle, module: 'Help', sidebarKey: 'help' },
+];
+
 const ALL_GROUPS: { label: string; items: NavItemWithMeta[] }[] = [
     { label: 'Overview', items: overviewItems },
     { label: 'Auth & Users', items: authItems },
@@ -148,6 +153,7 @@ const ALL_GROUPS: { label: string; items: NavItemWithMeta[] }[] = [
     { label: 'Site Configuration', items: siteConfigItems },
     { label: 'SEO & Navigation', items: seoNavItems },
     { label: 'Analytics', items: analyticsItems },
+    { label: 'Support', items: supportItems },
 ];
 
 export function AppSidebar() {

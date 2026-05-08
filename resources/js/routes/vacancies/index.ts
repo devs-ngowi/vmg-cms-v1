@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../wayfinder'
 /**
-* @see routes/web.php:143
+* @see routes/web.php:145
 * @route '/vacancies'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +14,7 @@ index.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:143
+* @see routes/web.php:145
 * @route '/vacancies'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -26,7 +26,7 @@ index.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:143
+* @see routes/web.php:145
 * @route '/vacancies'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:143
+* @see routes/web.php:145
 * @route '/vacancies'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -44,7 +44,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:143
+* @see routes/web.php:145
 * @route '/vacancies'
 */
 const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -53,7 +53,7 @@ const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 })
 
 /**
-* @see routes/web.php:143
+* @see routes/web.php:145
 * @route '/vacancies'
 */
 indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -62,7 +62,7 @@ indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:143
+* @see routes/web.php:145
 * @route '/vacancies'
 */
 indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -78,7 +78,7 @@ indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 index.form = indexForm
 
 /**
-* @see routes/web.php:144
+* @see routes/web.php:146
 * @route '/vacancies/create'
 */
 export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -92,7 +92,7 @@ create.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:144
+* @see routes/web.php:146
 * @route '/vacancies/create'
 */
 create.url = (options?: RouteQueryOptions) => {
@@ -104,7 +104,7 @@ create.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:144
+* @see routes/web.php:146
 * @route '/vacancies/create'
 */
 create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -113,7 +113,7 @@ create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:144
+* @see routes/web.php:146
 * @route '/vacancies/create'
 */
 create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -122,7 +122,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:144
+* @see routes/web.php:146
 * @route '/vacancies/create'
 */
 const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -131,7 +131,7 @@ const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => 
 })
 
 /**
-* @see routes/web.php:144
+* @see routes/web.php:146
 * @route '/vacancies/create'
 */
 createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -140,7 +140,7 @@ createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:144
+* @see routes/web.php:146
 * @route '/vacancies/create'
 */
 createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -156,7 +156,7 @@ createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 create.form = createForm
 
 /**
-* @see routes/web.php:145
+* @see routes/web.php:147
 * @route '/vacancies/expired'
 */
 export const expired = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -170,7 +170,7 @@ expired.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:145
+* @see routes/web.php:147
 * @route '/vacancies/expired'
 */
 expired.url = (options?: RouteQueryOptions) => {
@@ -182,7 +182,7 @@ expired.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:145
+* @see routes/web.php:147
 * @route '/vacancies/expired'
 */
 expired.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -191,7 +191,7 @@ expired.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:145
+* @see routes/web.php:147
 * @route '/vacancies/expired'
 */
 expired.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -200,7 +200,7 @@ expired.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:145
+* @see routes/web.php:147
 * @route '/vacancies/expired'
 */
 const expiredForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -209,7 +209,7 @@ const expiredForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =>
 })
 
 /**
-* @see routes/web.php:145
+* @see routes/web.php:147
 * @route '/vacancies/expired'
 */
 expiredForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -218,7 +218,7 @@ expiredForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 })
 
 /**
-* @see routes/web.php:145
+* @see routes/web.php:147
 * @route '/vacancies/expired'
 */
 expiredForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

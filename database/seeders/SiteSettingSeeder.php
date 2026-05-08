@@ -48,38 +48,28 @@ class SiteSettingSeeder extends Seeder
             ['key' => 'cookie_notice', 'value' => 'true', 'type' => 'boolean', 'group' => 'advanced'],
             ['key' => 'cookie_notice_text', 'value' => 'We use cookies to enhance your experience.', 'type' => 'string', 'group' => 'advanced'],
 
-            // ── Sidebar Modules ───────────────────────────────────────────────
+           // ── Sidebar Modules ───────────────────────────────────────────────
             [
-                'key' => 'sidebar_visible_modules',
+                'key'   => 'sidebar_visible_modules',
                 'value' => json_encode([
-                    'Dashboard',
-                    'Users',
-                    'Roles',
-                    'Authors',
-                    'Pages',
-                    'Services',
-                    'Industries',
-                    'Projects',
-                    'Blog',
-                    'Media',
-                    'Forms',
-                    'Submissions',
-                    'Workflow',
-                    'Hero Slides',
-                    'Client Logos',
-                    'Testimonials',
-                    'Settings',
-                    'SEO',
-                    'Menus',
-                    'Analytics',
+                    'dashboard',
+                    'users', 'roles', 'authors',
+                    'pages', 'services', 'industries', 'projects', 'knowledge', 'blog',
+                    'media',
+                    'forms', 'submissions',
+                    'workflow',
+                    'home_banners', 'hero_slides', 'client_logos', 'testimonials', 'site_settings',
+                    'seo', 'menus',
+                    'analytics',
+                    'feedback', 'help',
                 ]),
-                'type' => 'json',
+                'type'  => 'json',
                 'group' => 'sidebar',
             ],
         ];
 
         foreach ($settings as $setting) {
-            SiteSetting::on('tenant')->firstOrCreate(
+            SiteSetting::on('tenant')->updateOrCreate(
                 ['key' => $setting['key']],
                 array_merge($setting, ['updated_by' => null]),
             );

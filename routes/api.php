@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BannerController;
 use App\Http\Controllers\BlogPostController;
 use App\Http\Controllers\ClientLogoController;
+use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\FormController;
 use App\Http\Controllers\HeroSlideController;
 use App\Http\Controllers\IndustryController;
@@ -17,6 +18,7 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\SeoSettingController;
 use App\Http\Controllers\SiteSettingController;
+use App\Http\Controllers\SupportTicketController;
 use App\Http\Controllers\TestimonialController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WorkflowController;
@@ -246,11 +248,6 @@ Route::prefix('v1')->group(function () {
             Route::delete('/{banner}',       [BannerController::class, 'destroy']);
         });
 
-        // ✅ Knowledge — PROTECTED (admin writes only)
-        // ⚠️  GET /articles and GET /categories are intentionally absent here.
-        //     They are already registered as public routes above.
-        //     Duplicating them here inside auth:sanctum causes a route conflict
-        //     where Laravel matches the protected version and returns 401.
         Route::prefix('knowledge')->group(function () {
             // Categories (writes)
             Route::post('/categories',                    [KnowledgeController::class, 'categoriesStore']);
@@ -268,6 +265,43 @@ Route::prefix('v1')->group(function () {
             Route::delete('/articles/{article}',          [KnowledgeController::class, 'articlesDestroy']);
             Route::patch('/articles/{article}/toggle',    [KnowledgeController::class, 'articlesToggle']);
         });
+
+        // ── Feedback — PUBLIC (submit only) ──────────────────────────────────────────
+        Route::post('/feedback', [FeedbackController::class, 'store']);
+
+        // ── Feedback — PROTECTED ──────────────────────────────────────────────────────
+        Route::middleware('auth:sanctum')->group(function () {
+            Route::get('/feedback',                     [FeedbackController::class, 'index']);
+            Route::get('/feedback/{feedback}',          [FeedbackController::class, 'show']);
+            Route::patch('/feedback/{feedback}',        [FeedbackController::class, 'update']);
+            Route::patch('/feedback/{feedback}/status', [FeedbackController::class, 'toggleStatus']);
+            Route::delete('/feedback/{feedback}',       [FeedbackController::class, 'destroy']);
+        });
+
+        // ── Support Tickets ───────────────────────────────────────────────────────────
+
+        // PUBLIC — anyone can submit a ticket (no auth required)
+        Route::post('/support/tickets', [SupportTicketController::class, 'store']);
+
+        // PROTECTED — CMS admin only
+        Route::middleware('auth:sanctum')->prefix('support')->group(function () {
+
+            // List all tickets (with filters + stats)
+            Route::get('/tickets',                        [SupportTicketController::class, 'index']);
+
+            // View single ticket (auto-advances status open → in_progress)
+            Route::get('/tickets/{supportTicket}',        [SupportTicketController::class, 'show']);
+
+            // Update status / priority / assignment / admin notes
+            Route::patch('/tickets/{supportTicket}',      [SupportTicketController::class, 'update']);
+
+            // Add a reply or internal note
+            Route::post('/tickets/{supportTicket}/reply', [SupportTicketController::class, 'reply']);
+
+            // Delete ticket
+            Route::delete('/tickets/{supportTicket}',     [SupportTicketController::class, 'destroy']);
+        });
+
 
     }); // end auth:sanctum
 

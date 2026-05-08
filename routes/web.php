@@ -7,6 +7,7 @@ use App\Http\Controllers\BlogPostController;
 use App\Http\Controllers\ClientLogoController;
 use App\Http\Controllers\CompanyRegistrationController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\FormController;
 use App\Http\Controllers\HeroSlideController;
 use App\Http\Controllers\IndustryController;
@@ -19,6 +20,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SeoSettingController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\SiteSettingController;
+use App\Http\Controllers\SupportTicketController;
 use App\Http\Controllers\TestimonialController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WorkflowController;
@@ -245,4 +247,27 @@ Route::patch('/knowledge/articles/{article}',               [KnowledgeController
 Route::delete('/knowledge/articles/{article}',              [KnowledgeController::class, 'articlesDestroy'])->name('knowledge.articles.destroy');
 Route::patch('/knowledge/articles/{article}/toggle',        [KnowledgeController::class, 'articlesToggle'])->name('knowledge.articles.toggle');
 
+// ── Feedback ──────────────────────────────────────────────────────────────────
+// Public: anyone can submit feedback (outside auth middleware)
+Route::post('/feedback', [FeedbackController::class, 'store'])->name('feedback.store');
+
+// CMS admin (requires auth — already inside the auth middleware group)
+Route::get('/feedback',                     [FeedbackController::class, 'index'])->name('feedback.index');
+Route::get('/feedback/create',              [FeedbackController::class, 'create'])->name('feedback.create');
+Route::get('/feedback/{feedback}',          [FeedbackController::class, 'show'])->name('feedback.show');
+Route::get('/feedback/{feedback}/edit',     [FeedbackController::class, 'edit'])->name('feedback.edit');
+Route::patch('/feedback/{feedback}',        [FeedbackController::class, 'update'])->name('feedback.update');
+Route::patch('/feedback/{feedback}/status', [FeedbackController::class, 'toggleStatus'])->name('feedback.toggleStatus');
+Route::delete('/feedback/{feedback}',       [FeedbackController::class, 'destroy'])->name('feedback.destroy');
+
+// ── Support Tickets ───────────────────────────────────────────────────────────
+// Public: anyone can submit a ticket
+Route::post('/help/ticket', [SupportTicketController::class, 'store'])->name('support.store');
+
+// CMS admin
+Route::get('/support',                        [SupportTicketController::class, 'index'])->name('support.index');
+Route::get('/support/{supportTicket}',        [SupportTicketController::class, 'show'])->name('support.show');
+Route::patch('/support/{supportTicket}',      [SupportTicketController::class, 'update'])->name('support.update');
+Route::post('/support/{supportTicket}/reply', [SupportTicketController::class, 'reply'])->name('support.reply');
+Route::delete('/support/{supportTicket}',     [SupportTicketController::class, 'destroy'])->name('support.destroy');
 });

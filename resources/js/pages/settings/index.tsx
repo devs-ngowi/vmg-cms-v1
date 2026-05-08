@@ -61,6 +61,9 @@ const SIDEBAR_ITEM_OPTIONS: SidebarOption[] = [
     { label: 'Menu Manager', value: 'menus', group: 'SEO & Navigation' },
 
     { label: 'Analytics', value: 'analytics', group: 'Analytics' },
+    
+    { label: 'Feedback', value: 'feedback', group: 'Support' },
+    { label: 'Help & Support', value: 'help', group: 'Support' },
 ];
 
 const groupIcons: Record<string, React.ReactNode> = {
