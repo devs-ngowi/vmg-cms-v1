@@ -140,7 +140,8 @@ const analyticsItems: NavItemWithMeta[] = [
 
 const supportItems: NavItemWithMeta[] = [
     { title: 'Feedback', href: '/feedback', icon: MessageSquare, module: 'Feedback', sidebarKey: 'feedback' },
-    { title: 'Help & Support', href: '/help', icon: HelpCircle, module: 'Help', sidebarKey: 'help' },
+    { title: 'Support Tickets', href: '/support', icon: ClipboardList, module: 'Support', sidebarKey: 'support_tickets' },
+    { title: 'Help & Support', href: '/support', icon: HelpCircle, module: 'Help', sidebarKey: 'help' },
 ];
 
 const ALL_GROUPS: { label: string; items: NavItemWithMeta[] }[] = [
