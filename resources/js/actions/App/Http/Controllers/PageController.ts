@@ -20,10 +20,6 @@ indexf9f18fa6d63adeaec899f77d59e37085.definition = {
 * @route '/api/v1/pages'
 */
 indexf9f18fa6d63adeaec899f77d59e37085.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return indexf9f18fa6d63adeaec899f77d59e37085.definition.url + queryParams(options)
 }
 
@@ -104,10 +100,6 @@ index01be313083f752c41dc8b10f96264689.definition = {
 * @route '/pages'
 */
 index01be313083f752c41dc8b10f96264689.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return index01be313083f752c41dc8b10f96264689.definition.url + queryParams(options)
 }
 
@@ -173,7 +165,6 @@ export const index = {
     '/pages': index01be313083f752c41dc8b10f96264689,
 }
 
-
 /**
 * @see \App\Http\Controllers\PageController::show
 * @see app/Http/Controllers/PageController.php:0
@@ -199,7 +190,6 @@ show.url = (args: { page: string | number } | [page: string | number ] | string 
         args = { page: args }
     }
 
-
     if (Array.isArray(args)) {
         args = {
             page: args[0],
@@ -207,7 +197,6 @@ show.url = (args: { page: string | number } | [page: string | number ] | string 
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         page: args.page,
@@ -296,10 +285,6 @@ draftscacd2561a6a0da7c956a739e7d792e87.definition = {
 * @route '/api/v1/pages/drafts'
 */
 draftscacd2561a6a0da7c956a739e7d792e87.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return draftscacd2561a6a0da7c956a739e7d792e87.definition.url + queryParams(options)
 }
 
@@ -380,10 +365,6 @@ drafts9e54cdf6cc93be58a16d6eb92ad10503.definition = {
 * @route '/pages/drafts'
 */
 drafts9e54cdf6cc93be58a16d6eb92ad10503.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return drafts9e54cdf6cc93be58a16d6eb92ad10503.definition.url + queryParams(options)
 }
 
@@ -449,7 +430,6 @@ export const drafts = {
     '/pages/drafts': drafts9e54cdf6cc93be58a16d6eb92ad10503,
 }
 
-
 /**
 * @see \App\Http\Controllers\PageController::create
 * @see app/Http/Controllers/PageController.php:151
@@ -471,10 +451,6 @@ create53da05f5784c5ced045639481a9ee610.definition = {
 * @route '/api/v1/pages/create'
 */
 create53da05f5784c5ced045639481a9ee610.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return create53da05f5784c5ced045639481a9ee610.definition.url + queryParams(options)
 }
 
@@ -555,10 +531,6 @@ create1dc79e5e6e498bc3adfcb8c4f7e8664b.definition = {
 * @route '/pages/create'
 */
 create1dc79e5e6e498bc3adfcb8c4f7e8664b.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return create1dc79e5e6e498bc3adfcb8c4f7e8664b.definition.url + queryParams(options)
 }
 
@@ -624,7 +596,6 @@ export const create = {
     '/pages/create': create1dc79e5e6e498bc3adfcb8c4f7e8664b,
 }
 
-
 /**
 * @see \App\Http\Controllers\PageController::store
 * @see app/Http/Controllers/PageController.php:165
@@ -646,10 +617,6 @@ storef9f18fa6d63adeaec899f77d59e37085.definition = {
 * @route '/api/v1/pages'
 */
 storef9f18fa6d63adeaec899f77d59e37085.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return storef9f18fa6d63adeaec899f77d59e37085.definition.url + queryParams(options)
 }
 
@@ -705,10 +672,6 @@ store01be313083f752c41dc8b10f96264689.definition = {
 * @route '/pages'
 */
 store01be313083f752c41dc8b10f96264689.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return store01be313083f752c41dc8b10f96264689.definition.url + queryParams(options)
 }
 
@@ -749,7 +712,6 @@ export const store = {
     '/pages': store01be313083f752c41dc8b10f96264689,
 }
 
-
 /**
 * @see \App\Http\Controllers\PageController::update
 * @see app/Http/Controllers/PageController.php:229
@@ -786,7 +748,6 @@ updatef70dc08d412626ca2cfacd2633a7d02c.url = (args: { page: string | number | { 
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         page: typeof args.page === 'object'
@@ -877,7 +838,6 @@ update97b52a73bf846e75e5c90f5eaa500e81.url = (args: { page: string | number | { 
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         page: typeof args.page === 'object'
         ? args.page.id
@@ -936,7 +896,6 @@ export const update = {
     '/pages/{page}': update97b52a73bf846e75e5c90f5eaa500e81,
 }
 
-
 /**
 * @see \App\Http\Controllers\PageController::destroy
 * @see app/Http/Controllers/PageController.php:263
@@ -973,7 +932,6 @@ destroyf70dc08d412626ca2cfacd2633a7d02c.url = (args: { page: string | number | {
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         page: typeof args.page === 'object'
@@ -1064,7 +1022,6 @@ destroy97b52a73bf846e75e5c90f5eaa500e81.url = (args: { page: string | number | {
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         page: typeof args.page === 'object'
         ? args.page.id
@@ -1123,7 +1080,6 @@ export const destroy = {
     '/pages/{page}': destroy97b52a73bf846e75e5c90f5eaa500e81,
 }
 
-
 /**
 * @see \App\Http\Controllers\PageController::edit
 * @see app/Http/Controllers/PageController.php:194
@@ -1160,7 +1116,6 @@ edit.url = (args: { page: string | number | { id: string | number } } | [page: s
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         page: typeof args.page === 'object'

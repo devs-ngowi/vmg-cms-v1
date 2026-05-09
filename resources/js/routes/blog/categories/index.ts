@@ -20,10 +20,6 @@ store.definition = {
 * @route '/blog/categories'
 */
 store.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return store.definition.url + queryParams(options)
 }
 
@@ -95,7 +91,6 @@ update.url = (args: { category: string | number | { id: string | number } } | [c
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         category: typeof args.category === 'object'
@@ -187,7 +182,6 @@ destroy.url = (args: { category: string | number | { id: string | number } } | [
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         category: typeof args.category === 'object'
         ? args.category.id
@@ -240,8 +234,6 @@ destroyForm.delete = (args: { category: string | number | { id: string | number 
 })
 
 destroy.form = destroyForm
-
-
 
 const categories = {
     store: Object.assign(store, store),

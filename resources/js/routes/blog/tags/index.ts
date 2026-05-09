@@ -20,10 +20,6 @@ store.definition = {
 * @route '/blog/tags'
 */
 store.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return store.definition.url + queryParams(options)
 }
 
@@ -96,7 +92,6 @@ destroy.url = (args: { tag: string | number | { id: string | number } } | [tag: 
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         tag: typeof args.tag === 'object'
         ? args.tag.id
@@ -149,8 +144,6 @@ destroyForm.delete = (args: { tag: string | number | { id: string | number } } |
 })
 
 destroy.form = destroyForm
-
-
 
 const tags = {
     store: Object.assign(store, store),

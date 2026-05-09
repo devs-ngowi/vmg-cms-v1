@@ -20,10 +20,6 @@ index9e06ca2503b8737acfe636a6f7e6c789.definition = {
 * @route '/api/v1/forms'
 */
 index9e06ca2503b8737acfe636a6f7e6c789.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return index9e06ca2503b8737acfe636a6f7e6c789.definition.url + queryParams(options)
 }
 
@@ -104,10 +100,6 @@ index118516b29870aea4e0bf4a5af2a9ec26.definition = {
 * @route '/forms'
 */
 index118516b29870aea4e0bf4a5af2a9ec26.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return index118516b29870aea4e0bf4a5af2a9ec26.definition.url + queryParams(options)
 }
 
@@ -173,7 +165,6 @@ export const index = {
     '/forms': index118516b29870aea4e0bf4a5af2a9ec26,
 }
 
-
 /**
 * @see \App\Http\Controllers\FormController::edit
 * @see app/Http/Controllers/FormController.php:180
@@ -210,7 +201,6 @@ edit9d8d845d6f7c605df85b10b742a3fa54.url = (args: { form: string | number | { id
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         form: typeof args.form === 'object'
@@ -316,7 +306,6 @@ edit504ecd26906a3a8333b7e56f4cd73bb5.url = (args: { form: string | number | { id
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         form: typeof args.form === 'object'
         ? args.form.id
@@ -390,7 +379,6 @@ export const edit = {
     '/forms/{form}/edit': edit504ecd26906a3a8333b7e56f4cd73bb5,
 }
 
-
 /**
 * @see \App\Http\Controllers\FormController::submit
 * @see app/Http/Controllers/FormController.php:264
@@ -427,7 +415,6 @@ submit.url = (args: { form: string | number | { id: string | number } } | [form:
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         form: typeof args.form === 'object'
@@ -493,10 +480,6 @@ store9e06ca2503b8737acfe636a6f7e6c789.definition = {
 * @route '/api/v1/forms'
 */
 store9e06ca2503b8737acfe636a6f7e6c789.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return store9e06ca2503b8737acfe636a6f7e6c789.definition.url + queryParams(options)
 }
 
@@ -552,10 +535,6 @@ store118516b29870aea4e0bf4a5af2a9ec26.definition = {
 * @route '/forms'
 */
 store118516b29870aea4e0bf4a5af2a9ec26.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return store118516b29870aea4e0bf4a5af2a9ec26.definition.url + queryParams(options)
 }
 
@@ -596,7 +575,6 @@ export const store = {
     '/forms': store118516b29870aea4e0bf4a5af2a9ec26,
 }
 
-
 /**
 * @see \App\Http\Controllers\FormController::update
 * @see app/Http/Controllers/FormController.php:200
@@ -633,7 +611,6 @@ update9d8d845d6f7c605df85b10b742a3fa54.url = (args: { form: string | number | { 
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         form: typeof args.form === 'object'
@@ -724,7 +701,6 @@ updatea5831ab45545e4e8c292e9f1153c780c.url = (args: { form: string | number | { 
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         form: typeof args.form === 'object'
         ? args.form.id
@@ -783,7 +759,6 @@ export const update = {
     '/forms/{form}': updatea5831ab45545e4e8c292e9f1153c780c,
 }
 
-
 /**
 * @see \App\Http\Controllers\FormController::destroy
 * @see app/Http/Controllers/FormController.php:244
@@ -820,7 +795,6 @@ destroy9d8d845d6f7c605df85b10b742a3fa54.url = (args: { form: string | number | {
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         form: typeof args.form === 'object'
@@ -911,7 +885,6 @@ destroya5831ab45545e4e8c292e9f1153c780c.url = (args: { form: string | number | {
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         form: typeof args.form === 'object'
         ? args.form.id
@@ -970,7 +943,6 @@ export const destroy = {
     '/forms/{form}': destroya5831ab45545e4e8c292e9f1153c780c,
 }
 
-
 /**
 * @see \App\Http\Controllers\FormController::toggle
 * @see app/Http/Controllers/FormController.php:227
@@ -1007,7 +979,6 @@ toggleb67630f7b4f685b6b1a485d8fba486f7.url = (args: { form: string | number | { 
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         form: typeof args.form === 'object'
@@ -1098,7 +1069,6 @@ toggle5d6e5a3d37b9182bbbf467cd65bb662d.url = (args: { form: string | number | { 
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         form: typeof args.form === 'object'
         ? args.form.id
@@ -1157,7 +1127,6 @@ export const toggle = {
     '/forms/{form}/toggle': toggle5d6e5a3d37b9182bbbf467cd65bb662d,
 }
 
-
 /**
 * @see \App\Http\Controllers\FormController::submissions
 * @see app/Http/Controllers/FormController.php:329
@@ -1179,10 +1148,6 @@ submissions767545d5453043484b3dee1a51e98b5c.definition = {
 * @route '/api/v1/submissions'
 */
 submissions767545d5453043484b3dee1a51e98b5c.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return submissions767545d5453043484b3dee1a51e98b5c.definition.url + queryParams(options)
 }
 
@@ -1263,10 +1228,6 @@ submissionsbfd64b9c54577531a4b07645f6439881.definition = {
 * @route '/submissions'
 */
 submissionsbfd64b9c54577531a4b07645f6439881.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return submissionsbfd64b9c54577531a4b07645f6439881.definition.url + queryParams(options)
 }
 
@@ -1332,7 +1293,6 @@ export const submissions = {
     '/submissions': submissionsbfd64b9c54577531a4b07645f6439881,
 }
 
-
 /**
 * @see \App\Http\Controllers\FormController::showSubmission
 * @see app/Http/Controllers/FormController.php:354
@@ -1369,7 +1329,6 @@ showSubmission7628ee3f74163b57a952f3506034fb4f.url = (args: { submission: string
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         submission: typeof args.submission === 'object'
@@ -1475,7 +1434,6 @@ showSubmission9b45390f07b512830fb43cbcd16a0bf3.url = (args: { submission: string
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         submission: typeof args.submission === 'object'
         ? args.submission.id
@@ -1549,7 +1507,6 @@ export const showSubmission = {
     '/submissions/{submission}': showSubmission9b45390f07b512830fb43cbcd16a0bf3,
 }
 
-
 /**
 * @see \App\Http\Controllers\FormController::updateSubmission
 * @see app/Http/Controllers/FormController.php:373
@@ -1586,7 +1543,6 @@ updateSubmission2188cd01ef269f18deeb80db87d2fe9b.url = (args: { submission: stri
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         submission: typeof args.submission === 'object'
@@ -1677,7 +1633,6 @@ updateSubmission9b45390f07b512830fb43cbcd16a0bf3.url = (args: { submission: stri
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         submission: typeof args.submission === 'object'
         ? args.submission.id
@@ -1736,7 +1691,6 @@ export const updateSubmission = {
     '/submissions/{submission}': updateSubmission9b45390f07b512830fb43cbcd16a0bf3,
 }
 
-
 /**
 * @see \App\Http\Controllers\FormController::destroySubmission
 * @see app/Http/Controllers/FormController.php:394
@@ -1773,7 +1727,6 @@ destroySubmission7628ee3f74163b57a952f3506034fb4f.url = (args: { submission: str
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         submission: typeof args.submission === 'object'
@@ -1864,7 +1817,6 @@ destroySubmission9b45390f07b512830fb43cbcd16a0bf3.url = (args: { submission: str
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         submission: typeof args.submission === 'object'
         ? args.submission.id
@@ -1923,7 +1875,6 @@ export const destroySubmission = {
     '/submissions/{submission}': destroySubmission9b45390f07b512830fb43cbcd16a0bf3,
 }
 
-
 /**
 * @see \App\Http\Controllers\FormController::create
 * @see app/Http/Controllers/FormController.php:137
@@ -1945,10 +1896,6 @@ create.definition = {
 * @route '/forms/create'
 */
 create.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return create.definition.url + queryParams(options)
 }
 

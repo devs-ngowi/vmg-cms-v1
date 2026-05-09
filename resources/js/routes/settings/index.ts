@@ -20,10 +20,6 @@ index.definition = {
 * @route '/settings'
 */
 index.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return index.definition.url + queryParams(options)
 }
 
@@ -105,10 +101,6 @@ seedDefaults.definition = {
 * @route '/settings/seed-defaults'
 */
 seedDefaults.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return seedDefaults.definition.url + queryParams(options)
 }
 
@@ -165,10 +157,6 @@ update.definition = {
 * @route '/settings'
 */
 update.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return update.definition.url + queryParams(options)
 }
 
@@ -203,8 +191,6 @@ updateForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => 
 })
 
 update.form = updateForm
-
-
 
 const settings = {
     index: Object.assign(index, index),

@@ -20,10 +20,6 @@ index.definition = {
 * @route '/pages'
 */
 index.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return index.definition.url + queryParams(options)
 }
 
@@ -105,10 +101,6 @@ drafts.definition = {
 * @route '/pages/drafts'
 */
 drafts.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return drafts.definition.url + queryParams(options)
 }
 
@@ -190,10 +182,6 @@ create.definition = {
 * @route '/pages/create'
 */
 create.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return create.definition.url + queryParams(options)
 }
 
@@ -275,10 +263,6 @@ store.definition = {
 * @route '/pages'
 */
 store.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return store.definition.url + queryParams(options)
 }
 
@@ -350,7 +334,6 @@ edit.url = (args: { page: string | number | { id: string | number } } | [page: s
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         page: typeof args.page === 'object'
@@ -457,7 +440,6 @@ update.url = (args: { page: string | number | { id: string | number } } | [page:
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         page: typeof args.page === 'object'
         ? args.page.id
@@ -548,7 +530,6 @@ destroy.url = (args: { page: string | number | { id: string | number } } | [page
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         page: typeof args.page === 'object'
         ? args.page.id
@@ -601,8 +582,6 @@ destroyForm.delete = (args: { page: string | number | { id: string | number } } 
 })
 
 destroy.form = destroyForm
-
-
 
 const pages = {
     index: Object.assign(index, index),

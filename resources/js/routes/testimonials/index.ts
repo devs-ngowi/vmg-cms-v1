@@ -20,10 +20,6 @@ index.definition = {
 * @route '/testimonials'
 */
 index.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return index.definition.url + queryParams(options)
 }
 
@@ -105,10 +101,6 @@ store.definition = {
 * @route '/testimonials'
 */
 store.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return store.definition.url + queryParams(options)
 }
 
@@ -180,7 +172,6 @@ update.url = (args: { testimonial: string | number | { id: string | number } } |
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         testimonial: typeof args.testimonial === 'object'
@@ -272,7 +263,6 @@ approve.url = (args: { testimonial: string | number | { id: string | number } } 
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         testimonial: typeof args.testimonial === 'object'
         ? args.testimonial.id
@@ -362,7 +352,6 @@ feature.url = (args: { testimonial: string | number | { id: string | number } } 
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         testimonial: typeof args.testimonial === 'object'
@@ -454,7 +443,6 @@ destroy.url = (args: { testimonial: string | number | { id: string | number } } 
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         testimonial: typeof args.testimonial === 'object'
         ? args.testimonial.id
@@ -507,8 +495,6 @@ destroyForm.delete = (args: { testimonial: string | number | { id: string | numb
 })
 
 destroy.form = destroyForm
-
-
 
 const testimonials = {
     index: Object.assign(index, index),

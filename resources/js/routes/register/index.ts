@@ -20,10 +20,6 @@ submit.definition = {
 * @route '/register'
 */
 submit.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return submit.definition.url + queryParams(options)
 }
 
@@ -58,8 +54,6 @@ submitForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => 
 })
 
 submit.form = submitForm
-
-
 
 const register = {
     submit: Object.assign(submit, submit),

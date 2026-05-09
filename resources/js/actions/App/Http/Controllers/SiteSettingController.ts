@@ -20,10 +20,6 @@ apiIndex.definition = {
 * @route '/api/v1/settings'
 */
 apiIndex.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return apiIndex.definition.url + queryParams(options)
 }
 
@@ -109,7 +105,6 @@ apiByGroup.url = (args: { group: string | number } | [group: string | number ] |
         args = { group: args }
     }
 
-
     if (Array.isArray(args)) {
         args = {
             group: args[0],
@@ -117,7 +112,6 @@ apiByGroup.url = (args: { group: string | number } | [group: string | number ] |
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         group: args.group,
@@ -210,7 +204,6 @@ apiGetSetting.url = (args: { key: string | number } | [key: string | number ] | 
         args = { key: args }
     }
 
-
     if (Array.isArray(args)) {
         args = {
             key: args[0],
@@ -218,7 +211,6 @@ apiGetSetting.url = (args: { key: string | number } | [key: string | number ] | 
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         key: args.key,
@@ -307,10 +299,6 @@ index.definition = {
 * @route '/settings'
 */
 index.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return index.definition.url + queryParams(options)
 }
 
@@ -392,10 +380,6 @@ seedDefaults.definition = {
 * @route '/settings/seed-defaults'
 */
 seedDefaults.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return seedDefaults.definition.url + queryParams(options)
 }
 
@@ -452,10 +436,6 @@ update.definition = {
 * @route '/settings'
 */
 update.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return update.definition.url + queryParams(options)
 }
 

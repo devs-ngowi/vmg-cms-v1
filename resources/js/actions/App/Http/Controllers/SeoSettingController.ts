@@ -20,10 +20,6 @@ indexee2fb8c7e9269e17eaece30a5c33f900.definition = {
 * @route '/api/v1/seo'
 */
 indexee2fb8c7e9269e17eaece30a5c33f900.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return indexee2fb8c7e9269e17eaece30a5c33f900.definition.url + queryParams(options)
 }
 
@@ -104,10 +100,6 @@ index137a6eedd68bc47b5fb8b3831ddf227c.definition = {
 * @route '/seo'
 */
 index137a6eedd68bc47b5fb8b3831ddf227c.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return index137a6eedd68bc47b5fb8b3831ddf227c.definition.url + queryParams(options)
 }
 
@@ -173,7 +165,6 @@ export const index = {
     '/seo': index137a6eedd68bc47b5fb8b3831ddf227c,
 }
 
-
 /**
 * @see \App\Http\Controllers\SeoSettingController::update
 * @see app/Http/Controllers/SeoSettingController.php:79
@@ -195,10 +186,6 @@ updateee2fb8c7e9269e17eaece30a5c33f900.definition = {
 * @route '/api/v1/seo'
 */
 updateee2fb8c7e9269e17eaece30a5c33f900.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return updateee2fb8c7e9269e17eaece30a5c33f900.definition.url + queryParams(options)
 }
 
@@ -254,10 +241,6 @@ update137a6eedd68bc47b5fb8b3831ddf227c.definition = {
 * @route '/seo'
 */
 update137a6eedd68bc47b5fb8b3831ddf227c.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return update137a6eedd68bc47b5fb8b3831ddf227c.definition.url + queryParams(options)
 }
 
@@ -297,7 +280,6 @@ export const update = {
     '/api/v1/seo': updateee2fb8c7e9269e17eaece30a5c33f900,
     '/seo': update137a6eedd68bc47b5fb8b3831ddf227c,
 }
-
 
 const SeoSettingController = { index, update }
 

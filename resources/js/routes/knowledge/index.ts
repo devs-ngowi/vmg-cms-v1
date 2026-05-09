@@ -22,10 +22,6 @@ index.definition = {
 * @route '/knowledge'
 */
 index.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return index.definition.url + queryParams(options)
 }
 
@@ -85,8 +81,6 @@ indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 })
 
 index.form = indexForm
-
-
 
 const knowledge = {
     index: Object.assign(index, index),

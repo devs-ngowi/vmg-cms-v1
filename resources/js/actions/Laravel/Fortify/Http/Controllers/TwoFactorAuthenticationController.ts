@@ -20,10 +20,6 @@ store.definition = {
 * @route '/user/two-factor-authentication'
 */
 store.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return store.definition.url + queryParams(options)
 }
 
@@ -80,10 +76,6 @@ destroy.definition = {
 * @route '/user/two-factor-authentication'
 */
 destroy.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return destroy.definition.url + queryParams(options)
 }
 

@@ -24,7 +24,6 @@ import DashboardController from './DashboardController'
 import RoleController from './RoleController'
 import AuthorController from './AuthorController'
 
-
 const Controllers = {
     AuthController: Object.assign(AuthController, AuthController),
     BannerController: Object.assign(BannerController, BannerController),

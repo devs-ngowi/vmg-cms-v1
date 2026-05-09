@@ -20,10 +20,6 @@ index.definition = {
 * @route '/submissions'
 */
 index.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return index.definition.url + queryParams(options)
 }
 
@@ -120,7 +116,6 @@ show.url = (args: { submission: string | number | { id: string | number } } | [s
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         submission: typeof args.submission === 'object'
@@ -227,7 +222,6 @@ update.url = (args: { submission: string | number | { id: string | number } } | 
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         submission: typeof args.submission === 'object'
         ? args.submission.id
@@ -318,7 +312,6 @@ destroy.url = (args: { submission: string | number | { id: string | number } } |
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         submission: typeof args.submission === 'object'
         ? args.submission.id
@@ -371,8 +364,6 @@ destroyForm.delete = (args: { submission: string | number | { id: string | numbe
 })
 
 destroy.form = destroyForm
-
-
 
 const submissions = {
     index: Object.assign(index, index),

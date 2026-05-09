@@ -36,7 +36,6 @@ store.url = (args: { menu: string | number | { id: string | number } } | [menu: 
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         menu: typeof args.menu === 'object'
         ? args.menu.id
@@ -101,7 +100,6 @@ update.definition = {
 * @route '/menus/{menu}/items/{item}'
 */
 update.url = (args: { menu: string | number | { id: string | number }, item: string | number | { id: string | number } } | [menu: string | number | { id: string | number }, item: string | number | { id: string | number } ], options?: RouteQueryOptions) => {
-
     if (Array.isArray(args)) {
         args = {
             menu: args[0],
@@ -110,7 +108,6 @@ update.url = (args: { menu: string | number | { id: string | number }, item: str
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         menu: typeof args.menu === 'object'
@@ -190,7 +187,6 @@ destroy.definition = {
 * @route '/menus/{menu}/items/{item}'
 */
 destroy.url = (args: { menu: string | number | { id: string | number }, item: string | number | { id: string | number } } | [menu: string | number | { id: string | number }, item: string | number | { id: string | number } ], options?: RouteQueryOptions) => {
-
     if (Array.isArray(args)) {
         args = {
             menu: args[0],
@@ -199,7 +195,6 @@ destroy.url = (args: { menu: string | number | { id: string | number }, item: st
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         menu: typeof args.menu === 'object'
@@ -279,7 +274,6 @@ toggleVisibility.definition = {
 * @route '/menus/{menu}/items/{item}/toggle-visibility'
 */
 toggleVisibility.url = (args: { menu: string | number | { id: string | number }, item: string | number | { id: string | number } } | [menu: string | number | { id: string | number }, item: string | number | { id: string | number } ], options?: RouteQueryOptions) => {
-
     if (Array.isArray(args)) {
         args = {
             menu: args[0],
@@ -288,7 +282,6 @@ toggleVisibility.url = (args: { menu: string | number | { id: string | number },
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         menu: typeof args.menu === 'object'
@@ -346,8 +339,6 @@ toggleVisibilityForm.patch = (args: { menu: string | number | { id: string | num
 })
 
 toggleVisibility.form = toggleVisibilityForm
-
-
 
 const items = {
     store: Object.assign(store, store),

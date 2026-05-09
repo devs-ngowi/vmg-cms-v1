@@ -20,10 +20,6 @@ indexfbf4730473b44e0be0e904c7fed2ac86.definition = {
 * @route '/api/v1/hero-slides'
 */
 indexfbf4730473b44e0be0e904c7fed2ac86.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return indexfbf4730473b44e0be0e904c7fed2ac86.definition.url + queryParams(options)
 }
 
@@ -104,10 +100,6 @@ indexec49b9152593a5fbf5bfbaf5d91e9f40.definition = {
 * @route '/hero-slides'
 */
 indexec49b9152593a5fbf5bfbaf5d91e9f40.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return indexec49b9152593a5fbf5bfbaf5d91e9f40.definition.url + queryParams(options)
 }
 
@@ -173,7 +165,6 @@ export const index = {
     '/hero-slides': indexec49b9152593a5fbf5bfbaf5d91e9f40,
 }
 
-
 /**
 * @see \App\Http\Controllers\HeroSlideController::create
 * @see app/Http/Controllers/HeroSlideController.php:89
@@ -195,10 +186,6 @@ create1aeb8e11644372d0c0e96cf804b8346d.definition = {
 * @route '/api/v1/hero-slides/create'
 */
 create1aeb8e11644372d0c0e96cf804b8346d.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return create1aeb8e11644372d0c0e96cf804b8346d.definition.url + queryParams(options)
 }
 
@@ -279,10 +266,6 @@ createcf58e898b9afc2e763cf80b4f0fe6fbb.definition = {
 * @route '/hero-slides/create'
 */
 createcf58e898b9afc2e763cf80b4f0fe6fbb.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return createcf58e898b9afc2e763cf80b4f0fe6fbb.definition.url + queryParams(options)
 }
 
@@ -348,7 +331,6 @@ export const create = {
     '/hero-slides/create': createcf58e898b9afc2e763cf80b4f0fe6fbb,
 }
 
-
 /**
 * @see \App\Http\Controllers\HeroSlideController::store
 * @see app/Http/Controllers/HeroSlideController.php:111
@@ -370,10 +352,6 @@ storefbf4730473b44e0be0e904c7fed2ac86.definition = {
 * @route '/api/v1/hero-slides'
 */
 storefbf4730473b44e0be0e904c7fed2ac86.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return storefbf4730473b44e0be0e904c7fed2ac86.definition.url + queryParams(options)
 }
 
@@ -429,10 +407,6 @@ storeec49b9152593a5fbf5bfbaf5d91e9f40.definition = {
 * @route '/hero-slides'
 */
 storeec49b9152593a5fbf5bfbaf5d91e9f40.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return storeec49b9152593a5fbf5bfbaf5d91e9f40.definition.url + queryParams(options)
 }
 
@@ -473,7 +447,6 @@ export const store = {
     '/hero-slides': storeec49b9152593a5fbf5bfbaf5d91e9f40,
 }
 
-
 /**
 * @see \App\Http\Controllers\HeroSlideController::edit
 * @see app/Http/Controllers/HeroSlideController.php:131
@@ -510,7 +483,6 @@ editb79bf15440235634d001595778a2f7ed.url = (args: { heroSlide: string | number |
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         heroSlide: typeof args.heroSlide === 'object'
@@ -616,7 +588,6 @@ editb7299864d1a52b40dfb0a880e0de57be.url = (args: { heroSlide: string | number |
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         heroSlide: typeof args.heroSlide === 'object'
         ? args.heroSlide.id
@@ -690,7 +661,6 @@ export const edit = {
     '/hero-slides/{heroSlide}/edit': editb7299864d1a52b40dfb0a880e0de57be,
 }
 
-
 /**
 * @see \App\Http\Controllers\HeroSlideController::update
 * @see app/Http/Controllers/HeroSlideController.php:151
@@ -727,7 +697,6 @@ updateb79bf15440235634d001595778a2f7ed.url = (args: { heroSlide: string | number
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         heroSlide: typeof args.heroSlide === 'object'
@@ -818,7 +787,6 @@ update9002a35e22b4884599a7d76a82a782ff.url = (args: { heroSlide: string | number
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         heroSlide: typeof args.heroSlide === 'object'
         ? args.heroSlide.id
@@ -877,7 +845,6 @@ export const update = {
     '/hero-slides/{heroSlide}': update9002a35e22b4884599a7d76a82a782ff,
 }
 
-
 /**
 * @see \App\Http\Controllers\HeroSlideController::destroy
 * @see app/Http/Controllers/HeroSlideController.php:213
@@ -914,7 +881,6 @@ destroyb79bf15440235634d001595778a2f7ed.url = (args: { heroSlide: string | numbe
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         heroSlide: typeof args.heroSlide === 'object'
@@ -1005,7 +971,6 @@ destroy9002a35e22b4884599a7d76a82a782ff.url = (args: { heroSlide: string | numbe
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         heroSlide: typeof args.heroSlide === 'object'
         ? args.heroSlide.id
@@ -1064,7 +1029,6 @@ export const destroy = {
     '/hero-slides/{heroSlide}': destroy9002a35e22b4884599a7d76a82a782ff,
 }
 
-
 /**
 * @see \App\Http\Controllers\HeroSlideController::toggle
 * @see app/Http/Controllers/HeroSlideController.php:171
@@ -1101,7 +1065,6 @@ toggle6b52fb6c6fd5f707530f78b6b9eb8087.url = (args: { heroSlide: string | number
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         heroSlide: typeof args.heroSlide === 'object'
@@ -1192,7 +1155,6 @@ toggle659113103eda4e16c7202a58c9c31c8f.url = (args: { heroSlide: string | number
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         heroSlide: typeof args.heroSlide === 'object'
         ? args.heroSlide.id
@@ -1251,7 +1213,6 @@ export const toggle = {
     '/hero-slides/{heroSlide}/toggle': toggle659113103eda4e16c7202a58c9c31c8f,
 }
 
-
 /**
 * @see \App\Http\Controllers\HeroSlideController::reorder
 * @see app/Http/Controllers/HeroSlideController.php:190
@@ -1273,10 +1234,6 @@ reorder534031ab9bfad1bc4e29786313df6c2d.definition = {
 * @route '/api/v1/hero-slides/reorder'
 */
 reorder534031ab9bfad1bc4e29786313df6c2d.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return reorder534031ab9bfad1bc4e29786313df6c2d.definition.url + queryParams(options)
 }
 
@@ -1332,10 +1289,6 @@ reorder772b194da0eece36ff4f786b20183267.definition = {
 * @route '/hero-slides/reorder'
 */
 reorder772b194da0eece36ff4f786b20183267.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return reorder772b194da0eece36ff4f786b20183267.definition.url + queryParams(options)
 }
 
@@ -1375,7 +1328,6 @@ export const reorder = {
     '/api/v1/hero-slides/reorder': reorder534031ab9bfad1bc4e29786313df6c2d,
     '/hero-slides/reorder': reorder772b194da0eece36ff4f786b20183267,
 }
-
 
 const HeroSlideController = { index, create, store, edit, update, destroy, toggle, reorder }
 

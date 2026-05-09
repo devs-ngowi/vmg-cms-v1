@@ -20,10 +20,6 @@ index.definition = {
 * @route '/industries'
 */
 index.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return index.definition.url + queryParams(options)
 }
 
@@ -105,10 +101,6 @@ create.definition = {
 * @route '/industries/create'
 */
 create.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return create.definition.url + queryParams(options)
 }
 
@@ -190,10 +182,6 @@ store.definition = {
 * @route '/industries'
 */
 store.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return store.definition.url + queryParams(options)
 }
 
@@ -265,7 +253,6 @@ edit.url = (args: { industry: string | number | { id: string | number } } | [ind
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         industry: typeof args.industry === 'object'
@@ -372,7 +359,6 @@ update.url = (args: { industry: string | number | { id: string | number } } | [i
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         industry: typeof args.industry === 'object'
         ? args.industry.id
@@ -462,7 +448,6 @@ toggle.url = (args: { industry: string | number | { id: string | number } } | [i
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         industry: typeof args.industry === 'object'
@@ -554,7 +539,6 @@ destroy.url = (args: { industry: string | number | { id: string | number } } | [
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         industry: typeof args.industry === 'object'
         ? args.industry.id
@@ -607,8 +591,6 @@ destroyForm.delete = (args: { industry: string | number | { id: string | number 
 })
 
 destroy.form = destroyForm
-
-
 
 const industries = {
     index: Object.assign(index, index),

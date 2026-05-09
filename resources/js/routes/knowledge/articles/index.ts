@@ -20,10 +20,6 @@ index.definition = {
 * @route '/knowledge/articles'
 */
 index.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return index.definition.url + queryParams(options)
 }
 
@@ -105,10 +101,6 @@ create.definition = {
 * @route '/knowledge/articles/create'
 */
 create.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return create.definition.url + queryParams(options)
 }
 
@@ -190,10 +182,6 @@ store.definition = {
 * @route '/knowledge/articles'
 */
 store.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return store.definition.url + queryParams(options)
 }
 
@@ -265,7 +253,6 @@ edit.url = (args: { article: string | number | { id: string | number } } | [arti
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         article: typeof args.article === 'object'
@@ -372,7 +359,6 @@ update.url = (args: { article: string | number | { id: string | number } } | [ar
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         article: typeof args.article === 'object'
         ? args.article.id
@@ -462,7 +448,6 @@ destroy.url = (args: { article: string | number | { id: string | number } } | [a
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         article: typeof args.article === 'object'
@@ -554,7 +539,6 @@ toggle.url = (args: { article: string | number | { id: string | number } } | [ar
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         article: typeof args.article === 'object'
         ? args.article.id
@@ -607,8 +591,6 @@ toggleForm.patch = (args: { article: string | number | { id: string | number } }
 })
 
 toggle.form = toggleForm
-
-
 
 const articles = {
     index: Object.assign(index, index),

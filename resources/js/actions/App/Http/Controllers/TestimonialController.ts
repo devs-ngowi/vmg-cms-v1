@@ -20,10 +20,6 @@ index4fa4077218d5e7fe77081b5744a29838.definition = {
 * @route '/api/v1/testimonials'
 */
 index4fa4077218d5e7fe77081b5744a29838.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return index4fa4077218d5e7fe77081b5744a29838.definition.url + queryParams(options)
 }
 
@@ -104,10 +100,6 @@ index72b1a7119a7eff10378f8adae8662ffa.definition = {
 * @route '/testimonials'
 */
 index72b1a7119a7eff10378f8adae8662ffa.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return index72b1a7119a7eff10378f8adae8662ffa.definition.url + queryParams(options)
 }
 
@@ -173,7 +165,6 @@ export const index = {
     '/testimonials': index72b1a7119a7eff10378f8adae8662ffa,
 }
 
-
 /**
 * @see \App\Http\Controllers\TestimonialController::store
 * @see app/Http/Controllers/TestimonialController.php:79
@@ -195,10 +186,6 @@ store4fa4077218d5e7fe77081b5744a29838.definition = {
 * @route '/api/v1/testimonials'
 */
 store4fa4077218d5e7fe77081b5744a29838.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return store4fa4077218d5e7fe77081b5744a29838.definition.url + queryParams(options)
 }
 
@@ -254,10 +241,6 @@ store72b1a7119a7eff10378f8adae8662ffa.definition = {
 * @route '/testimonials'
 */
 store72b1a7119a7eff10378f8adae8662ffa.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return store72b1a7119a7eff10378f8adae8662ffa.definition.url + queryParams(options)
 }
 
@@ -298,7 +281,6 @@ export const store = {
     '/testimonials': store72b1a7119a7eff10378f8adae8662ffa,
 }
 
-
 /**
 * @see \App\Http\Controllers\TestimonialController::update
 * @see app/Http/Controllers/TestimonialController.php:107
@@ -335,7 +317,6 @@ update840deb74ce12d26ffbdbd7c3307733d6.url = (args: { testimonial: string | numb
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         testimonial: typeof args.testimonial === 'object'
@@ -426,7 +407,6 @@ update194bcc97b7cd6daaf5e2b50dd89bc238.url = (args: { testimonial: string | numb
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         testimonial: typeof args.testimonial === 'object'
         ? args.testimonial.id
@@ -485,7 +465,6 @@ export const update = {
     '/testimonials/{testimonial}': update194bcc97b7cd6daaf5e2b50dd89bc238,
 }
 
-
 /**
 * @see \App\Http\Controllers\TestimonialController::destroy
 * @see app/Http/Controllers/TestimonialController.php:171
@@ -522,7 +501,6 @@ destroy840deb74ce12d26ffbdbd7c3307733d6.url = (args: { testimonial: string | num
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         testimonial: typeof args.testimonial === 'object'
@@ -613,7 +591,6 @@ destroy194bcc97b7cd6daaf5e2b50dd89bc238.url = (args: { testimonial: string | num
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         testimonial: typeof args.testimonial === 'object'
         ? args.testimonial.id
@@ -672,7 +649,6 @@ export const destroy = {
     '/testimonials/{testimonial}': destroy194bcc97b7cd6daaf5e2b50dd89bc238,
 }
 
-
 /**
 * @see \App\Http\Controllers\TestimonialController::approve
 * @see app/Http/Controllers/TestimonialController.php:135
@@ -709,7 +685,6 @@ approve31659f6a9b883a1665d09252fa8bf7d7.url = (args: { testimonial: string | num
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         testimonial: typeof args.testimonial === 'object'
@@ -800,7 +775,6 @@ approve1c0c33ef940a2f104e9b2a6c5fb7262b.url = (args: { testimonial: string | num
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         testimonial: typeof args.testimonial === 'object'
         ? args.testimonial.id
@@ -859,7 +833,6 @@ export const approve = {
     '/testimonials/{testimonial}/approve': approve1c0c33ef940a2f104e9b2a6c5fb7262b,
 }
 
-
 /**
 * @see \App\Http\Controllers\TestimonialController::feature
 * @see app/Http/Controllers/TestimonialController.php:153
@@ -896,7 +869,6 @@ feature2bb9a561ba5b3803f05aacc083d54a9f.url = (args: { testimonial: string | num
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         testimonial: typeof args.testimonial === 'object'
@@ -987,7 +959,6 @@ feature99ce9fc788c860e92b2a4bb379f782ec.url = (args: { testimonial: string | num
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         testimonial: typeof args.testimonial === 'object'
         ? args.testimonial.id
@@ -1045,7 +1016,6 @@ export const feature = {
     '/api/v1/testimonials/{testimonial}/feature': feature2bb9a561ba5b3803f05aacc083d54a9f,
     '/testimonials/{testimonial}/feature': feature99ce9fc788c860e92b2a4bb379f782ec,
 }
-
 
 const TestimonialController = { index, store, update, destroy, approve, feature }
 

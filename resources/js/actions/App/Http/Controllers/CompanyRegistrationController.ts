@@ -20,10 +20,6 @@ create.definition = {
 * @route '/register-company'
 */
 create.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return create.definition.url + queryParams(options)
 }
 
@@ -105,10 +101,6 @@ store.definition = {
 * @route '/register-company'
 */
 store.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return store.definition.url + queryParams(options)
 }
 

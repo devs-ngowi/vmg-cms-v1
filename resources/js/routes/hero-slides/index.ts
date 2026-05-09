@@ -20,10 +20,6 @@ index.definition = {
 * @route '/hero-slides'
 */
 index.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return index.definition.url + queryParams(options)
 }
 
@@ -105,10 +101,6 @@ create.definition = {
 * @route '/hero-slides/create'
 */
 create.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return create.definition.url + queryParams(options)
 }
 
@@ -190,10 +182,6 @@ store.definition = {
 * @route '/hero-slides'
 */
 store.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return store.definition.url + queryParams(options)
 }
 
@@ -265,7 +253,6 @@ edit.url = (args: { heroSlide: string | number | { id: string | number } } | [he
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         heroSlide: typeof args.heroSlide === 'object'
@@ -372,7 +359,6 @@ update.url = (args: { heroSlide: string | number | { id: string | number } } | [
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         heroSlide: typeof args.heroSlide === 'object'
         ? args.heroSlide.id
@@ -463,7 +449,6 @@ toggle.url = (args: { heroSlide: string | number | { id: string | number } } | [
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         heroSlide: typeof args.heroSlide === 'object'
         ? args.heroSlide.id
@@ -538,10 +523,6 @@ reorder.definition = {
 * @route '/hero-slides/reorder'
 */
 reorder.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return reorder.definition.url + queryParams(options)
 }
 
@@ -614,7 +595,6 @@ destroy.url = (args: { heroSlide: string | number | { id: string | number } } | 
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         heroSlide: typeof args.heroSlide === 'object'
         ? args.heroSlide.id
@@ -667,8 +647,6 @@ destroyForm.delete = (args: { heroSlide: string | number | { id: string | number
 })
 
 destroy.form = destroyForm
-
-
 
 const heroSlides = {
     index: Object.assign(index, index),

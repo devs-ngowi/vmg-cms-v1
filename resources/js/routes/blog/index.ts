@@ -22,10 +22,6 @@ index.definition = {
 * @route '/blog'
 */
 index.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return index.definition.url + queryParams(options)
 }
 
@@ -107,10 +103,6 @@ create.definition = {
 * @route '/blog/create'
 */
 create.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return create.definition.url + queryParams(options)
 }
 
@@ -192,10 +184,6 @@ store.definition = {
 * @route '/blog'
 */
 store.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return store.definition.url + queryParams(options)
 }
 
@@ -267,7 +255,6 @@ edit.url = (args: { post: string | number | { id: string | number } } | [post: s
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         post: typeof args.post === 'object'
@@ -374,7 +361,6 @@ update.url = (args: { post: string | number | { id: string | number } } | [post:
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         post: typeof args.post === 'object'
         ? args.post.id
@@ -465,7 +451,6 @@ destroy.url = (args: { post: string | number | { id: string | number } } | [post
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         post: typeof args.post === 'object'
         ? args.post.id
@@ -540,10 +525,6 @@ categories.definition = {
 * @route '/blog/categories'
 */
 categories.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return categories.definition.url + queryParams(options)
 }
 
@@ -625,10 +606,6 @@ tags.definition = {
 * @route '/blog/tags'
 */
 tags.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return tags.definition.url + queryParams(options)
 }
 
@@ -688,8 +665,6 @@ tagsForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 })
 
 tags.form = tagsForm
-
-
 
 const blog = {
     index: Object.assign(index, index),

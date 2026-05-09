@@ -20,10 +20,6 @@ indexacc10b84d225f0581727436dda923200.definition = {
 * @route '/api/v1/workflow'
 */
 indexacc10b84d225f0581727436dda923200.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return indexacc10b84d225f0581727436dda923200.definition.url + queryParams(options)
 }
 
@@ -104,10 +100,6 @@ indexbbea7b41d0a638d387dcfabac0a8b67d.definition = {
 * @route '/workflow'
 */
 indexbbea7b41d0a638d387dcfabac0a8b67d.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return indexbbea7b41d0a638d387dcfabac0a8b67d.definition.url + queryParams(options)
 }
 
@@ -173,7 +165,6 @@ export const index = {
     '/workflow': indexbbea7b41d0a638d387dcfabac0a8b67d,
 }
 
-
 /**
 * @see \App\Http\Controllers\WorkflowController::move
 * @see app/Http/Controllers/WorkflowController.php:115
@@ -210,7 +201,6 @@ move054532d54db4f92d82214bb80c3c9f50.url = (args: { workflow: string | number | 
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         workflow: typeof args.workflow === 'object'
@@ -291,7 +281,6 @@ movee2d3e8e58163d6313e7d168bc1bc9a8b.url = (args: { workflow: string | number | 
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         workflow: typeof args.workflow === 'object'
         ? args.workflow.id
@@ -350,7 +339,6 @@ export const move = {
     '/workflow/{workflow}/move': movee2d3e8e58163d6313e7d168bc1bc9a8b,
 }
 
-
 /**
 * @see \App\Http\Controllers\WorkflowController::history
 * @see app/Http/Controllers/WorkflowController.php:150
@@ -372,7 +360,6 @@ history7036602c6664a22493e27cd6d788c728.definition = {
 * @route '/api/v1/workflow/history/{contentType}/{contentId}'
 */
 history7036602c6664a22493e27cd6d788c728.url = (args: { contentType: string | number, contentId: string | number } | [contentType: string | number, contentId: string | number ], options?: RouteQueryOptions) => {
-
     if (Array.isArray(args)) {
         args = {
             contentType: args[0],
@@ -381,7 +368,6 @@ history7036602c6664a22493e27cd6d788c728.url = (args: { contentType: string | num
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         contentType: args.contentType,
@@ -471,7 +457,6 @@ historya5d563bfeabac48291be9cb910e3d84e.definition = {
 * @route '/workflow/history/{contentType}/{contentId}'
 */
 historya5d563bfeabac48291be9cb910e3d84e.url = (args: { contentType: string | number, contentId: string | number } | [contentType: string | number, contentId: string | number ], options?: RouteQueryOptions) => {
-
     if (Array.isArray(args)) {
         args = {
             contentType: args[0],
@@ -480,7 +465,6 @@ historya5d563bfeabac48291be9cb910e3d84e.url = (args: { contentType: string | num
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         contentType: args.contentType,
@@ -554,7 +538,6 @@ export const history = {
     '/api/v1/workflow/history/{contentType}/{contentId}': history7036602c6664a22493e27cd6d788c728,
     '/workflow/history/{contentType}/{contentId}': historya5d563bfeabac48291be9cb910e3d84e,
 }
-
 
 const WorkflowController = { index, move, history }
 

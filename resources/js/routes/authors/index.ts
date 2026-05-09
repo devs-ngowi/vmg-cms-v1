@@ -20,10 +20,6 @@ index.definition = {
 * @route '/authors'
 */
 index.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return index.definition.url + queryParams(options)
 }
 
@@ -105,10 +101,6 @@ create.definition = {
 * @route '/authors/create'
 */
 create.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return create.definition.url + queryParams(options)
 }
 
@@ -190,10 +182,6 @@ store.definition = {
 * @route '/authors'
 */
 store.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return store.definition.url + queryParams(options)
 }
 
@@ -265,7 +253,6 @@ edit.url = (args: { author: string | number | { author_id: string | number } } |
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         author: typeof args.author === 'object'
@@ -372,7 +359,6 @@ update.url = (args: { author: string | number | { author_id: string | number } }
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         author: typeof args.author === 'object'
         ? args.author.author_id
@@ -463,7 +449,6 @@ destroy.url = (args: { author: string | number | { author_id: string | number } 
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         author: typeof args.author === 'object'
         ? args.author.author_id
@@ -516,8 +501,6 @@ destroyForm.delete = (args: { author: string | number | { author_id: string | nu
 })
 
 destroy.form = destroyForm
-
-
 
 const authors = {
     index: Object.assign(index, index),

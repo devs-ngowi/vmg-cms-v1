@@ -20,10 +20,6 @@ indexab66c113f866f9633c4b9798bc9067c5.definition = {
 * @route '/api/v1/banners'
 */
 indexab66c113f866f9633c4b9798bc9067c5.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return indexab66c113f866f9633c4b9798bc9067c5.definition.url + queryParams(options)
 }
 
@@ -104,10 +100,6 @@ indexabd85f3d50b786005113deb987d86c23.definition = {
 * @route '/banners'
 */
 indexabd85f3d50b786005113deb987d86c23.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return indexabd85f3d50b786005113deb987d86c23.definition.url + queryParams(options)
 }
 
@@ -173,7 +165,6 @@ export const index = {
     '/banners': indexabd85f3d50b786005113deb987d86c23,
 }
 
-
 /**
 * @see \App\Http\Controllers\BannerController::store
 * @see app/Http/Controllers/BannerController.php:70
@@ -195,10 +186,6 @@ storeab66c113f866f9633c4b9798bc9067c5.definition = {
 * @route '/api/v1/banners'
 */
 storeab66c113f866f9633c4b9798bc9067c5.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return storeab66c113f866f9633c4b9798bc9067c5.definition.url + queryParams(options)
 }
 
@@ -254,10 +241,6 @@ storeabd85f3d50b786005113deb987d86c23.definition = {
 * @route '/banners'
 */
 storeabd85f3d50b786005113deb987d86c23.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return storeabd85f3d50b786005113deb987d86c23.definition.url + queryParams(options)
 }
 
@@ -298,7 +281,6 @@ export const store = {
     '/banners': storeabd85f3d50b786005113deb987d86c23,
 }
 
-
 /**
 * @see \App\Http\Controllers\BannerController::update
 * @see app/Http/Controllers/BannerController.php:119
@@ -335,7 +317,6 @@ update839d79fbf2c2808b5756bd6ae5976b49.url = (args: { banner: string | number | 
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         banner: typeof args.banner === 'object'
@@ -426,7 +407,6 @@ updatea9dfbd47f11de858efb050d8d8d0a4ea.url = (args: { banner: string | number | 
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         banner: typeof args.banner === 'object'
         ? args.banner.id
@@ -516,7 +496,6 @@ updatea9dfbd47f11de858efb050d8d8d0a4ea.url = (args: { banner: string | number | 
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         banner: typeof args.banner === 'object'
         ? args.banner.id
@@ -576,7 +555,6 @@ export const update = {
     '/banners/{banner}': updatea9dfbd47f11de858efb050d8d8d0a4ea,
 }
 
-
 /**
 * @see \App\Http\Controllers\BannerController::toggle
 * @see app/Http/Controllers/BannerController.php:147
@@ -613,7 +591,6 @@ togglec4113741637d66ff37ff6f02b311d1b2.url = (args: { banner: string | number | 
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         banner: typeof args.banner === 'object'
@@ -704,7 +681,6 @@ toggle4f611a407f372ef96e06b6d608b1ecf6.url = (args: { banner: string | number | 
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         banner: typeof args.banner === 'object'
         ? args.banner.id
@@ -763,7 +739,6 @@ export const toggle = {
     '/banners/{banner}/toggle': toggle4f611a407f372ef96e06b6d608b1ecf6,
 }
 
-
 /**
 * @see \App\Http\Controllers\BannerController::destroy
 * @see app/Http/Controllers/BannerController.php:162
@@ -800,7 +775,6 @@ destroy839d79fbf2c2808b5756bd6ae5976b49.url = (args: { banner: string | number |
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         banner: typeof args.banner === 'object'
@@ -891,7 +865,6 @@ destroya9dfbd47f11de858efb050d8d8d0a4ea.url = (args: { banner: string | number |
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         banner: typeof args.banner === 'object'
         ? args.banner.id
@@ -950,7 +923,6 @@ export const destroy = {
     '/banners/{banner}': destroya9dfbd47f11de858efb050d8d8d0a4ea,
 }
 
-
 /**
 * @see \App\Http\Controllers\BannerController::create
 * @see app/Http/Controllers/BannerController.php:63
@@ -972,10 +944,6 @@ create.definition = {
 * @route '/banners/create'
 */
 create.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return create.definition.url + queryParams(options)
 }
 
@@ -1072,7 +1040,6 @@ edit.url = (args: { banner: string | number | { id: string | number } } | [banne
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         banner: typeof args.banner === 'object'
@@ -1178,7 +1145,6 @@ show.url = (args: { banner: string | number | { id: string | number } } | [banne
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         banner: typeof args.banner === 'object'

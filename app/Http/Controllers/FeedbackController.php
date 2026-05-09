@@ -11,29 +11,42 @@ use Inertia\Response;
 
 class FeedbackController extends Controller
 {
-    // ── Index (Inertia CMS) ───────────────────────────────────────────────────
+    private function isApi(Request $request): bool
+    {
+        return $request->expectsJson() || $request->wantsJson();
+    }
 
-    public function index(): Response
+    // ── Index ─────────────────────────────────────────────────────────────────
+
+    public function index(Request $request)
     {
         $feedbacks = Feedback::orderByRaw("FIELD(status, 'pending', 'reviewed', 'resolved')")
             ->orderByDesc('created_at')
             ->get(['id', 'name', 'email', 'category', 'rating', 'message', 'status', 'admin_notes', 'reviewed_at', 'created_at']);
 
-        return Inertia::render('feedbacks/index', [
+        if ($this->isApi($request)) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Feedbacks retrieved successfully.',
+                'data'    => $feedbacks,
+            ]);
+        }
+
+        return Inertia::render('feedback/index', [
             'feedbacks' => $feedbacks,
         ]);
     }
 
-    // ── Create (Inertia CMS form page) ────────────────────────────────────────
+    // ── Create ────────────────────────────────────────────────────────────────
 
     public function create(): Response
     {
-        return Inertia::render('feedbacks/create');
+        return Inertia::render('feedback/create');
     }
 
-    // ── Store — supports both Inertia redirect AND API JSON ──────────────────
+    // ── Store ─────────────────────────────────────────────────────────────────
 
-    public function store(Request $request): RedirectResponse|JsonResponse
+    public function store(Request $request)
     {
         $data = $request->validate([
             'name'     => ['required', 'string', 'max:255'],
@@ -47,8 +60,7 @@ class FeedbackController extends Controller
 
         $feedback = Feedback::create($data);
 
-        // API clients get JSON; Inertia/browser gets redirect
-        if ($request->expectsJson()) {
+        if ($this->isApi($request)) {
             return response()->json([
                 'success' => true,
                 'message' => 'Feedback submitted successfully.',
@@ -59,45 +71,52 @@ class FeedbackController extends Controller
         return back()->with('success', 'Feedback submitted successfully.');
     }
 
-    // ── Show (Inertia CMS) ────────────────────────────────────────────────────
+    // ── Show ──────────────────────────────────────────────────────────────────
 
-    public function show(Feedback $feedback): Response
+    public function show(Request $request, Feedback $feedback)
     {
-        return Inertia::render('feedbacks/show', [
+        if ($this->isApi($request)) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Feedback retrieved successfully.',
+                'data'    => $feedback,
+            ]);
+        }
+
+        return Inertia::render('feedback/show', [
             'feedback' => $feedback,
         ]);
     }
 
-    // ── Edit (Inertia CMS) ────────────────────────────────────────────────────
+    // ── Edit ──────────────────────────────────────────────────────────────────
 
     public function edit(Feedback $feedback): Response
     {
-        return Inertia::render('feedbacks/edit', [
+        return Inertia::render('feedback/edit', [
             'feedback' => $feedback,
         ]);
     }
 
     // ── Update ────────────────────────────────────────────────────────────────
 
-    public function update(Request $request, Feedback $feedback): RedirectResponse|JsonResponse
+    public function update(Request $request, Feedback $feedback)
     {
         $data = $request->validate([
-            'name'        => ['required', 'string', 'max:255'],
-            'email'       => ['required', 'email',  'max:255'],
-            'category'    => ['required', 'in:general,compliment,suggestion,complaint,other'],
-            'rating'      => ['required', 'integer', 'min:1', 'max:5'],
-            'message'     => ['required', 'string',  'max:5000'],
-            'status'      => ['required', 'in:pending,reviewed,resolved'],
-            'admin_notes' => ['nullable', 'string',  'max:5000'],
+            'status'      => ['sometimes', 'in:pending,reviewed,resolved'],
+            'admin_notes' => ['nullable', 'string', 'max:5000'],
         ]);
 
-        if ($feedback->status === 'pending' && $data['status'] !== 'pending') {
+        if (
+            isset($data['status']) &&
+            $feedback->status === 'pending' &&
+            $data['status'] !== 'pending'
+        ) {
             $data['reviewed_at'] = now();
         }
 
         $feedback->update($data);
 
-        if ($request->expectsJson()) {
+        if ($this->isApi($request)) {
             return response()->json([
                 'success' => true,
                 'message' => 'Feedback updated successfully.',
@@ -110,42 +129,45 @@ class FeedbackController extends Controller
 
     // ── Toggle Status ─────────────────────────────────────────────────────────
 
-    public function toggleStatus(Request $request, Feedback $feedback): RedirectResponse|JsonResponse
+    public function toggleStatus(Request $request, Feedback $feedback)
     {
         $data = $request->validate([
             'status' => ['required', 'in:pending,reviewed,resolved'],
         ]);
 
-        if ($feedback->status === 'pending' && $data['status'] !== 'pending') {
+        if (
+            $feedback->status === 'pending' &&
+            $data['status'] !== 'pending'
+        ) {
             $data['reviewed_at'] = now();
         }
 
         $feedback->update($data);
 
-        if ($request->expectsJson()) {
+        if ($this->isApi($request)) {
             return response()->json([
                 'success' => true,
-                'message' => 'Status updated.',
+                'message' => 'Status updated successfully.',
                 'data'    => $feedback->fresh(),
             ]);
         }
 
-        return back()->with('success', 'Status updated.');
+        return back()->with('success', 'Status updated successfully.');
     }
 
     // ── Destroy ───────────────────────────────────────────────────────────────
 
-    public function destroy(Feedback $feedback): RedirectResponse|JsonResponse
+    public function destroy(Request $request, Feedback $feedback)
     {
         $feedback->delete();
 
-        if (request()->expectsJson()) {
+        if ($this->isApi($request)) {
             return response()->json([
                 'success' => true,
-                'message' => 'Feedback deleted.',
+                'message' => 'Feedback deleted successfully.',
             ]);
         }
 
-        return redirect('/feedback')->with('success', 'Feedback deleted.');
+        return redirect('/feedback')->with('success', 'Feedback deleted successfully.');
     }
 }

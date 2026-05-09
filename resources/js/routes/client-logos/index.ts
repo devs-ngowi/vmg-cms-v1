@@ -20,10 +20,6 @@ index.definition = {
 * @route '/client-logos'
 */
 index.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return index.definition.url + queryParams(options)
 }
 
@@ -105,10 +101,6 @@ store.definition = {
 * @route '/client-logos'
 */
 store.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return store.definition.url + queryParams(options)
 }
 
@@ -165,10 +157,6 @@ reorder.definition = {
 * @route '/client-logos/reorder'
 */
 reorder.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return reorder.definition.url + queryParams(options)
 }
 
@@ -240,7 +228,6 @@ update.url = (args: { clientLogo: string | number | { id: string | number } } | 
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         clientLogo: typeof args.clientLogo === 'object'
@@ -332,7 +319,6 @@ toggle.url = (args: { clientLogo: string | number | { id: string | number } } | 
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         clientLogo: typeof args.clientLogo === 'object'
         ? args.clientLogo.id
@@ -423,7 +409,6 @@ destroy.url = (args: { clientLogo: string | number | { id: string | number } } |
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         clientLogo: typeof args.clientLogo === 'object'
         ? args.clientLogo.id
@@ -476,8 +461,6 @@ destroyForm.delete = (args: { clientLogo: string | number | { id: string | numbe
 })
 
 destroy.form = destroyForm
-
-
 
 const clientLogos = {
     index: Object.assign(index, index),

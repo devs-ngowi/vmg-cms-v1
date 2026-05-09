@@ -20,10 +20,6 @@ store.definition = {
 * @route '/forgot-password'
 */
 store.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return store.definition.url + queryParams(options)
 }
 

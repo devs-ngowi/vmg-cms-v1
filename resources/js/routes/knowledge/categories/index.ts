@@ -20,10 +20,6 @@ index.definition = {
 * @route '/knowledge/categories'
 */
 index.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return index.definition.url + queryParams(options)
 }
 
@@ -105,10 +101,6 @@ create.definition = {
 * @route '/knowledge/categories/create'
 */
 create.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return create.definition.url + queryParams(options)
 }
 
@@ -190,10 +182,6 @@ store.definition = {
 * @route '/knowledge/categories'
 */
 store.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return store.definition.url + queryParams(options)
 }
 
@@ -265,7 +253,6 @@ edit.url = (args: { category: string | number | { id: string | number } } | [cat
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         category: typeof args.category === 'object'
@@ -372,7 +359,6 @@ update.url = (args: { category: string | number | { id: string | number } } | [c
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         category: typeof args.category === 'object'
         ? args.category.id
@@ -462,7 +448,6 @@ destroy.url = (args: { category: string | number | { id: string | number } } | [
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         category: typeof args.category === 'object'
@@ -554,7 +539,6 @@ toggle.url = (args: { category: string | number | { id: string | number } } | [c
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         category: typeof args.category === 'object'
         ? args.category.id
@@ -607,8 +591,6 @@ toggleForm.patch = (args: { category: string | number | { id: string | number } 
 })
 
 toggle.form = toggleForm
-
-
 
 const categories = {
     index: Object.assign(index, index),

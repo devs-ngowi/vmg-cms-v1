@@ -21,10 +21,6 @@ register.definition = {
 * @route '/register-company'
 */
 register.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return register.definition.url + queryParams(options)
 }
 
@@ -84,8 +80,6 @@ registerForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =>
 })
 
 register.form = registerForm
-
-
 
 const company = {
     register: Object.assign(register, register702019),

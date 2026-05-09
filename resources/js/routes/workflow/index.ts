@@ -20,10 +20,6 @@ index.definition = {
 * @route '/workflow'
 */
 index.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return index.definition.url + queryParams(options)
 }
 
@@ -121,7 +117,6 @@ move.url = (args: { workflow: string | number | { id: string | number } } | [wor
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         workflow: typeof args.workflow === 'object'
         ? args.workflow.id
@@ -196,7 +191,6 @@ history.definition = {
 * @route '/workflow/history/{contentType}/{contentId}'
 */
 history.url = (args: { contentType: string | number, contentId: string | number } | [contentType: string | number, contentId: string | number ], options?: RouteQueryOptions) => {
-
     if (Array.isArray(args)) {
         args = {
             contentType: args[0],
@@ -205,7 +199,6 @@ history.url = (args: { contentType: string | number, contentId: string | number 
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         contentType: args.contentType,
@@ -274,8 +267,6 @@ historyForm.head = (args: { contentType: string | number, contentId: string | nu
 })
 
 history.form = historyForm
-
-
 
 const workflow = {
     index: Object.assign(index, index),

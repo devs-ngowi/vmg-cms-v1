@@ -20,10 +20,6 @@ show.definition = {
 * @route '/sanctum/csrf-cookie'
 */
 show.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return show.definition.url + queryParams(options)
 }
 

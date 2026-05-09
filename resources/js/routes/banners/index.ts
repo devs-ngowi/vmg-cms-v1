@@ -20,10 +20,6 @@ create.definition = {
 * @route '/banners/create'
 */
 create.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return create.definition.url + queryParams(options)
 }
 
@@ -105,10 +101,6 @@ index.definition = {
 * @route '/banners'
 */
 index.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return index.definition.url + queryParams(options)
 }
 
@@ -205,7 +197,6 @@ edit.url = (args: { banner: string | number | { id: string | number } } | [banne
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         banner: typeof args.banner === 'object'
@@ -312,7 +303,6 @@ show.url = (args: { banner: string | number | { id: string | number } } | [banne
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         banner: typeof args.banner === 'object'
         ? args.banner.id
@@ -402,10 +392,6 @@ store.definition = {
 * @route '/banners'
 */
 store.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return store.definition.url + queryParams(options)
 }
 
@@ -477,7 +463,6 @@ update.url = (args: { banner: string | number | { id: string | number } } | [ban
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         banner: typeof args.banner === 'object'
@@ -569,7 +554,6 @@ toggle.url = (args: { banner: string | number | { id: string | number } } | [ban
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         banner: typeof args.banner === 'object'
         ? args.banner.id
@@ -660,7 +644,6 @@ destroy.url = (args: { banner: string | number | { id: string | number } } | [ba
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         banner: typeof args.banner === 'object'
         ? args.banner.id
@@ -713,8 +696,6 @@ destroyForm.delete = (args: { banner: string | number | { id: string | number } 
 })
 
 destroy.form = destroyForm
-
-
 
 const banners = {
     create: Object.assign(create, create),

@@ -20,10 +20,6 @@ index313f3c79f121bc6a2d94009a86d2d41d.definition = {
 * @route '/api/v1/client-logos'
 */
 index313f3c79f121bc6a2d94009a86d2d41d.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return index313f3c79f121bc6a2d94009a86d2d41d.definition.url + queryParams(options)
 }
 
@@ -104,10 +100,6 @@ index3da54a50374e5943277716f8ccded4fb.definition = {
 * @route '/client-logos'
 */
 index3da54a50374e5943277716f8ccded4fb.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return index3da54a50374e5943277716f8ccded4fb.definition.url + queryParams(options)
 }
 
@@ -173,7 +165,6 @@ export const index = {
     '/client-logos': index3da54a50374e5943277716f8ccded4fb,
 }
 
-
 /**
 * @see \App\Http\Controllers\ClientLogoController::store
 * @see app/Http/Controllers/ClientLogoController.php:90
@@ -195,10 +186,6 @@ store313f3c79f121bc6a2d94009a86d2d41d.definition = {
 * @route '/api/v1/client-logos'
 */
 store313f3c79f121bc6a2d94009a86d2d41d.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return store313f3c79f121bc6a2d94009a86d2d41d.definition.url + queryParams(options)
 }
 
@@ -254,10 +241,6 @@ store3da54a50374e5943277716f8ccded4fb.definition = {
 * @route '/client-logos'
 */
 store3da54a50374e5943277716f8ccded4fb.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return store3da54a50374e5943277716f8ccded4fb.definition.url + queryParams(options)
 }
 
@@ -298,7 +281,6 @@ export const store = {
     '/client-logos': store3da54a50374e5943277716f8ccded4fb,
 }
 
-
 /**
 * @see \App\Http\Controllers\ClientLogoController::update
 * @see app/Http/Controllers/ClientLogoController.php:113
@@ -335,7 +317,6 @@ updatea74895d377fe8878b7cecec8de1f8250.url = (args: { clientLogo: string | numbe
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         clientLogo: typeof args.clientLogo === 'object'
@@ -426,7 +407,6 @@ update304d9e9143a442329e88a926de7fe4cf.url = (args: { clientLogo: string | numbe
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         clientLogo: typeof args.clientLogo === 'object'
         ? args.clientLogo.id
@@ -485,7 +465,6 @@ export const update = {
     '/client-logos/{clientLogo}': update304d9e9143a442329e88a926de7fe4cf,
 }
 
-
 /**
 * @see \App\Http\Controllers\ClientLogoController::destroy
 * @see app/Http/Controllers/ClientLogoController.php:172
@@ -522,7 +501,6 @@ destroya74895d377fe8878b7cecec8de1f8250.url = (args: { clientLogo: string | numb
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         clientLogo: typeof args.clientLogo === 'object'
@@ -613,7 +591,6 @@ destroy304d9e9143a442329e88a926de7fe4cf.url = (args: { clientLogo: string | numb
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         clientLogo: typeof args.clientLogo === 'object'
         ? args.clientLogo.id
@@ -672,7 +649,6 @@ export const destroy = {
     '/client-logos/{clientLogo}': destroy304d9e9143a442329e88a926de7fe4cf,
 }
 
-
 /**
 * @see \App\Http\Controllers\ClientLogoController::toggle
 * @see app/Http/Controllers/ClientLogoController.php:132
@@ -709,7 +685,6 @@ togglea3b354c0a8de6e1f5968c6a6625b6b95.url = (args: { clientLogo: string | numbe
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         clientLogo: typeof args.clientLogo === 'object'
@@ -800,7 +775,6 @@ toggle21281aa0a9cee3590d02b744b6fdef49.url = (args: { clientLogo: string | numbe
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         clientLogo: typeof args.clientLogo === 'object'
         ? args.clientLogo.id
@@ -859,7 +833,6 @@ export const toggle = {
     '/client-logos/{clientLogo}/toggle': toggle21281aa0a9cee3590d02b744b6fdef49,
 }
 
-
 /**
 * @see \App\Http\Controllers\ClientLogoController::reorder
 * @see app/Http/Controllers/ClientLogoController.php:149
@@ -881,10 +854,6 @@ reorder402da3abe85f43a599aaba0f459a9728.definition = {
 * @route '/api/v1/client-logos/reorder'
 */
 reorder402da3abe85f43a599aaba0f459a9728.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return reorder402da3abe85f43a599aaba0f459a9728.definition.url + queryParams(options)
 }
 
@@ -940,10 +909,6 @@ reorder6a02582c5cd281d84fa8bd28e19d16f7.definition = {
 * @route '/client-logos/reorder'
 */
 reorder6a02582c5cd281d84fa8bd28e19d16f7.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return reorder6a02582c5cd281d84fa8bd28e19d16f7.definition.url + queryParams(options)
 }
 
@@ -983,7 +948,6 @@ export const reorder = {
     '/api/v1/client-logos/reorder': reorder402da3abe85f43a599aaba0f459a9728,
     '/client-logos/reorder': reorder6a02582c5cd281d84fa8bd28e19d16f7,
 }
-
 
 const ClientLogoController = { index, store, update, destroy, toggle, reorder }
 

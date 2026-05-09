@@ -20,10 +20,6 @@ index550b87b29bb668fcecb973139b9d9f29.definition = {
 * @route '/api/v1/blog/posts'
 */
 index550b87b29bb668fcecb973139b9d9f29.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return index550b87b29bb668fcecb973139b9d9f29.definition.url + queryParams(options)
 }
 
@@ -104,10 +100,6 @@ index0281689d11c3db12eb0f0bc21b3e4ed4.definition = {
 * @route '/blog'
 */
 index0281689d11c3db12eb0f0bc21b3e4ed4.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return index0281689d11c3db12eb0f0bc21b3e4ed4.definition.url + queryParams(options)
 }
 
@@ -173,7 +165,6 @@ export const index = {
     '/blog': index0281689d11c3db12eb0f0bc21b3e4ed4,
 }
 
-
 /**
 * @see \App\Http\Controllers\BlogPostController::show
 * @see app/Http/Controllers/BlogPostController.php:114
@@ -199,7 +190,6 @@ show.url = (args: { slug: string | number } | [slug: string | number ] | string 
         args = { slug: args }
     }
 
-
     if (Array.isArray(args)) {
         args = {
             slug: args[0],
@@ -207,7 +197,6 @@ show.url = (args: { slug: string | number } | [slug: string | number ] | string 
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         slug: args.slug,
@@ -296,10 +285,6 @@ categoriese118a81f85f191d5cc87140c727f24c5.definition = {
 * @route '/api/v1/blog/categories'
 */
 categoriese118a81f85f191d5cc87140c727f24c5.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return categoriese118a81f85f191d5cc87140c727f24c5.definition.url + queryParams(options)
 }
 
@@ -380,10 +365,6 @@ categories3716332543aa448f6820533c5eca0ee9.definition = {
 * @route '/blog/categories'
 */
 categories3716332543aa448f6820533c5eca0ee9.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return categories3716332543aa448f6820533c5eca0ee9.definition.url + queryParams(options)
 }
 
@@ -449,7 +430,6 @@ export const categories = {
     '/blog/categories': categories3716332543aa448f6820533c5eca0ee9,
 }
 
-
 /**
 * @see \App\Http\Controllers\BlogPostController::tags
 * @see app/Http/Controllers/BlogPostController.php:397
@@ -471,10 +451,6 @@ tags9e84f08bb6444383a7b88553756e79b0.definition = {
 * @route '/api/v1/blog/tags'
 */
 tags9e84f08bb6444383a7b88553756e79b0.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return tags9e84f08bb6444383a7b88553756e79b0.definition.url + queryParams(options)
 }
 
@@ -555,10 +531,6 @@ tagse7b2cb7f9ed5fd2dcb3de666dc0bcbd2.definition = {
 * @route '/blog/tags'
 */
 tagse7b2cb7f9ed5fd2dcb3de666dc0bcbd2.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return tagse7b2cb7f9ed5fd2dcb3de666dc0bcbd2.definition.url + queryParams(options)
 }
 
@@ -624,7 +596,6 @@ export const tags = {
     '/blog/tags': tagse7b2cb7f9ed5fd2dcb3de666dc0bcbd2,
 }
 
-
 /**
 * @see \App\Http\Controllers\BlogPostController::store
 * @see app/Http/Controllers/BlogPostController.php:141
@@ -646,10 +617,6 @@ store550b87b29bb668fcecb973139b9d9f29.definition = {
 * @route '/api/v1/blog/posts'
 */
 store550b87b29bb668fcecb973139b9d9f29.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return store550b87b29bb668fcecb973139b9d9f29.definition.url + queryParams(options)
 }
 
@@ -705,10 +672,6 @@ store0281689d11c3db12eb0f0bc21b3e4ed4.definition = {
 * @route '/blog'
 */
 store0281689d11c3db12eb0f0bc21b3e4ed4.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return store0281689d11c3db12eb0f0bc21b3e4ed4.definition.url + queryParams(options)
 }
 
@@ -749,7 +712,6 @@ export const store = {
     '/blog': store0281689d11c3db12eb0f0bc21b3e4ed4,
 }
 
-
 /**
 * @see \App\Http\Controllers\BlogPostController::update
 * @see app/Http/Controllers/BlogPostController.php:211
@@ -786,7 +748,6 @@ update34bedbc0ca76ebf0968c5fb4789b503b.url = (args: { post: string | number | { 
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         post: typeof args.post === 'object'
@@ -877,7 +838,6 @@ update03c0d545ccb9ba8a75e6b8284640b19d.url = (args: { post: string | number | { 
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         post: typeof args.post === 'object'
         ? args.post.id
@@ -936,7 +896,6 @@ export const update = {
     '/blog/{post}': update03c0d545ccb9ba8a75e6b8284640b19d,
 }
 
-
 /**
 * @see \App\Http\Controllers\BlogPostController::destroy
 * @see app/Http/Controllers/BlogPostController.php:266
@@ -973,7 +932,6 @@ destroy34bedbc0ca76ebf0968c5fb4789b503b.url = (args: { post: string | number | {
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         post: typeof args.post === 'object'
@@ -1064,7 +1022,6 @@ destroy03c0d545ccb9ba8a75e6b8284640b19d.url = (args: { post: string | number | {
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         post: typeof args.post === 'object'
         ? args.post.id
@@ -1123,7 +1080,6 @@ export const destroy = {
     '/blog/{post}': destroy03c0d545ccb9ba8a75e6b8284640b19d,
 }
 
-
 /**
 * @see \App\Http\Controllers\BlogPostController::storeCategory
 * @see app/Http/Controllers/BlogPostController.php:316
@@ -1145,10 +1101,6 @@ storeCategorye118a81f85f191d5cc87140c727f24c5.definition = {
 * @route '/api/v1/blog/categories'
 */
 storeCategorye118a81f85f191d5cc87140c727f24c5.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return storeCategorye118a81f85f191d5cc87140c727f24c5.definition.url + queryParams(options)
 }
 
@@ -1204,10 +1156,6 @@ storeCategory3716332543aa448f6820533c5eca0ee9.definition = {
 * @route '/blog/categories'
 */
 storeCategory3716332543aa448f6820533c5eca0ee9.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return storeCategory3716332543aa448f6820533c5eca0ee9.definition.url + queryParams(options)
 }
 
@@ -1248,7 +1196,6 @@ export const storeCategory = {
     '/blog/categories': storeCategory3716332543aa448f6820533c5eca0ee9,
 }
 
-
 /**
 * @see \App\Http\Controllers\BlogPostController::destroyCategory
 * @see app/Http/Controllers/BlogPostController.php:370
@@ -1285,7 +1232,6 @@ destroyCategoryb742d8a2fd34305b9482fb01a3d2ab0c.url = (args: { category: string 
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         category: typeof args.category === 'object'
@@ -1376,7 +1322,6 @@ destroyCategory11c918c09e9a8bf64e1a3bce6874b7a1.url = (args: { category: string 
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         category: typeof args.category === 'object'
         ? args.category.id
@@ -1435,7 +1380,6 @@ export const destroyCategory = {
     '/blog/categories/{category}': destroyCategory11c918c09e9a8bf64e1a3bce6874b7a1,
 }
 
-
 /**
 * @see \App\Http\Controllers\BlogPostController::storeTag
 * @see app/Http/Controllers/BlogPostController.php:421
@@ -1457,10 +1401,6 @@ storeTag9e84f08bb6444383a7b88553756e79b0.definition = {
 * @route '/api/v1/blog/tags'
 */
 storeTag9e84f08bb6444383a7b88553756e79b0.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return storeTag9e84f08bb6444383a7b88553756e79b0.definition.url + queryParams(options)
 }
 
@@ -1516,10 +1456,6 @@ storeTage7b2cb7f9ed5fd2dcb3de666dc0bcbd2.definition = {
 * @route '/blog/tags'
 */
 storeTage7b2cb7f9ed5fd2dcb3de666dc0bcbd2.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return storeTage7b2cb7f9ed5fd2dcb3de666dc0bcbd2.definition.url + queryParams(options)
 }
 
@@ -1560,7 +1496,6 @@ export const storeTag = {
     '/blog/tags': storeTage7b2cb7f9ed5fd2dcb3de666dc0bcbd2,
 }
 
-
 /**
 * @see \App\Http\Controllers\BlogPostController::destroyTag
 * @see app/Http/Controllers/BlogPostController.php:444
@@ -1597,7 +1532,6 @@ destroyTag7386d73db12fe70494c2f21f74d20b8a.url = (args: { tag: string | number |
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         tag: typeof args.tag === 'object'
@@ -1688,7 +1622,6 @@ destroyTagc4c1c6ea06aa24316153f8ce839c2e11.url = (args: { tag: string | number |
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         tag: typeof args.tag === 'object'
         ? args.tag.id
@@ -1747,7 +1680,6 @@ export const destroyTag = {
     '/blog/tags/{tag}': destroyTagc4c1c6ea06aa24316153f8ce839c2e11,
 }
 
-
 /**
 * @see \App\Http\Controllers\BlogPostController::create
 * @see app/Http/Controllers/BlogPostController.php:134
@@ -1769,10 +1701,6 @@ create.definition = {
 * @route '/blog/create'
 */
 create.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return create.definition.url + queryParams(options)
 }
 
@@ -1869,7 +1797,6 @@ edit.url = (args: { post: string | number | { id: string | number } } | [post: s
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         post: typeof args.post === 'object'
@@ -1975,7 +1902,6 @@ updateCategory.url = (args: { category: string | number | { id: string | number 
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         category: typeof args.category === 'object'

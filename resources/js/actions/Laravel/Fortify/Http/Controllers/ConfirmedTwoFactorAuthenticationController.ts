@@ -20,10 +20,6 @@ store.definition = {
 * @route '/user/confirmed-two-factor-authentication'
 */
 store.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return store.definition.url + queryParams(options)
 }
 

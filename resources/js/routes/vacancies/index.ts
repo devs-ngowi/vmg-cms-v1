@@ -18,10 +18,6 @@ index.definition = {
 * @route '/vacancies'
 */
 index.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return index.definition.url + queryParams(options)
 }
 
@@ -96,10 +92,6 @@ create.definition = {
 * @route '/vacancies/create'
 */
 create.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return create.definition.url + queryParams(options)
 }
 
@@ -174,10 +166,6 @@ expired.definition = {
 * @route '/vacancies/expired'
 */
 expired.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return expired.definition.url + queryParams(options)
 }
 
@@ -232,8 +220,6 @@ expiredForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => 
 })
 
 expired.form = expiredForm
-
-
 
 const vacancies = {
     index: Object.assign(index, index),

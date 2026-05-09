@@ -20,10 +20,6 @@ showLogin.definition = {
 * @route '/login'
 */
 showLogin.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return showLogin.definition.url + queryParams(options)
 }
 
@@ -105,10 +101,6 @@ loginb6041c76e8e1cd791f8f89d035d48611.definition = {
 * @route '/login'
 */
 loginb6041c76e8e1cd791f8f89d035d48611.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return loginb6041c76e8e1cd791f8f89d035d48611.definition.url + queryParams(options)
 }
 
@@ -164,10 +156,6 @@ loginf08cf5b8e17f0259f48ac6f91cb5fd93.definition = {
 * @route '/api/v1/auth/login'
 */
 loginf08cf5b8e17f0259f48ac6f91cb5fd93.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return loginf08cf5b8e17f0259f48ac6f91cb5fd93.definition.url + queryParams(options)
 }
 
@@ -208,7 +196,6 @@ export const login = {
     '/api/v1/auth/login': loginf08cf5b8e17f0259f48ac6f91cb5fd93,
 }
 
-
 /**
 * @see \App\Http\Controllers\AuthController::logout
 * @see app/Http/Controllers/AuthController.php:164
@@ -230,10 +217,6 @@ logoutf732b903d9f8919b4c24bef1f8bb897a.definition = {
 * @route '/logout'
 */
 logoutf732b903d9f8919b4c24bef1f8bb897a.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return logoutf732b903d9f8919b4c24bef1f8bb897a.definition.url + queryParams(options)
 }
 
@@ -289,10 +272,6 @@ logoute86dac8ced8597adf893a7f400807b67.definition = {
 * @route '/api/v1/auth/logout'
 */
 logoute86dac8ced8597adf893a7f400807b67.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return logoute86dac8ced8597adf893a7f400807b67.definition.url + queryParams(options)
 }
 
@@ -333,7 +312,6 @@ export const logout = {
     '/api/v1/auth/logout': logoute86dac8ced8597adf893a7f400807b67,
 }
 
-
 /**
 * @see \App\Http\Controllers\AuthController::register
 * @see app/Http/Controllers/AuthController.php:131
@@ -355,10 +333,6 @@ register2e61e4480c9d993ac4312ac9dd755931.definition = {
 * @route '/api/v1/auth/register'
 */
 register2e61e4480c9d993ac4312ac9dd755931.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return register2e61e4480c9d993ac4312ac9dd755931.definition.url + queryParams(options)
 }
 
@@ -414,10 +388,6 @@ registere9819db9819a1d19b38dd89a0c4218c4.definition = {
 * @route '/register'
 */
 registere9819db9819a1d19b38dd89a0c4218c4.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return registere9819db9819a1d19b38dd89a0c4218c4.definition.url + queryParams(options)
 }
 
@@ -458,7 +428,6 @@ export const register = {
     '/register': registere9819db9819a1d19b38dd89a0c4218c4,
 }
 
-
 /**
 * @see \App\Http\Controllers\AuthController::showRegister
 * @see app/Http/Controllers/AuthController.php:126
@@ -480,10 +449,6 @@ showRegister.definition = {
 * @route '/register'
 */
 showRegister.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return showRegister.definition.url + queryParams(options)
 }
 

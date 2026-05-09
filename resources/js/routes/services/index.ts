@@ -20,10 +20,6 @@ index.definition = {
 * @route '/services'
 */
 index.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return index.definition.url + queryParams(options)
 }
 
@@ -105,10 +101,6 @@ create.definition = {
 * @route '/services/create'
 */
 create.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return create.definition.url + queryParams(options)
 }
 
@@ -190,10 +182,6 @@ store.definition = {
 * @route '/services'
 */
 store.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return store.definition.url + queryParams(options)
 }
 
@@ -265,7 +253,6 @@ edit.url = (args: { service: string | number | { id: string | number } } | [serv
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         service: typeof args.service === 'object'
@@ -372,7 +359,6 @@ update.url = (args: { service: string | number | { id: string | number } } | [se
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         service: typeof args.service === 'object'
         ? args.service.id
@@ -463,7 +449,6 @@ destroy.url = (args: { service: string | number | { id: string | number } } | [s
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         service: typeof args.service === 'object'
         ? args.service.id
@@ -516,8 +501,6 @@ destroyForm.delete = (args: { service: string | number | { id: string | number }
 })
 
 destroy.form = destroyForm
-
-
 
 const services = {
     index: Object.assign(index, index),

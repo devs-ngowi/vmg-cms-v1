@@ -20,10 +20,6 @@ index4ba94bdba7ea56877bed462c2a45f5dd.definition = {
 * @route '/api/v1/knowledge'
 */
 index4ba94bdba7ea56877bed462c2a45f5dd.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return index4ba94bdba7ea56877bed462c2a45f5dd.definition.url + queryParams(options)
 }
 
@@ -104,10 +100,6 @@ index6ee0a66c1fd0b7f6be6a6765a13a8607.definition = {
 * @route '/knowledge'
 */
 index6ee0a66c1fd0b7f6be6a6765a13a8607.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return index6ee0a66c1fd0b7f6be6a6765a13a8607.definition.url + queryParams(options)
 }
 
@@ -173,7 +165,6 @@ export const index = {
     '/knowledge': index6ee0a66c1fd0b7f6be6a6765a13a8607,
 }
 
-
 /**
 * @see \App\Http\Controllers\KnowledgeController::publicArticlesList
 * @see app/Http/Controllers/KnowledgeController.php:275
@@ -195,10 +186,6 @@ publicArticlesList.definition = {
 * @route '/api/v1/knowledge/articles'
 */
 publicArticlesList.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return publicArticlesList.definition.url + queryParams(options)
 }
 
@@ -280,10 +267,6 @@ publicCategories.definition = {
 * @route '/api/v1/knowledge/categories'
 */
 publicCategories.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return publicCategories.definition.url + queryParams(options)
 }
 
@@ -369,7 +352,6 @@ publicCategoryBySlug.url = (args: { slug: string | number } | [slug: string | nu
         args = { slug: args }
     }
 
-
     if (Array.isArray(args)) {
         args = {
             slug: args[0],
@@ -377,7 +359,6 @@ publicCategoryBySlug.url = (args: { slug: string | number } | [slug: string | nu
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         slug: args.slug,
@@ -466,7 +447,6 @@ publicArticleBySlug.definition = {
 * @route '/api/v1/knowledge/{categorySlug}/{articleSlug}'
 */
 publicArticleBySlug.url = (args: { categorySlug: string | number, articleSlug: string | number } | [categorySlug: string | number, articleSlug: string | number ], options?: RouteQueryOptions) => {
-
     if (Array.isArray(args)) {
         args = {
             categorySlug: args[0],
@@ -475,7 +455,6 @@ publicArticleBySlug.url = (args: { categorySlug: string | number, articleSlug: s
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         categorySlug: args.categorySlug,
@@ -566,10 +545,6 @@ categoriesStoree6c4e9551521ae4be878e00a9628a203.definition = {
 * @route '/api/v1/knowledge/categories'
 */
 categoriesStoree6c4e9551521ae4be878e00a9628a203.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return categoriesStoree6c4e9551521ae4be878e00a9628a203.definition.url + queryParams(options)
 }
 
@@ -625,10 +600,6 @@ categoriesStore30610406a843c9952cf5c91767f6a3cb.definition = {
 * @route '/knowledge/categories'
 */
 categoriesStore30610406a843c9952cf5c91767f6a3cb.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return categoriesStore30610406a843c9952cf5c91767f6a3cb.definition.url + queryParams(options)
 }
 
@@ -669,7 +640,6 @@ export const categoriesStore = {
     '/knowledge/categories': categoriesStore30610406a843c9952cf5c91767f6a3cb,
 }
 
-
 /**
 * @see \App\Http\Controllers\KnowledgeController::categoriesEdit
 * @see app/Http/Controllers/KnowledgeController.php:169
@@ -706,7 +676,6 @@ categoriesEditeed9bf512304e5a4aae3fdf86844468a.url = (args: { category: string |
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         category: typeof args.category === 'object'
@@ -812,7 +781,6 @@ categoriesEdit45f13e03629b7d4a25774bd3cb05061c.url = (args: { category: string |
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         category: typeof args.category === 'object'
         ? args.category.id
@@ -886,7 +854,6 @@ export const categoriesEdit = {
     '/knowledge/categories/{category}/edit': categoriesEdit45f13e03629b7d4a25774bd3cb05061c,
 }
 
-
 /**
 * @see \App\Http\Controllers\KnowledgeController::categoriesUpdate
 * @see app/Http/Controllers/KnowledgeController.php:194
@@ -923,7 +890,6 @@ categoriesUpdateeed9bf512304e5a4aae3fdf86844468a.url = (args: { category: string
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         category: typeof args.category === 'object'
@@ -1014,7 +980,6 @@ categoriesUpdateeed9bf512304e5a4aae3fdf86844468a.url = (args: { category: string
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         category: typeof args.category === 'object'
         ? args.category.id
@@ -1104,7 +1069,6 @@ categoriesUpdate17a6768d49ff774b41fc8a03759fb526.url = (args: { category: string
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         category: typeof args.category === 'object'
         ? args.category.id
@@ -1164,7 +1128,6 @@ export const categoriesUpdate = {
     '/knowledge/categories/{category}': categoriesUpdate17a6768d49ff774b41fc8a03759fb526,
 }
 
-
 /**
 * @see \App\Http\Controllers\KnowledgeController::categoriesDestroy
 * @see app/Http/Controllers/KnowledgeController.php:223
@@ -1201,7 +1164,6 @@ categoriesDestroyeed9bf512304e5a4aae3fdf86844468a.url = (args: { category: strin
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         category: typeof args.category === 'object'
@@ -1292,7 +1254,6 @@ categoriesDestroy17a6768d49ff774b41fc8a03759fb526.url = (args: { category: strin
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         category: typeof args.category === 'object'
         ? args.category.id
@@ -1351,7 +1312,6 @@ export const categoriesDestroy = {
     '/knowledge/categories/{category}': categoriesDestroy17a6768d49ff774b41fc8a03759fb526,
 }
 
-
 /**
 * @see \App\Http\Controllers\KnowledgeController::categoriesToggle
 * @see app/Http/Controllers/KnowledgeController.php:234
@@ -1388,7 +1348,6 @@ categoriesToggle0cf2ed58cedf7229b39a59e7ad95c9fd.url = (args: { category: string
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         category: typeof args.category === 'object'
@@ -1479,7 +1438,6 @@ categoriesToggle05418238a985e2e60f767dc75c734998.url = (args: { category: string
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         category: typeof args.category === 'object'
         ? args.category.id
@@ -1538,7 +1496,6 @@ export const categoriesToggle = {
     '/knowledge/categories/{category}/toggle': categoriesToggle05418238a985e2e60f767dc75c734998,
 }
 
-
 /**
 * @see \App\Http\Controllers\KnowledgeController::articlesStore
 * @see app/Http/Controllers/KnowledgeController.php:317
@@ -1560,10 +1517,6 @@ articlesStore340f6b4d677c6c54904e35ca6f0553fe.definition = {
 * @route '/api/v1/knowledge/articles'
 */
 articlesStore340f6b4d677c6c54904e35ca6f0553fe.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return articlesStore340f6b4d677c6c54904e35ca6f0553fe.definition.url + queryParams(options)
 }
 
@@ -1619,10 +1572,6 @@ articlesStore40452c0ad987669f1e89796d277de21c.definition = {
 * @route '/knowledge/articles'
 */
 articlesStore40452c0ad987669f1e89796d277de21c.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return articlesStore40452c0ad987669f1e89796d277de21c.definition.url + queryParams(options)
 }
 
@@ -1663,7 +1612,6 @@ export const articlesStore = {
     '/knowledge/articles': articlesStore40452c0ad987669f1e89796d277de21c,
 }
 
-
 /**
 * @see \App\Http\Controllers\KnowledgeController::articlesEdit
 * @see app/Http/Controllers/KnowledgeController.php:358
@@ -1700,7 +1648,6 @@ articlesEditdd545d57e44fb5c218f65f6281707d70.url = (args: { article: string | nu
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         article: typeof args.article === 'object'
@@ -1806,7 +1753,6 @@ articlesEdit8a296c52100daea5a70fdc798fc2dd34.url = (args: { article: string | nu
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         article: typeof args.article === 'object'
         ? args.article.id
@@ -1880,7 +1826,6 @@ export const articlesEdit = {
     '/knowledge/articles/{article}/edit': articlesEdit8a296c52100daea5a70fdc798fc2dd34,
 }
 
-
 /**
 * @see \App\Http\Controllers\KnowledgeController::articlesUpdate
 * @see app/Http/Controllers/KnowledgeController.php:386
@@ -1917,7 +1862,6 @@ articlesUpdatedd545d57e44fb5c218f65f6281707d70.url = (args: { article: string | 
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         article: typeof args.article === 'object'
@@ -2008,7 +1952,6 @@ articlesUpdatedd545d57e44fb5c218f65f6281707d70.url = (args: { article: string | 
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         article: typeof args.article === 'object'
         ? args.article.id
@@ -2098,7 +2041,6 @@ articlesUpdateee724504ef3ef9cf1a1853f35273e111.url = (args: { article: string | 
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         article: typeof args.article === 'object'
         ? args.article.id
@@ -2158,7 +2100,6 @@ export const articlesUpdate = {
     '/knowledge/articles/{article}': articlesUpdateee724504ef3ef9cf1a1853f35273e111,
 }
 
-
 /**
 * @see \App\Http\Controllers\KnowledgeController::articlesDestroy
 * @see app/Http/Controllers/KnowledgeController.php:427
@@ -2195,7 +2136,6 @@ articlesDestroydd545d57e44fb5c218f65f6281707d70.url = (args: { article: string |
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         article: typeof args.article === 'object'
@@ -2286,7 +2226,6 @@ articlesDestroyee724504ef3ef9cf1a1853f35273e111.url = (args: { article: string |
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         article: typeof args.article === 'object'
         ? args.article.id
@@ -2345,7 +2284,6 @@ export const articlesDestroy = {
     '/knowledge/articles/{article}': articlesDestroyee724504ef3ef9cf1a1853f35273e111,
 }
 
-
 /**
 * @see \App\Http\Controllers\KnowledgeController::articlesToggle
 * @see app/Http/Controllers/KnowledgeController.php:439
@@ -2382,7 +2320,6 @@ articlesTogglead70329f9d5cdfe616b8eb0d83338ed9.url = (args: { article: string | 
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         article: typeof args.article === 'object'
@@ -2473,7 +2410,6 @@ articlesToggle0ac2decad417fb715106361ce3d47a5f.url = (args: { article: string | 
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         article: typeof args.article === 'object'
         ? args.article.id
@@ -2532,7 +2468,6 @@ export const articlesToggle = {
     '/knowledge/articles/{article}/toggle': articlesToggle0ac2decad417fb715106361ce3d47a5f,
 }
 
-
 /**
 * @see \App\Http\Controllers\KnowledgeController::categoriesIndex
 * @see app/Http/Controllers/KnowledgeController.php:112
@@ -2554,10 +2489,6 @@ categoriesIndex.definition = {
 * @route '/knowledge/categories'
 */
 categoriesIndex.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return categoriesIndex.definition.url + queryParams(options)
 }
 
@@ -2639,10 +2570,6 @@ categoriesCreate.definition = {
 * @route '/knowledge/categories/create'
 */
 categoriesCreate.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return categoriesCreate.definition.url + queryParams(options)
 }
 
@@ -2724,10 +2651,6 @@ articlesIndex.definition = {
 * @route '/knowledge/articles'
 */
 articlesIndex.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return articlesIndex.definition.url + queryParams(options)
 }
 
@@ -2809,10 +2732,6 @@ articlesCreate.definition = {
 * @route '/knowledge/articles/create'
 */
 articlesCreate.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return articlesCreate.definition.url + queryParams(options)
 }
 

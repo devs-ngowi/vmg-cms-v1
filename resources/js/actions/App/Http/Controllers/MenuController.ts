@@ -20,10 +20,6 @@ primary698d72c760b8a872a61557710f9b3a95.definition = {
 * @route '/api/v1/menus/primary'
 */
 primary698d72c760b8a872a61557710f9b3a95.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return primary698d72c760b8a872a61557710f9b3a95.definition.url + queryParams(options)
 }
 
@@ -104,10 +100,6 @@ primaryebf53f2020ccf267fcb373253f9b5783.definition = {
 * @route '/menus/primary'
 */
 primaryebf53f2020ccf267fcb373253f9b5783.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return primaryebf53f2020ccf267fcb373253f9b5783.definition.url + queryParams(options)
 }
 
@@ -173,7 +165,6 @@ export const primary = {
     '/menus/primary': primaryebf53f2020ccf267fcb373253f9b5783,
 }
 
-
 /**
 * @see \App\Http\Controllers\MenuController::footer
 * @see app/Http/Controllers/MenuController.php:97
@@ -195,10 +186,6 @@ footer8f452a1b66ebb2967df05a95f90914f5.definition = {
 * @route '/api/v1/menus/footer'
 */
 footer8f452a1b66ebb2967df05a95f90914f5.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return footer8f452a1b66ebb2967df05a95f90914f5.definition.url + queryParams(options)
 }
 
@@ -279,10 +266,6 @@ footerb55421b726da9cfa74ae18cd94f6dd8e.definition = {
 * @route '/menus/footer'
 */
 footerb55421b726da9cfa74ae18cd94f6dd8e.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return footerb55421b726da9cfa74ae18cd94f6dd8e.definition.url + queryParams(options)
 }
 
@@ -348,7 +331,6 @@ export const footer = {
     '/menus/footer': footerb55421b726da9cfa74ae18cd94f6dd8e,
 }
 
-
 /**
 * @see \App\Http\Controllers\MenuController::updateMenu
 * @see app/Http/Controllers/MenuController.php:101
@@ -385,7 +367,6 @@ updateMenue2f2ce0b6d5b4b30691e6adb4cb87dee.url = (args: { menu: string | number 
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         menu: typeof args.menu === 'object'
@@ -476,7 +457,6 @@ updateMenu9e75cf0da1445b906872d4fd6f729012.url = (args: { menu: string | number 
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         menu: typeof args.menu === 'object'
         ? args.menu.id
@@ -535,7 +515,6 @@ export const updateMenu = {
     '/menus/{menu}': updateMenu9e75cf0da1445b906872d4fd6f729012,
 }
 
-
 /**
 * @see \App\Http\Controllers\MenuController::storeItem
 * @see app/Http/Controllers/MenuController.php:123
@@ -572,7 +551,6 @@ storeItem88f6913c4d3f8e480a8b01a08c462074.url = (args: { menu: string | number |
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         menu: typeof args.menu === 'object'
@@ -653,7 +631,6 @@ storeItemac4e4869333fc93c485dbbb6bb8751cf.url = (args: { menu: string | number |
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         menu: typeof args.menu === 'object'
         ? args.menu.id
@@ -702,7 +679,6 @@ export const storeItem = {
     '/menus/{menu}/items': storeItemac4e4869333fc93c485dbbb6bb8751cf,
 }
 
-
 /**
 * @see \App\Http\Controllers\MenuController::updateItem
 * @see app/Http/Controllers/MenuController.php:157
@@ -724,7 +700,6 @@ updateItem9b454399bb7bfc3811f427a6a7d7cdb1.definition = {
 * @route '/api/v1/menus/{menu}/items/{item}'
 */
 updateItem9b454399bb7bfc3811f427a6a7d7cdb1.url = (args: { menu: string | number | { id: string | number }, item: string | number | { id: string | number } } | [menu: string | number | { id: string | number }, item: string | number | { id: string | number } ], options?: RouteQueryOptions) => {
-
     if (Array.isArray(args)) {
         args = {
             menu: args[0],
@@ -733,7 +708,6 @@ updateItem9b454399bb7bfc3811f427a6a7d7cdb1.url = (args: { menu: string | number 
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         menu: typeof args.menu === 'object'
@@ -812,7 +786,6 @@ updateItem9b454399bb7bfc3811f427a6a7d7cdb1.definition = {
 * @route '/api/v1/menus/{menu}/items/{item}'
 */
 updateItem9b454399bb7bfc3811f427a6a7d7cdb1.url = (args: { menu: string | number | { id: string | number }, item: string | number | { id: string | number } } | [menu: string | number | { id: string | number }, item: string | number | { id: string | number } ], options?: RouteQueryOptions) => {
-
     if (Array.isArray(args)) {
         args = {
             menu: args[0],
@@ -821,7 +794,6 @@ updateItem9b454399bb7bfc3811f427a6a7d7cdb1.url = (args: { menu: string | number 
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         menu: typeof args.menu === 'object'
@@ -900,7 +872,6 @@ updateItemf743d17954b3bcc3b43d8596960c1527.definition = {
 * @route '/menus/{menu}/items/{item}'
 */
 updateItemf743d17954b3bcc3b43d8596960c1527.url = (args: { menu: string | number | { id: string | number }, item: string | number | { id: string | number } } | [menu: string | number | { id: string | number }, item: string | number | { id: string | number } ], options?: RouteQueryOptions) => {
-
     if (Array.isArray(args)) {
         args = {
             menu: args[0],
@@ -909,7 +880,6 @@ updateItemf743d17954b3bcc3b43d8596960c1527.url = (args: { menu: string | number 
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         menu: typeof args.menu === 'object'
@@ -974,7 +944,6 @@ export const updateItem = {
     '/menus/{menu}/items/{item}': updateItemf743d17954b3bcc3b43d8596960c1527,
 }
 
-
 /**
 * @see \App\Http\Controllers\MenuController::destroyItem
 * @see app/Http/Controllers/MenuController.php:217
@@ -996,7 +965,6 @@ destroyItem9b454399bb7bfc3811f427a6a7d7cdb1.definition = {
 * @route '/api/v1/menus/{menu}/items/{item}'
 */
 destroyItem9b454399bb7bfc3811f427a6a7d7cdb1.url = (args: { menu: string | number | { id: string | number }, item: string | number | { id: string | number } } | [menu: string | number | { id: string | number }, item: string | number | { id: string | number } ], options?: RouteQueryOptions) => {
-
     if (Array.isArray(args)) {
         args = {
             menu: args[0],
@@ -1005,7 +973,6 @@ destroyItem9b454399bb7bfc3811f427a6a7d7cdb1.url = (args: { menu: string | number
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         menu: typeof args.menu === 'object'
@@ -1084,7 +1051,6 @@ destroyItemf743d17954b3bcc3b43d8596960c1527.definition = {
 * @route '/menus/{menu}/items/{item}'
 */
 destroyItemf743d17954b3bcc3b43d8596960c1527.url = (args: { menu: string | number | { id: string | number }, item: string | number | { id: string | number } } | [menu: string | number | { id: string | number }, item: string | number | { id: string | number } ], options?: RouteQueryOptions) => {
-
     if (Array.isArray(args)) {
         args = {
             menu: args[0],
@@ -1093,7 +1059,6 @@ destroyItemf743d17954b3bcc3b43d8596960c1527.url = (args: { menu: string | number
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         menu: typeof args.menu === 'object'
@@ -1157,7 +1122,6 @@ export const destroyItem = {
     '/menus/{menu}/items/{item}': destroyItemf743d17954b3bcc3b43d8596960c1527,
 }
 
-
 /**
 * @see \App\Http\Controllers\MenuController::reorder
 * @see app/Http/Controllers/MenuController.php:239
@@ -1194,7 +1158,6 @@ reorder98d34b3e12042f0ec14dcd9b099e1be2.url = (args: { menu: string | number | {
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         menu: typeof args.menu === 'object'
@@ -1275,7 +1238,6 @@ reorder93a820b9bf00b0c11d31b1406e9a2b2a.url = (args: { menu: string | number | {
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         menu: typeof args.menu === 'object'
         ? args.menu.id
@@ -1324,7 +1286,6 @@ export const reorder = {
     '/menus/{menu}/reorder': reorder93a820b9bf00b0c11d31b1406e9a2b2a,
 }
 
-
 /**
 * @see \App\Http\Controllers\MenuController::toggleVisibility
 * @see app/Http/Controllers/MenuController.php:198
@@ -1346,7 +1307,6 @@ toggleVisibilitye9a72d513e5ed2c7a9d754ee5153bd8d.definition = {
 * @route '/api/v1/menus/{menu}/items/{item}/toggle-visibility'
 */
 toggleVisibilitye9a72d513e5ed2c7a9d754ee5153bd8d.url = (args: { menu: string | number | { id: string | number }, item: string | number | { id: string | number } } | [menu: string | number | { id: string | number }, item: string | number | { id: string | number } ], options?: RouteQueryOptions) => {
-
     if (Array.isArray(args)) {
         args = {
             menu: args[0],
@@ -1355,7 +1315,6 @@ toggleVisibilitye9a72d513e5ed2c7a9d754ee5153bd8d.url = (args: { menu: string | n
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         menu: typeof args.menu === 'object'
@@ -1434,7 +1393,6 @@ toggleVisibilityc3c63d40f04fe0fd72d500ee867dc0b5.definition = {
 * @route '/menus/{menu}/items/{item}/toggle-visibility'
 */
 toggleVisibilityc3c63d40f04fe0fd72d500ee867dc0b5.url = (args: { menu: string | number | { id: string | number }, item: string | number | { id: string | number } } | [menu: string | number | { id: string | number }, item: string | number | { id: string | number } ], options?: RouteQueryOptions) => {
-
     if (Array.isArray(args)) {
         args = {
             menu: args[0],
@@ -1443,7 +1401,6 @@ toggleVisibilityc3c63d40f04fe0fd72d500ee867dc0b5.url = (args: { menu: string | n
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         menu: typeof args.menu === 'object'
@@ -1506,7 +1463,6 @@ export const toggleVisibility = {
     '/api/v1/menus/{menu}/items/{item}/toggle-visibility': toggleVisibilitye9a72d513e5ed2c7a9d754ee5153bd8d,
     '/menus/{menu}/items/{item}/toggle-visibility': toggleVisibilityc3c63d40f04fe0fd72d500ee867dc0b5,
 }
-
 
 const MenuController = { primary, footer, updateMenu, storeItem, updateItem, destroyItem, reorder, toggleVisibility }
 

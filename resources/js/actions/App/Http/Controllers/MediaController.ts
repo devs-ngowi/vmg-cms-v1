@@ -20,10 +20,6 @@ index46c6282de3c06ba451eff0ce018051d9.definition = {
 * @route '/api/v1/media'
 */
 index46c6282de3c06ba451eff0ce018051d9.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return index46c6282de3c06ba451eff0ce018051d9.definition.url + queryParams(options)
 }
 
@@ -104,10 +100,6 @@ indexb6e246e27f8af7b9881470f6aa5d44b9.definition = {
 * @route '/media'
 */
 indexb6e246e27f8af7b9881470f6aa5d44b9.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return indexb6e246e27f8af7b9881470f6aa5d44b9.definition.url + queryParams(options)
 }
 
@@ -173,7 +165,6 @@ export const index = {
     '/media': indexb6e246e27f8af7b9881470f6aa5d44b9,
 }
 
-
 /**
 * @see \App\Http\Controllers\MediaController::store
 * @see app/Http/Controllers/MediaController.php:83
@@ -195,10 +186,6 @@ store46c6282de3c06ba451eff0ce018051d9.definition = {
 * @route '/api/v1/media'
 */
 store46c6282de3c06ba451eff0ce018051d9.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return store46c6282de3c06ba451eff0ce018051d9.definition.url + queryParams(options)
 }
 
@@ -254,10 +241,6 @@ storeb6e246e27f8af7b9881470f6aa5d44b9.definition = {
 * @route '/media'
 */
 storeb6e246e27f8af7b9881470f6aa5d44b9.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return storeb6e246e27f8af7b9881470f6aa5d44b9.definition.url + queryParams(options)
 }
 
@@ -298,7 +281,6 @@ export const store = {
     '/media': storeb6e246e27f8af7b9881470f6aa5d44b9,
 }
 
-
 /**
 * @see \App\Http\Controllers\MediaController::update
 * @see app/Http/Controllers/MediaController.php:232
@@ -335,7 +317,6 @@ update6850d2fb3d47745f79163e8790170c24.url = (args: { media: string | number | {
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         media: typeof args.media === 'object'
@@ -426,7 +407,6 @@ update6f9bac910898eb7282dee656264b59d3.url = (args: { media: string | number | {
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         media: typeof args.media === 'object'
         ? args.media.id
@@ -485,7 +465,6 @@ export const update = {
     '/media/{media}': update6f9bac910898eb7282dee656264b59d3,
 }
 
-
 /**
 * @see \App\Http\Controllers\MediaController::destroy
 * @see app/Http/Controllers/MediaController.php:256
@@ -522,7 +501,6 @@ destroy6850d2fb3d47745f79163e8790170c24.url = (args: { media: string | number | 
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         media: typeof args.media === 'object'
@@ -613,7 +591,6 @@ destroy6f9bac910898eb7282dee656264b59d3.url = (args: { media: string | number | 
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         media: typeof args.media === 'object'
         ? args.media.id
@@ -671,7 +648,6 @@ export const destroy = {
     '/api/v1/media/{media}': destroy6850d2fb3d47745f79163e8790170c24,
     '/media/{media}': destroy6f9bac910898eb7282dee656264b59d3,
 }
-
 
 const MediaController = { index, store, update, destroy }
 

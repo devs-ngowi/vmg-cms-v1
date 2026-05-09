@@ -20,10 +20,6 @@ indexcfbf357e8dab34d03e28bc679427f990.definition = {
 * @route '/api/v1/services'
 */
 indexcfbf357e8dab34d03e28bc679427f990.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return indexcfbf357e8dab34d03e28bc679427f990.definition.url + queryParams(options)
 }
 
@@ -104,10 +100,6 @@ indexbbee0fd5659320176905772cd001770a.definition = {
 * @route '/services'
 */
 indexbbee0fd5659320176905772cd001770a.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return indexbbee0fd5659320176905772cd001770a.definition.url + queryParams(options)
 }
 
@@ -173,7 +165,6 @@ export const index = {
     '/services': indexbbee0fd5659320176905772cd001770a,
 }
 
-
 /**
 * @see \App\Http\Controllers\ServiceController::show
 * @see app/Http/Controllers/ServiceController.php:181
@@ -199,7 +190,6 @@ show.url = (args: { slug: string | number } | [slug: string | number ] | string 
         args = { slug: args }
     }
 
-
     if (Array.isArray(args)) {
         args = {
             slug: args[0],
@@ -207,7 +197,6 @@ show.url = (args: { slug: string | number } | [slug: string | number ] | string 
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         slug: args.slug,
@@ -296,10 +285,6 @@ create40d52d9cd007934f4b8e75f58abc47c0.definition = {
 * @route '/api/v1/services/create'
 */
 create40d52d9cd007934f4b8e75f58abc47c0.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return create40d52d9cd007934f4b8e75f58abc47c0.definition.url + queryParams(options)
 }
 
@@ -380,10 +365,6 @@ createe3e693cb1537414d2055c5fff81899c0.definition = {
 * @route '/services/create'
 */
 createe3e693cb1537414d2055c5fff81899c0.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return createe3e693cb1537414d2055c5fff81899c0.definition.url + queryParams(options)
 }
 
@@ -449,7 +430,6 @@ export const create = {
     '/services/create': createe3e693cb1537414d2055c5fff81899c0,
 }
 
-
 /**
 * @see \App\Http\Controllers\ServiceController::store
 * @see app/Http/Controllers/ServiceController.php:206
@@ -471,10 +451,6 @@ storecfbf357e8dab34d03e28bc679427f990.definition = {
 * @route '/api/v1/services'
 */
 storecfbf357e8dab34d03e28bc679427f990.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return storecfbf357e8dab34d03e28bc679427f990.definition.url + queryParams(options)
 }
 
@@ -530,10 +506,6 @@ storebbee0fd5659320176905772cd001770a.definition = {
 * @route '/services'
 */
 storebbee0fd5659320176905772cd001770a.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return storebbee0fd5659320176905772cd001770a.definition.url + queryParams(options)
 }
 
@@ -574,7 +546,6 @@ export const store = {
     '/services': storebbee0fd5659320176905772cd001770a,
 }
 
-
 /**
 * @see \App\Http\Controllers\ServiceController::edit
 * @see app/Http/Controllers/ServiceController.php:276
@@ -611,7 +582,6 @@ edit95d35ec76f29384dc016b3986dce57b1.url = (args: { service: string | number | {
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         service: typeof args.service === 'object'
@@ -717,7 +687,6 @@ edit0bf85072c0282cde0771804a80019346.url = (args: { service: string | number | {
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         service: typeof args.service === 'object'
         ? args.service.id
@@ -791,7 +760,6 @@ export const edit = {
     '/services/{service}/edit': edit0bf85072c0282cde0771804a80019346,
 }
 
-
 /**
 * @see \App\Http\Controllers\ServiceController::update
 * @see app/Http/Controllers/ServiceController.php:327
@@ -828,7 +796,6 @@ update95d35ec76f29384dc016b3986dce57b1.url = (args: { service: string | number |
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         service: typeof args.service === 'object'
@@ -919,7 +886,6 @@ update000b2142c88a537855e36d5540b0e8ee.url = (args: { service: string | number |
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         service: typeof args.service === 'object'
         ? args.service.id
@@ -978,7 +944,6 @@ export const update = {
     '/services/{service}': update000b2142c88a537855e36d5540b0e8ee,
 }
 
-
 /**
 * @see \App\Http\Controllers\ServiceController::destroy
 * @see app/Http/Controllers/ServiceController.php:451
@@ -1015,7 +980,6 @@ destroy95d35ec76f29384dc016b3986dce57b1.url = (args: { service: string | number 
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         service: typeof args.service === 'object'
@@ -1106,7 +1070,6 @@ destroy000b2142c88a537855e36d5540b0e8ee.url = (args: { service: string | number 
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         service: typeof args.service === 'object'
         ? args.service.id
@@ -1164,7 +1127,6 @@ export const destroy = {
     '/api/v1/services/{service}': destroy95d35ec76f29384dc016b3986dce57b1,
     '/services/{service}': destroy000b2142c88a537855e36d5540b0e8ee,
 }
-
 
 const ServiceController = { index, show, create, store, edit, update, destroy }
 

@@ -20,10 +20,6 @@ index116416e499131727388aa88905bf71a8.definition = {
 * @route '/api/v1/projects'
 */
 index116416e499131727388aa88905bf71a8.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return index116416e499131727388aa88905bf71a8.definition.url + queryParams(options)
 }
 
@@ -104,10 +100,6 @@ index8f35706c95c06c991312479b995e49d2.definition = {
 * @route '/projects'
 */
 index8f35706c95c06c991312479b995e49d2.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return index8f35706c95c06c991312479b995e49d2.definition.url + queryParams(options)
 }
 
@@ -173,7 +165,6 @@ export const index = {
     '/projects': index8f35706c95c06c991312479b995e49d2,
 }
 
-
 /**
 * @see \App\Http\Controllers\ProjectController::featured
 * @see app/Http/Controllers/ProjectController.php:184
@@ -195,10 +186,6 @@ featuredd5fbd14d6762c216111c4fe11e8cce27.definition = {
 * @route '/api/v1/projects/featured'
 */
 featuredd5fbd14d6762c216111c4fe11e8cce27.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return featuredd5fbd14d6762c216111c4fe11e8cce27.definition.url + queryParams(options)
 }
 
@@ -279,10 +266,6 @@ featuredc3389ad7912b59c2c7cf804f7eb4de27.definition = {
 * @route '/projects/featured'
 */
 featuredc3389ad7912b59c2c7cf804f7eb4de27.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return featuredc3389ad7912b59c2c7cf804f7eb4de27.definition.url + queryParams(options)
 }
 
@@ -348,7 +331,6 @@ export const featured = {
     '/projects/featured': featuredc3389ad7912b59c2c7cf804f7eb4de27,
 }
 
-
 /**
 * @see \App\Http\Controllers\ProjectController::show
 * @see app/Http/Controllers/ProjectController.php:210
@@ -374,7 +356,6 @@ show.url = (args: { slug: string | number } | [slug: string | number ] | string 
         args = { slug: args }
     }
 
-
     if (Array.isArray(args)) {
         args = {
             slug: args[0],
@@ -382,7 +363,6 @@ show.url = (args: { slug: string | number } | [slug: string | number ] | string 
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         slug: args.slug,
@@ -471,10 +451,6 @@ create2bea697971d74d3cbd6ad3bdba5f0078.definition = {
 * @route '/api/v1/projects/create'
 */
 create2bea697971d74d3cbd6ad3bdba5f0078.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return create2bea697971d74d3cbd6ad3bdba5f0078.definition.url + queryParams(options)
 }
 
@@ -555,10 +531,6 @@ create854856a96573f720f48e09da9946a4d0.definition = {
 * @route '/projects/create'
 */
 create854856a96573f720f48e09da9946a4d0.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return create854856a96573f720f48e09da9946a4d0.definition.url + queryParams(options)
 }
 
@@ -624,7 +596,6 @@ export const create = {
     '/projects/create': create854856a96573f720f48e09da9946a4d0,
 }
 
-
 /**
 * @see \App\Http\Controllers\ProjectController::store
 * @see app/Http/Controllers/ProjectController.php:246
@@ -646,10 +617,6 @@ store116416e499131727388aa88905bf71a8.definition = {
 * @route '/api/v1/projects'
 */
 store116416e499131727388aa88905bf71a8.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return store116416e499131727388aa88905bf71a8.definition.url + queryParams(options)
 }
 
@@ -705,10 +672,6 @@ store8f35706c95c06c991312479b995e49d2.definition = {
 * @route '/projects'
 */
 store8f35706c95c06c991312479b995e49d2.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return store8f35706c95c06c991312479b995e49d2.definition.url + queryParams(options)
 }
 
@@ -749,7 +712,6 @@ export const store = {
     '/projects': store8f35706c95c06c991312479b995e49d2,
 }
 
-
 /**
 * @see \App\Http\Controllers\ProjectController::edit
 * @see app/Http/Controllers/ProjectController.php:275
@@ -786,7 +748,6 @@ editbee676bb2f0b399f533f3ef3e229c90b.url = (args: { project: string | number | {
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         project: typeof args.project === 'object'
@@ -892,7 +853,6 @@ edit8b5aed867a01ebae28df58a5eee1c3e2.url = (args: { project: string | number | {
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         project: typeof args.project === 'object'
         ? args.project.id
@@ -966,7 +926,6 @@ export const edit = {
     '/projects/{project}/edit': edit8b5aed867a01ebae28df58a5eee1c3e2,
 }
 
-
 /**
 * @see \App\Http\Controllers\ProjectController::update
 * @see app/Http/Controllers/ProjectController.php:312
@@ -1003,7 +962,6 @@ updatebee676bb2f0b399f533f3ef3e229c90b.url = (args: { project: string | number |
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         project: typeof args.project === 'object'
@@ -1094,7 +1052,6 @@ update506e97b57d862c7a6e6006aa3bd3e3f3.url = (args: { project: string | number |
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         project: typeof args.project === 'object'
         ? args.project.id
@@ -1153,7 +1110,6 @@ export const update = {
     '/projects/{project}': update506e97b57d862c7a6e6006aa3bd3e3f3,
 }
 
-
 /**
 * @see \App\Http\Controllers\ProjectController::destroy
 * @see app/Http/Controllers/ProjectController.php:346
@@ -1190,7 +1146,6 @@ destroybee676bb2f0b399f533f3ef3e229c90b.url = (args: { project: string | number 
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         project: typeof args.project === 'object'
@@ -1281,7 +1236,6 @@ destroy506e97b57d862c7a6e6006aa3bd3e3f3.url = (args: { project: string | number 
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         project: typeof args.project === 'object'
         ? args.project.id
@@ -1339,7 +1293,6 @@ export const destroy = {
     '/api/v1/projects/{project}': destroybee676bb2f0b399f533f3ef3e229c90b,
     '/projects/{project}': destroy506e97b57d862c7a6e6006aa3bd3e3f3,
 }
-
 
 const ProjectController = { index, featured, show, create, store, edit, update, destroy }
 

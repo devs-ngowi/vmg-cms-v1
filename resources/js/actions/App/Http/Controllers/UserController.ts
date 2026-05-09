@@ -20,10 +20,6 @@ index98c0cbd59f45d2f897c79a0a70c7ac59.definition = {
 * @route '/api/v1/users'
 */
 index98c0cbd59f45d2f897c79a0a70c7ac59.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return index98c0cbd59f45d2f897c79a0a70c7ac59.definition.url + queryParams(options)
 }
 
@@ -104,10 +100,6 @@ index6e8299a085c11017e62ab420951fb27c.definition = {
 * @route '/users'
 */
 index6e8299a085c11017e62ab420951fb27c.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return index6e8299a085c11017e62ab420951fb27c.definition.url + queryParams(options)
 }
 
@@ -173,7 +165,6 @@ export const index = {
     '/users': index6e8299a085c11017e62ab420951fb27c,
 }
 
-
 /**
 * @see \App\Http\Controllers\UserController::store
 * @see app/Http/Controllers/UserController.php:57
@@ -195,10 +186,6 @@ store98c0cbd59f45d2f897c79a0a70c7ac59.definition = {
 * @route '/api/v1/users'
 */
 store98c0cbd59f45d2f897c79a0a70c7ac59.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return store98c0cbd59f45d2f897c79a0a70c7ac59.definition.url + queryParams(options)
 }
 
@@ -254,10 +241,6 @@ store6e8299a085c11017e62ab420951fb27c.definition = {
 * @route '/users'
 */
 store6e8299a085c11017e62ab420951fb27c.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return store6e8299a085c11017e62ab420951fb27c.definition.url + queryParams(options)
 }
 
@@ -298,7 +281,6 @@ export const store = {
     '/users': store6e8299a085c11017e62ab420951fb27c,
 }
 
-
 /**
 * @see \App\Http\Controllers\UserController::show
 * @see app/Http/Controllers/UserController.php:87
@@ -335,7 +317,6 @@ show.url = (args: { user: string | number | { id: string | number } } | [user: s
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         user: typeof args.user === 'object'
@@ -441,7 +422,6 @@ update404721aa0166e3065b7a4674fba481b9.url = (args: { user: string | number | { 
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         user: typeof args.user === 'object'
@@ -557,7 +537,6 @@ updatef898f2daa993cc45af847e1a1f899673.url = (args: { user: string | number | { 
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         user: typeof args.user === 'object'
         ? args.user.id
@@ -616,7 +595,6 @@ export const update = {
     '/users/{user}': updatef898f2daa993cc45af847e1a1f899673,
 }
 
-
 /**
 * @see \App\Http\Controllers\UserController::destroy
 * @see app/Http/Controllers/UserController.php:148
@@ -653,7 +631,6 @@ destroy404721aa0166e3065b7a4674fba481b9.url = (args: { user: string | number | {
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         user: typeof args.user === 'object'
@@ -744,7 +721,6 @@ destroyf898f2daa993cc45af847e1a1f899673.url = (args: { user: string | number | {
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         user: typeof args.user === 'object'
         ? args.user.id
@@ -803,7 +779,6 @@ export const destroy = {
     '/users/{user}': destroyf898f2daa993cc45af847e1a1f899673,
 }
 
-
 /**
 * @see \App\Http\Controllers\UserController::create
 * @see app/Http/Controllers/UserController.php:48
@@ -825,10 +800,6 @@ create.definition = {
 * @route '/users/create'
 */
 create.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return create.definition.url + queryParams(options)
 }
 
@@ -925,7 +896,6 @@ edit.url = (args: { user: string | number | { id: string | number } } | [user: s
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         user: typeof args.user === 'object'

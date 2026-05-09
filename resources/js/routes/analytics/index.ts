@@ -18,10 +18,6 @@ pageViews.definition = {
 * @route '/analytics/page-views'
 */
 pageViews.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return pageViews.definition.url + queryParams(options)
 }
 
@@ -96,10 +92,6 @@ auditLog.definition = {
 * @route '/analytics/audit-log'
 */
 auditLog.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return auditLog.definition.url + queryParams(options)
 }
 
@@ -154,8 +146,6 @@ auditLogForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =>
 })
 
 auditLog.form = auditLogForm
-
-
 
 const analytics = {
     pageViews: Object.assign(pageViews, pageViews),

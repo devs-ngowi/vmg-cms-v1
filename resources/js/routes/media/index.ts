@@ -20,10 +20,6 @@ index.definition = {
 * @route '/media'
 */
 index.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return index.definition.url + queryParams(options)
 }
 
@@ -105,10 +101,6 @@ store.definition = {
 * @route '/media'
 */
 store.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return store.definition.url + queryParams(options)
 }
 
@@ -180,7 +172,6 @@ update.url = (args: { media: string | number | { id: string | number } } | [medi
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         media: typeof args.media === 'object'
@@ -272,7 +263,6 @@ destroy.url = (args: { media: string | number | { id: string | number } } | [med
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         media: typeof args.media === 'object'
         ? args.media.id
@@ -325,8 +315,6 @@ destroyForm.delete = (args: { media: string | number | { id: string | number } }
 })
 
 destroy.form = destroyForm
-
-
 
 const media = {
     index: Object.assign(index, index),

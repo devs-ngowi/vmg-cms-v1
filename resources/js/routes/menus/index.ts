@@ -21,10 +21,6 @@ primary.definition = {
 * @route '/menus/primary'
 */
 primary.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return primary.definition.url + queryParams(options)
 }
 
@@ -106,10 +102,6 @@ footer.definition = {
 * @route '/menus/footer'
 */
 footer.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return footer.definition.url + queryParams(options)
 }
 
@@ -207,7 +199,6 @@ update.url = (args: { menu: string | number | { id: string | number } } | [menu:
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         menu: typeof args.menu === 'object'
         ? args.menu.id
@@ -298,7 +289,6 @@ reorder.url = (args: { menu: string | number | { id: string | number } } | [menu
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         menu: typeof args.menu === 'object'
         ? args.menu.id
@@ -341,8 +331,6 @@ reorderForm.post = (args: { menu: string | number | { id: string | number } } | 
 })
 
 reorder.form = reorderForm
-
-
 
 const menus = {
     primary: Object.assign(primary, primary),

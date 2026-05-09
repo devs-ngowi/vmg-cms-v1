@@ -12,7 +12,6 @@ import TwoFactorQrCodeController from './TwoFactorQrCodeController'
 import TwoFactorSecretKeyController from './TwoFactorSecretKeyController'
 import RecoveryCodeController from './RecoveryCodeController'
 
-
 const Controllers = {
     NewPasswordController: Object.assign(NewPasswordController, NewPasswordController),
     PasswordResetLinkController: Object.assign(PasswordResetLinkController, PasswordResetLinkController),

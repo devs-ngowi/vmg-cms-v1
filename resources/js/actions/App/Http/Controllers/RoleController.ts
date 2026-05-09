@@ -20,10 +20,6 @@ index.definition = {
 * @route '/roles'
 */
 index.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return index.definition.url + queryParams(options)
 }
 
@@ -105,10 +101,6 @@ create.definition = {
 * @route '/roles/create'
 */
 create.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return create.definition.url + queryParams(options)
 }
 
@@ -190,10 +182,6 @@ store.definition = {
 * @route '/roles'
 */
 store.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return store.definition.url + queryParams(options)
 }
 
@@ -265,7 +253,6 @@ edit.url = (args: { role: number | { id: number } } | [role: number | { id: numb
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         role: typeof args.role === 'object'
@@ -372,7 +359,6 @@ update.url = (args: { role: number | { id: number } } | [role: number | { id: nu
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         role: typeof args.role === 'object'
         ? args.role.id
@@ -462,7 +448,6 @@ destroy.url = (args: { role: number | { id: number } } | [role: number | { id: n
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         role: typeof args.role === 'object'

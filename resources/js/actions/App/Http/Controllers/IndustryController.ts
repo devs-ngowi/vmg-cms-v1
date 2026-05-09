@@ -20,10 +20,6 @@ indexdf3d0e76d7b81a519142716a8c54b2f4.definition = {
 * @route '/api/v1/industries'
 */
 indexdf3d0e76d7b81a519142716a8c54b2f4.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return indexdf3d0e76d7b81a519142716a8c54b2f4.definition.url + queryParams(options)
 }
 
@@ -104,10 +100,6 @@ indexc2d9d607010913bd1c9d1949d5a8e648.definition = {
 * @route '/industries'
 */
 indexc2d9d607010913bd1c9d1949d5a8e648.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return indexc2d9d607010913bd1c9d1949d5a8e648.definition.url + queryParams(options)
 }
 
@@ -173,7 +165,6 @@ export const index = {
     '/industries': indexc2d9d607010913bd1c9d1949d5a8e648,
 }
 
-
 /**
 * @see \App\Http\Controllers\IndustryController::show
 * @see app/Http/Controllers/IndustryController.php:116
@@ -199,7 +190,6 @@ show.url = (args: { slug: string | number } | [slug: string | number ] | string 
         args = { slug: args }
     }
 
-
     if (Array.isArray(args)) {
         args = {
             slug: args[0],
@@ -207,7 +197,6 @@ show.url = (args: { slug: string | number } | [slug: string | number ] | string 
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         slug: args.slug,
@@ -296,10 +285,6 @@ create3b4b9d272fd516875eaaae2ef017d433.definition = {
 * @route '/api/v1/industries/create'
 */
 create3b4b9d272fd516875eaaae2ef017d433.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return create3b4b9d272fd516875eaaae2ef017d433.definition.url + queryParams(options)
 }
 
@@ -380,10 +365,6 @@ createe02796827cdddd14f29471c6dcbc7022.definition = {
 * @route '/industries/create'
 */
 createe02796827cdddd14f29471c6dcbc7022.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return createe02796827cdddd14f29471c6dcbc7022.definition.url + queryParams(options)
 }
 
@@ -449,7 +430,6 @@ export const create = {
     '/industries/create': createe02796827cdddd14f29471c6dcbc7022,
 }
 
-
 /**
 * @see \App\Http\Controllers\IndustryController::store
 * @see app/Http/Controllers/IndustryController.php:149
@@ -471,10 +451,6 @@ storedf3d0e76d7b81a519142716a8c54b2f4.definition = {
 * @route '/api/v1/industries'
 */
 storedf3d0e76d7b81a519142716a8c54b2f4.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return storedf3d0e76d7b81a519142716a8c54b2f4.definition.url + queryParams(options)
 }
 
@@ -530,10 +506,6 @@ storec2d9d607010913bd1c9d1949d5a8e648.definition = {
 * @route '/industries'
 */
 storec2d9d607010913bd1c9d1949d5a8e648.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return storec2d9d607010913bd1c9d1949d5a8e648.definition.url + queryParams(options)
 }
 
@@ -574,7 +546,6 @@ export const store = {
     '/industries': storec2d9d607010913bd1c9d1949d5a8e648,
 }
 
-
 /**
 * @see \App\Http\Controllers\IndustryController::edit
 * @see app/Http/Controllers/IndustryController.php:175
@@ -611,7 +582,6 @@ edit9bd3d82745171e78704558e463487061.url = (args: { industry: string | number | 
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         industry: typeof args.industry === 'object'
@@ -717,7 +687,6 @@ editfc0fbd42c6515eebf6dabc262ad3d4a3.url = (args: { industry: string | number | 
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         industry: typeof args.industry === 'object'
         ? args.industry.id
@@ -791,7 +760,6 @@ export const edit = {
     '/industries/{industry}/edit': editfc0fbd42c6515eebf6dabc262ad3d4a3,
 }
 
-
 /**
 * @see \App\Http\Controllers\IndustryController::update
 * @see app/Http/Controllers/IndustryController.php:203
@@ -828,7 +796,6 @@ update9bd3d82745171e78704558e463487061.url = (args: { industry: string | number 
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         industry: typeof args.industry === 'object'
@@ -919,7 +886,6 @@ update91e0a4226a667b1a78758ca8ef18ccfa.url = (args: { industry: string | number 
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         industry: typeof args.industry === 'object'
         ? args.industry.id
@@ -978,7 +944,6 @@ export const update = {
     '/industries/{industry}': update91e0a4226a667b1a78758ca8ef18ccfa,
 }
 
-
 /**
 * @see \App\Http\Controllers\IndustryController::destroy
 * @see app/Http/Controllers/IndustryController.php:243
@@ -1015,7 +980,6 @@ destroy9bd3d82745171e78704558e463487061.url = (args: { industry: string | number
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         industry: typeof args.industry === 'object'
@@ -1106,7 +1070,6 @@ destroy91e0a4226a667b1a78758ca8ef18ccfa.url = (args: { industry: string | number
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         industry: typeof args.industry === 'object'
         ? args.industry.id
@@ -1165,7 +1128,6 @@ export const destroy = {
     '/industries/{industry}': destroy91e0a4226a667b1a78758ca8ef18ccfa,
 }
 
-
 /**
 * @see \App\Http\Controllers\IndustryController::toggle
 * @see app/Http/Controllers/IndustryController.php:229
@@ -1202,7 +1164,6 @@ toggle5d251fff0c4559adc30f46bd2d909cf5.url = (args: { industry: string | number 
     }
 
     args = applyUrlDefaults(args)
-
 
     const parsedArgs = {
         industry: typeof args.industry === 'object'
@@ -1293,7 +1254,6 @@ toggleabf96ea9d7ff82ea2e6a2a78a0b3618f.url = (args: { industry: string | number 
 
     args = applyUrlDefaults(args)
 
-
     const parsedArgs = {
         industry: typeof args.industry === 'object'
         ? args.industry.id
@@ -1351,7 +1311,6 @@ export const toggle = {
     '/api/v1/industries/{industry}/toggle': toggle5d251fff0c4559adc30f46bd2d909cf5,
     '/industries/{industry}/toggle': toggleabf96ea9d7ff82ea2e6a2a78a0b3618f,
 }
-
 
 const IndustryController = { index, show, create, store, edit, update, destroy, toggle }
 

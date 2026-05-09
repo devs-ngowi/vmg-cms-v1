@@ -20,10 +20,6 @@ showe6169f3fafa7c3f4f661de225f8e262e.definition = {
 * @route '/user/two-factor-qr-code'
 */
 showe6169f3fafa7c3f4f661de225f8e262e.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return showe6169f3fafa7c3f4f661de225f8e262e.definition.url + queryParams(options)
 }
 
@@ -104,10 +100,6 @@ show0ad619344ffe7d8e6e4b1c508de96456.definition = {
 * @route '/settings/two-factor'
 */
 show0ad619344ffe7d8e6e4b1c508de96456.url = (options?: RouteQueryOptions) => {
-
-
-
-
     return show0ad619344ffe7d8e6e4b1c508de96456.definition.url + queryParams(options)
 }
 
@@ -172,7 +164,6 @@ export const show = {
     '/user/two-factor-qr-code': showe6169f3fafa7c3f4f661de225f8e262e,
     '/settings/two-factor': show0ad619344ffe7d8e6e4b1c508de96456,
 }
-
 
 const TwoFactorQrCodeController = { show }
 
