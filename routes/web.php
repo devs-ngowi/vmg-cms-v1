@@ -264,10 +264,13 @@ Route::delete('/feedback/{feedback}',       [FeedbackController::class, 'destroy
 // Public: anyone can submit a ticket
 Route::post('/help/ticket', [SupportTicketController::class, 'store'])->name('support.store');
 
-// CMS admin
-Route::get('/support',                        [SupportTicketController::class, 'index'])->name('support.index');
-Route::get('/support/{supportTicket}',        [SupportTicketController::class, 'show'])->name('support.show');
-Route::patch('/support/{supportTicket}',      [SupportTicketController::class, 'update'])->name('support.update');
-Route::post('/support/{supportTicket}/reply', [SupportTicketController::class, 'reply'])->name('support.reply');
-Route::delete('/support/{supportTicket}',     [SupportTicketController::class, 'destroy'])->name('support.destroy');
+// Support Tickets — CMS Admin
+Route::prefix('support')->name('support.')->group(function () {
+    Route::get('/',                        [SupportTicketController::class, 'index'])->name('index');
+    Route::post('/',                       [SupportTicketController::class, 'store'])->name('store');
+    Route::get('/{supportTicket}',         [SupportTicketController::class, 'show'])->name('show');
+    Route::patch('/{supportTicket}',       [SupportTicketController::class, 'update'])->name('update');
+    Route::post('/{supportTicket}/reply',  [SupportTicketController::class, 'reply'])->name('reply');
+    Route::delete('/{supportTicket}',      [SupportTicketController::class, 'destroy'])->name('destroy');
+});
 });

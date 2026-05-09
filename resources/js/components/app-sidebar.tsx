@@ -144,6 +144,11 @@ const supportItems: NavItemWithMeta[] = [
     { title: 'Help & Support', href: '/support', icon: HelpCircle, module: 'Help', sidebarKey: 'help' },
 ];
 
+// const supportItems: NavItemWithMeta[] = [
+//     { title: 'Feedback', href: '/feedback', icon: MessageSquare, module: 'Feedback', sidebarKey: 'feedback' },
+//     { title: 'Help & Support', href: '/help', icon: HelpCircle, module: 'Help', sidebarKey: 'help' },
+// ];
+
 const ALL_GROUPS: { label: string; items: NavItemWithMeta[] }[] = [
     { label: 'Overview', items: overviewItems },
     { label: 'Auth & Users', items: authItems },
