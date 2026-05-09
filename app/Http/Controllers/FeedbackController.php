@@ -11,6 +11,21 @@ use Inertia\Response;
 
 class FeedbackController extends Controller
 {
+    
+    // ── Resolved (public) ─────────────────────────────────────────────────────────
+    public function resolved(): JsonResponse
+    {
+        $feedbacks = Feedback::where('status', 'resolved')
+            ->orderByDesc('reviewed_at')
+            ->limit(6)
+            ->get(['id', 'name', 'category', 'rating', 'message', 'status', 'created_at']);
+    
+        return response()->json([
+            'success' => true,
+            'data'    => $feedbacks,
+        ]);
+    }
+
     private function isApi(Request $request): bool
     {
         return $request->expectsJson() || $request->wantsJson();

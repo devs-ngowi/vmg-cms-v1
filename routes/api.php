@@ -81,6 +81,7 @@ Route::prefix('v1')->group(function () {
 
     // PUBLIC submit routes (no auth)
     Route::post('/feedback',        [FeedbackController::class, 'store']);
+    Route::get('/feedback/resolved', [FeedbackController::class, 'resolved']);
     Route::post('/support/tickets', [SupportTicketController::class, 'store']);
 
     // ════════════════════════════════════════════════════════════════════════
