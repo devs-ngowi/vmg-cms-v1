@@ -1,1 +1,0 @@
-import{a as e}from"./createLucideIcon-DE7WSMtW.js";const a=[["circle",{cx:"12",cy:"12",r:"10",key:"1mglay"}],["path",{d:"M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3",key:"1u773s"}],["path",{d:"M12 17h.01",key:"p32p05"}]],s=e("CircleHelp",a);const c=[["path",{d:"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z",key:"1lielz"}]],r=e("MessageSquare",c);export{s as C,r as M};
